@@ -12,12 +12,17 @@ import static org.junit.jupiter.api.Assertions.*;
  * A simple unit test for the 'com.gtnewhorizons.gtnhgradle.greeting' plugin.
  */
 class GTNHGradlePluginTest {
-    @Test void pluginRegistersATask() {
-        // Create a test project and apply the plugin
-        Project project = ProjectBuilder.builder().build();
-        project.getPlugins().apply("com.gtnewhorizons.gtnhgradle.greeting");
 
-        // Verify the result
-        assertNotNull(project.getTasks().findByName("greeting"));
+    @Test
+    void pluginRegistersATask() {
+        // Create a test project and apply the plugin
+        Project project = ProjectBuilder.builder()
+            .build();
+        project.getPlugins()
+            .apply("com.gtnewhorizons.gtnhgradle");
+
+        assertNotNull(
+            project.getTasks()
+                .findByName("downloadVanillaJars")); // Check RFG tasks
     }
 }
