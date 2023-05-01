@@ -13,16 +13,29 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class GTNHGradlePluginTest {
 
-    @Test
-    void pluginRegistersATask() {
-        // Create a test project and apply the plugin
-        Project project = ProjectBuilder.builder()
+    private static Project makeGtnhProject() {
+        final Project project = ProjectBuilder.builder()
             .build();
         project.getPlugins()
             .apply("com.gtnewhorizons.gtnhgradle");
+        return project;
+    }
+
+    @Test
+    void pluginRegistersATask() {
+        final Project project = makeGtnhProject();
 
         assertNotNull(
             project.getTasks()
                 .findByName("downloadVanillaJars")); // Check RFG tasks
+    }
+
+    @Test
+    void gtnhExtensionAccessible() {
+        final Project project = makeGtnhProject();
+        assertInstanceOf(
+            GTNHGradlePlugin.GTNHExtension.class,
+            project.getExtensions()
+                .getByName("gtnhGradle"));
     }
 }

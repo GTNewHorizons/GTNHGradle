@@ -12,6 +12,9 @@ val gitVersion: groovy.lang.Closure<String> by extra
 group = "com.gtnewhorizons"
 version = gitVersion()
 
+// Add a source set for the functional test suite
+val functionalTestSourceSet = sourceSets.create("functionalTest") {}
+
 repositories {
     maven {
         name = "gtnh"
@@ -41,16 +44,19 @@ dependencies {
     compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.0") { isTransitive = false }
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.3.4"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.3.8"))
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
     api(pluginDep("com.palantir.git-version", "3.0.0"))
-    api(pluginDep("com.diffplug.spotless", "6.12.0"))
+    api(pluginDep("com.diffplug.spotless", "6.12.0")) {
+        exclude("org.codehaus.groovy", "groovy")
+        exclude("org.codehaus.groovy", "groovy-xml")
+    }
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
 }
 
 gradlePlugin {
-    val greeting by plugins.creating {
+    val gtnhGradle by plugins.creating {
         id = "com.gtnewhorizons.gtnhgradle"
         implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin"
     }
@@ -105,11 +111,8 @@ tasks.withType<JavaCompile> {
     })
 }
 
-// Add a source set for the functional test suite
-val functionalTestSourceSet = sourceSets.create("functionalTest") {
-}
-
 configurations["functionalTestImplementation"].extendsFrom(configurations["testImplementation"])
+configurations["functionalTestAnnotationProcessor"].extendsFrom(configurations["testAnnotationProcessor"])
 
 // Add a task to run the functional tests
 val functionalTest by tasks.registering(Test::class) {

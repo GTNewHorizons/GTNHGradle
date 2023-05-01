@@ -4,19 +4,96 @@
 package com.gtnewhorizons.gtnhgradle;
 
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
+import com.palantir.gradle.gitversion.GitVersionCacheService;
+import com.palantir.gradle.gitversion.GitVersionPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.Plugin;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.provider.Provider;
+
+import javax.inject.Inject;
 
 /**
- * A simple 'hello world' plugin.
+ * The main GTNH buildscript plugin object. You can access it in the buildscript as {@code gtnhGradle} and use it to
+ * activate specific modules.
  */
 public class GTNHGradlePlugin implements Plugin<Project> {
 
+    /**
+     * Name of the project extension you can use to
+     */
+    public static final String PROJECT_EXT_NAME = "gtnhGradle";
+
+    /**
+     * Ran by Gradle when the plugin is applied to the project.
+     * This applies the Java library and RetroFuturaGradle plugins, for the plugin to do anything else modules need to
+     * be opted-in using other functions in this class.
+     */
     public void apply(Project project) {
         final PluginManager plugins = project.getPluginManager();
         plugins.apply(JavaLibraryPlugin.class);
-        plugins.apply(UserDevPlugin.class); // Apply RFG
+        plugins.apply(UserDevPlugin.class); // RFG
+
+        // Create the gtnhGradle extension as a Gradle DSL-extensible object
+        final GTNHExtension extension = project.getObjects()
+            .newInstance(GTNHExtension.class, project);
+        project.getExtensions()
+            .add(GTNHExtension.class, PROJECT_EXT_NAME, extension);
+    }
+
+    public static abstract class GTNHExtension implements ExtensionAware {
+
+        private final Project project;
+        private final Logger logger;
+
+        @Inject
+        public GTNHExtension(Project project) {
+            this.project = project;
+            this.logger = project.getLogger();
+        }
+
+        /**
+         * First checks for a valid git repository in the project, if not found does nothing. Applies the
+         * {@code com.palantir.git-version} plugin and sets the project version based on the latest git tag and commit
+         * hash. Can be disabled by setting a VERSION environment variable.
+         */
+        public void applyGitVersion() {
+            // In submodules, .git is a file pointing to the real git dir
+            final boolean isAGitRepo = project.file(".git/HEAD")
+                .isFile()
+                || project.file(".git")
+                    .isFile();
+
+            final String versionOverride = System.getenv("VERSION");
+            String identifiedVersion = "NO-GIT-TAG-SET";
+            if (StringUtils.isNotBlank(versionOverride)) {
+                identifiedVersion = versionOverride;
+                logger.lifecycle("Version override set to {}", identifiedVersion);
+            } else if (!isAGitRepo) {
+                logger.error(
+                    "This mod must be version controlled by Git AND the repository must provide at least one tag, or the VERSION override must be set!");
+                logger.error(
+                    "(Do NOT download from GitHub using the ZIP option, instead clone the repository, see https://gtnh.miraheze.org/wiki/Development for details.)");
+            } else {
+                final PluginManager plugins = project.getPluginManager();
+                plugins.apply(GitVersionPlugin.class);
+                // Fix Jenkins' Git: chmod a file should not be detected as a change and append a '.dirty' to the
+                // version
+                project.exec(es -> { es.commandLine("git", "config", "core.fileMode", "false"); });
+                Provider<GitVersionCacheService> serviceProvider = GitVersionCacheService
+                    .getSharedGitVersionCacheService(project);
+                final String gitVersion = serviceProvider.get()
+                    .getGitVersion(project.getProjectDir(), null);
+                identifiedVersion = gitVersion;
+            }
+
+            project.setVersion(identifiedVersion);
+            project.getExtensions()
+                .add(String.class, "modVersion", identifiedVersion);
+        }
     }
 }
