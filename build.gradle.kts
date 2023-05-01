@@ -129,8 +129,6 @@ publishing {
     publications {
         create<MavenPublication>("gtnhGradle") {
             from(components["java"])
-            artifact(tasks.named("sourcesJar"))
-            artifact(tasks.named("javadocJar"))
         }
         // From org.gradle.plugin.devel.plugins.MavenPluginPublishPlugin.createMavenMarkerPublication
         for (declaration in gradlePlugin.plugins) {
