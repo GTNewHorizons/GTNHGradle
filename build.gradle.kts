@@ -56,9 +56,17 @@ dependencies {
 }
 
 gradlePlugin {
-    val gtnhGradle by plugins.creating {
-        id = "com.gtnewhorizons.gtnhgradle"
-        implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin"
+    plugins {
+        website.set("https://github.com/GTNewHorizons/GTNHGradle")
+        vcsUrl.set("https://github.com/GTNewHorizons/GTNHGradle.git")
+        isAutomatedPublishing = false
+        create("gtnhGradle") {
+            id = "com.gtnewhorizons.gtnhgradle"
+            implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin"
+            displayName = "GTNHGradle"
+            description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods"
+            tags.set(listOf("minecraft", "modding"))
+        }
     }
 }
 
@@ -99,6 +107,8 @@ java {
         languageVersion.set(JavaLanguageVersion.of(8))
         vendor.set(JvmVendorSpec.AZUL)
     }
+    withSourcesJar()
+    withJavadocJar()
 }
 tasks.withType<JavaCompile> {
     sourceCompatibility = "17" // for the IDE support
@@ -132,3 +142,49 @@ tasks.test {
     // Use JUnit Jupiter for unit tests.
     useJUnitPlatform()
 }
+
+
+publishing {
+    publications {
+        create<MavenPublication>("retrofuturagradle") {
+            shadow.component(this)
+            artifact(tasks.named("sourcesJar"))
+            artifact(tasks.named("javadocJar"))
+        }
+        // From org.gradle.plugin.devel.plugins.MavenPluginPublishPlugin.createMavenMarkerPublication
+        for (declaration in gradlePlugin.plugins) {
+            create<MavenPublication>(declaration.name + "PluginMarkerMaven") {
+                artifactId = declaration.id + ".gradle.plugin"
+                groupId = declaration.id
+                pom {
+                    name.set(declaration.displayName)
+                    description.set(declaration.description)
+                    withXml {
+                        val root = asElement()
+                        val document = root.ownerDocument
+                        val dependencies = root.appendChild(document.createElement("dependencies"))
+                        val dependency = dependencies.appendChild(document.createElement("dependency"))
+                        val groupId = dependency.appendChild(document.createElement("groupId"))
+                        groupId.textContent = project.group.toString()
+                        val artifactId = dependency.appendChild(document.createElement("artifactId"))
+                        artifactId.textContent = project.name
+                        val version = dependency.appendChild(document.createElement("version"))
+                        version.textContent = project.version.toString()
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = uri("http://jenkins.usrv.eu:8081/nexus/content/repositories/releases")
+            isAllowInsecureProtocol = true
+            credentials {
+                username = System.getenv("MAVEN_USER") ?: "NONE"
+                password = System.getenv("MAVEN_PASSWORD") ?: "NONE"
+            }
+        }
+    }
+}
+
