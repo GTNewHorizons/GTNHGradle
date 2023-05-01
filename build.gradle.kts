@@ -1,6 +1,5 @@
 plugins {
     `java-gradle-plugin`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.palantir.git-version") version "3.0.0"
     id("maven-publish")
     id("com.diffplug.spotless") version "6.12.0"
@@ -28,15 +27,6 @@ repositories {
 fun pluginDep(name: String, version: String): String {
     return "${name}:${name}.gradle.plugin:${version}"
 }
-
-val shadowImplementation: Configuration by configurations.creating {
-    isCanBeResolved = true
-    isCanBeConsumed = false
-}
-configurations.compileClasspath { extendsFrom(shadowImplementation) }
-configurations.testCompileClasspath { extendsFrom(shadowImplementation) }
-configurations.runtimeClasspath { extendsFrom(shadowImplementation) }
-configurations.testRuntimeClasspath { extendsFrom(shadowImplementation) }
 
 dependencies {
     annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.0")
@@ -92,15 +82,6 @@ spotless {
     }
 }
 
-// Shadow specific dependencies into the plugin jar
-tasks.shadowJar {
-    isEnableRelocation = true
-    relocationPrefix = "${group}.${name}.shadow"
-    configurations = listOf(shadowImplementation)
-}
-
-tasks.assemble { dependsOn(tasks.shadowJar) }
-
 // Enable Jabel for java 8 bytecode from java 17 sources
 java {
     toolchain {
@@ -146,8 +127,8 @@ tasks.test {
 
 publishing {
     publications {
-        create<MavenPublication>("retrofuturagradle") {
-            shadow.component(this)
+        create<MavenPublication>("gtnhGradle") {
+            from(components["java"])
             artifact(tasks.named("sourcesJar"))
             artifact(tasks.named("javadocJar"))
         }
