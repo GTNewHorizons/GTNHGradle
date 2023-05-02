@@ -80,7 +80,7 @@
             document.getElementById('reload-indicator').classList.remove('hidden')
             document.getElementById('use-version').disabled = true
             document.getElementById('refresh-version').disabled = true
-            fetch("https://gtnewhorizons.github.io/GTNHGradle/index.txt", {cache: "no-cache"})
+            fetch("https://www.gtnewhorizons.com/GTNHGradle/index.txt", {cache: "no-cache"})
                 .then((res) => {
                     if (!res.ok)
                         reload_versions_fallback()
@@ -120,7 +120,7 @@
 
         function set_version(version) {
             document.getElementById('current-select').value = version
-            document.getElementById('frame').src = 'https://gtnewhorizons.github.io/GTNHGradle/' + version + '/javadoc/index.html?overview-summary.html'
+            document.getElementById('frame').src = 'https://www.gtnewhorizons.com/GTNHGradle/' + version + '/javadoc/index.html?overview-summary.html'
             localStorage.setItem(lastUseKey, version)
         }
 
