@@ -7,13 +7,19 @@ import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
 import com.palantir.gradle.gitversion.GitVersionCacheService;
 import com.palantir.gradle.gitversion.GitVersionPlugin;
+import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
+import org.ajoberstar.grgit.gradle.GrgitPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.Plugin;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.plugins.scala.ScalaPlugin;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
+import org.gradle.plugins.ide.eclipse.EclipsePlugin;
+import org.jetbrains.gradle.ext.IdeaExtPlugin;
 
 import javax.inject.Inject;
 
@@ -37,6 +43,12 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         final PluginManager plugins = project.getPluginManager();
         plugins.apply(JavaLibraryPlugin.class);
         plugins.apply(UserDevPlugin.class); // RFG
+        plugins.apply(IdeaExtPlugin.class);
+        plugins.apply(EclipsePlugin.class);
+        plugins.apply(ScalaPlugin.class);
+        plugins.apply(MavenPublishPlugin.class);
+        plugins.apply(GrgitPlugin.class);
+        plugins.apply(DownloadTaskPlugin.class);
 
         // Create the gtnhGradle extension as a Gradle DSL-extensible object
         final GTNHExtension extension = project.getObjects()

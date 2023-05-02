@@ -37,6 +37,18 @@ dependencies {
     api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.3.8"))
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
     api(pluginDep("com.palantir.git-version", "3.0.0"))
+    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.7"))
+    api(pluginDep("org.jetbrains.kotlin.jvm", "1.8.0"))
+    api(pluginDep("org.jetbrains.kotlin.kapt", "1.8.0"))
+    api(pluginDep("com.google.devtools.ksp", "1.8.0-1.0.9"))
+    api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
+    api(pluginDep("de.undercouch.download", "5.4.0"))
+    api(pluginDep("com.github.gmazzo.buildconfig", "3.1.0")) // Unused, available for addon.gradle
+    api(pluginDep("com.diffplug.spotless", "6.13.0")) // 6.13.0 is the last jvm8 supporting version
+    api(pluginDep("com.modrinth.minotaur", "2.+"))
+    api(pluginDep("com.matthewprenger.cursegradle", "1.4.0"))
+
     api(pluginDep("com.diffplug.spotless", "6.12.0")) {
         exclude("org.codehaus.groovy", "groovy")
         exclude("org.codehaus.groovy", "groovy-xml")
