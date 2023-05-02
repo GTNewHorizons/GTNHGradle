@@ -57,11 +57,19 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             .add(GTNHExtension.class, PROJECT_EXT_NAME, extension);
     }
 
+    /**
+     * The object registered as {@code project.gtnhGradle}
+     */
     public static abstract class GTNHExtension implements ExtensionAware {
 
         private final Project project;
         private final Logger logger;
 
+        /**
+         * For internal use only.
+         * 
+         * @param project passed in to avoid having to pass the project object to every apply function
+         */
         @Inject
         public GTNHExtension(Project project) {
             this.project = project;
