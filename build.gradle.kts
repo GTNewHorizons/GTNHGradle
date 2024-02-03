@@ -152,6 +152,7 @@ tasks.wrapper.configure {
     distributionType = Wrapper.DistributionType.ALL
 }
 
+configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
 configurations["functionalTestImplementation"].extendsFrom(configurations["testImplementation"])
 configurations["functionalTestAnnotationProcessor"].extendsFrom(configurations["testAnnotationProcessor"])
 

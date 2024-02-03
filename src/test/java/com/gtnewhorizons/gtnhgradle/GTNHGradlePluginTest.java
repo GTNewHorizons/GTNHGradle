@@ -3,6 +3,7 @@
  */
 package com.gtnewhorizons.gtnhgradle;
 
+import com.google.common.collect.ImmutableMap;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.gradle.api.Project;
 import org.junit.jupiter.api.Test;
@@ -13,11 +14,29 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class GTNHGradlePluginTest {
 
+    private static final ImmutableMap<String, String> SIMPLE_PROPERTIES = ImmutableMap.of(
+        "modName",
+        "MyMod",
+        "modId",
+        "mymodid",
+        "modGroup",
+        "com.myname.mymodid",
+        "enableModernJavaSyntax",
+        "true",
+        "enableGenericInjection",
+        "true");
+
     private static Project makeGtnhProject() {
         final Project project = ProjectBuilder.builder()
             .build();
+        // Set some required properties
+        for (var entry : SIMPLE_PROPERTIES.entrySet()) {
+            project.getExtensions()
+                .getExtraProperties()
+                .set(entry.getKey(), entry.getValue());
+        }
         project.getPlugins()
-            .apply("com.gtnewhorizons.gtnhconvention");
+            .apply("com.gtnewhorizons.gtnhgradle");
         return project;
     }
 

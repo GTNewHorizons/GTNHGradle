@@ -28,20 +28,39 @@ class GTNHGradlePluginFunctionalTest {
         return new File(projectDir, "build.gradle");
     }
 
+    private File getPropertiesFile() {
+        return new File(projectDir, "gradle.properties");
+    }
+
     private File getSettingsFile() {
         return new File(projectDir, "settings.gradle");
     }
 
+    private static final String SIMPLE_SETTINGS_FILE = """
+        plugins {
+            id('com.gtnewhorizons.gtnhsettingsconvention')
+        }
+        """;
+
     private static final String SIMPLE_BUILD_FILE = """
         plugins {
-            id('com.gtnewhorizons.gtnhgradle')
+            id('com.gtnewhorizons.gtnhconvention')
         }
+        """;
+
+    private static final String SIMPLE_PROPERTIES_FILE = """
+        modName = MyMod
+        modId = mymodid
+        modGroup = com.myname.mymodid
+        enableModernJavaSyntax = true
+        enableGenericInjection = true
         """;
 
     @Test
     void canRunRfgTask() throws IOException {
-        writeString(getSettingsFile(), "");
+        writeString(getSettingsFile(), SIMPLE_SETTINGS_FILE);
         writeString(getBuildFile(), SIMPLE_BUILD_FILE);
+        writeString(getPropertiesFile(), SIMPLE_PROPERTIES_FILE);
 
         // Run the build
         GradleRunner runner = GradleRunner.create()

@@ -107,7 +107,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         trim = true,
-        required = true,
+        required = false,
         docComment = """
             Updates your build.gradle and settings.gradle automatically whenever an update is available.
             """)
@@ -119,7 +119,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         trim = true,
-        required = true,
+        required = false,
         docComment = """
             Version of Minecraft to target
             """)
@@ -131,11 +131,80 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         trim = true,
-        required = true,
+        required = false,
         docComment = """
             Version of Minecraft Forge to target
             """)
     public @NotNull String forgeVersion = "10.13.4.1614";
+
+    /** See annotation */
+    @Prop(name = "channel", isSettings = false, preferPopulated = true, trim = true, required = false, docComment = """
+        Specify an MCP channel for dependency deobfuscation and the deobfParams task.
+        """)
+    public @NotNull String channel = "stable";
+
+    /** See annotation */
+    @Prop(
+        name = "mappingsVersion",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Specify an MCP mappings version for dependency deobfuscation and the deobfParams task.
+            """)
+    public @NotNull String mappingsVersion = "12";
+
+    /** See annotation */
+    @Prop(
+        name = "remoteMappings",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Defines other MCP mappings for dependency deobfuscation.
+            """)
+    public @NotNull String remoteMappings = "https://raw.githubusercontent.com/MinecraftForge/FML/1.7.10/conf/";
+
+    /** See annotation */
+    @Prop(
+        name = "developmentEnvironmentUserName",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            # Select a default username for testing your mod. You can always override this per-run by running
+            `./gradlew runClient --username=AnotherPlayer`, or configuring this command in your IDE.
+            """)
+    public @NotNull String developmentEnvironmentUserName = "Developer";
+
+    /** See annotation */
+    @Prop(
+        name = "enableModernJavaSyntax",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Enables using modern Java syntax (up to version 17) via Jabel, while still targeting JVM 8.
+            See https://github.com/bsideup/jabel for details on how this works.
+            """)
+    public boolean enableModernJavaSyntax = false;
+
+    /** See annotation */
+    @Prop(
+        name = "enableGenericInjection",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Enables injecting missing generics into the decompiled source code for a better coding experience.
+            Turns most publicly visible List, Map, etc. into proper List<E>, Map<K, V> types.
+            """)
+    public boolean enableGenericInjection = false;
 
     /** See annotation */
     @Prop(
@@ -157,7 +226,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         trim = true,
-        required = true,
+        required = false,
         docComment = """
             Name of the token containing the project's current version to generate/replace.
             """)
@@ -182,6 +251,273 @@ public final class PropertiesConfiguration {
 
     /** See annotation */
     @Prop(
+        name = "apiPackage",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            In case your mod provides an API for other mods to implement you may declare its package here. Otherwise, you can
+            leave this property empty.
+            Example value: (apiPackage = api) + (modGroup = com.myname.mymodid) -> com.myname.mymodid.api
+            """)
+    public @NotNull String apiPackage = "";
+
+    /** See annotation */
+    @Prop(
+        name = "accessTransformersFile",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Specify the configuration file for Forge's access transformers here. It must be placed into /src/main/resources/META-INF/
+            There can be multiple files in a space-separated list.
+            Example value: mymodid_at.cfg nei_at.cfg
+            """)
+    public @NotNull String accessTransformersFile = "";
+
+    /** See annotation */
+    @Prop(
+        name = "usesMixins",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Provides setup for Mixins if enabled. If you don't know what mixins are: Keep it disabled!
+            """)
+    public boolean usesMixins = false;
+
+    /** See annotation */
+    @Prop(
+        name = "usesMixinsDebug",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Adds some debug arguments like verbose output and class export.
+            """)
+    public boolean usesMixinsDebug = false;
+
+    /** See annotation */
+    @Prop(
+        name = "mixinPlugin",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Specify the location of your implementation of IMixinConfigPlugin. Leave it empty otherwise.
+            """)
+    public @NotNull String mixinPlugin = "";
+
+    /** See annotation */
+    @Prop(
+        name = "mixinsPackage",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Specify the package that contains all of your Mixins. You may only place Mixins in this package or the build will fail!
+            """)
+    public @NotNull String mixinsPackage = "";
+
+    /** See annotation */
+    @Prop(
+        name = "coreModClass",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Specify the core mod entry class if you use a core mod. This class must implement IFMLLoadingPlugin!
+            This parameter is for legacy compatibility only
+            Example value: (coreModClass = asm.FMLPlugin) + (modGroup = com.myname.mymodid) -> com.myname.mymodid.asm.FMLPlugin
+            """)
+    public @NotNull String coreModClass = "";
+
+    /** See annotation */
+    @Prop(
+        name = "containsMixinsAndOrCoreModOnly",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            If your project is only a consolidation of mixins or a core mod and does NOT contain a 'normal' mod ( = some class
+            that is annotated with @Mod) you want this to be true. When in doubt: leave it on false!
+            """)
+    public boolean containsMixinsAndOrCoreModOnly = false;
+
+    /** See annotation */
+    @Prop(
+        name = "forceEnableMixins",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Enables Mixins even if this mod doesn't use them, useful if one of the dependencies uses mixins.
+            """)
+    public boolean forceEnableMixins = false;
+
+    /** See annotation */
+    @Prop(
+        name = "usesShadowedDependencies",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            If enabled, you may use 'shadowCompile' for dependencies. They will be integrated into your jar. It is your
+            responsibility to check the license and request permission for distribution if required.
+            """)
+    public boolean usesShadowedDependencies = false;
+    /** See annotation */
+    @Prop(
+        name = "minimizeShadowedDependencies",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            If disabled, won't remove unused classes from shadowed dependencies. Some libraries use reflection to access
+            their own classes, making the minimization unreliable.
+            """)
+    public boolean minimizeShadowedDependencies = true;
+    /** See annotation */
+    @Prop(
+        name = "relocateShadowedDependencies",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            If disabled, won't rename the shadowed classes.
+            """)
+    public boolean relocateShadowedDependencies = true;
+
+    /** See annotation */
+    @Prop(
+        name = "includeWellKnownRepositories",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Adds the GTNH maven, CurseMaven, IC2/Player maven, and some more well-known 1.7.10 repositories.
+            """)
+    public boolean includeWellKnownRepositories = true;
+
+    /** See annotation */
+    @Prop(
+        name = "usesMavenPublishing",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Change these to your Maven coordinates if you want to publish to a custom Maven repository instead of the default GTNH Maven.
+            Authenticate with the MAVEN_USER and MAVEN_PASSWORD environment variables.
+            If you need a more complex setup disable maven publishing here and add a publishing repository to addon.gradle.
+            """)
+    public boolean usesMavenPublishing = true;
+
+    /** See annotation */
+    @Prop(
+        name = "mavenPublishUrl",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Maven repository to publish the mod to.
+            """)
+    public @NotNull String mavenPublishUrl = GTNHConstants.GTNH_MAVEN_RELEASES_REPOSITORY;
+
+    /** See annotation */
+    @Prop(
+        name = "modrinthProjectId",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Publishing to Modrinth requires you to set the MODRINTH_TOKEN environment variable to your current Modrinth API token.
+
+            The project's ID on Modrinth. Can be either the slug or the ID.
+            Leave this empty if you don't want to publish to Modrinth.
+            """)
+    public @NotNull String modrinthProjectId = "";
+
+    /** See annotation */
+    @Prop(
+        name = "modrinthRelations",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            The project's relations on Modrinth. You can use this to refer to other projects on Modrinth.
+            Syntax: scope1-type1:name1;scope2-type2:name2;...
+            Where scope can be one of [required, optional, incompatible, embedded],
+                  type can be one of [project, version],
+                  and the name is the Modrinth project or version slug/id of the other mod.
+            Example: required-project:fplib;optional-project:gasstation;incompatible-project:gregtech
+            Note: GTNH Mixins is automatically set as a required dependency if usesMixins = true
+            """)
+    public @NotNull String modrinthRelations = "";
+
+    /** See annotation */
+    @Prop(
+        name = "curseForgeProjectId",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Publishing to CurseForge requires you to set the CURSEFORGE_TOKEN environment variable to one of your CurseForge API tokens.
+
+            The project's numeric ID on CurseForge. You can find this in the About Project box.
+            Leave this empty if you don't want to publish on CurseForge.
+            """)
+    public @NotNull String curseForgeProjectId = "";
+
+    /** See annotation */
+    @Prop(
+        name = "curseForgeRelations",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            The project's relations on CurseForge. You can use this to refer to other projects on CurseForge.
+            Syntax: type1:name1;type2:name2;...
+            Where type can be one of [requiredDependency, embeddedLibrary, optionalDependency, tool, incompatible],
+                  and the name is the CurseForge project slug of the other mod.
+            Example: requiredDependency:railcraft;embeddedLibrary:cofhlib;incompatible:buildcraft
+            Note: UniMixins is automatically set as a required dependency if usesMixins = true.
+            """)
+    public @NotNull String curseForgeRelations = "";
+
+    /** See annotation */
+    @Prop(
+        name = "customArchiveBaseName",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Optional parameter to customize the produced artifacts. Use this to preserve artifact naming when migrating older
+            projects. New projects should not use this parameter.
+            """)
+    public @NotNull String customArchiveBaseName = "";
+
+    /** See annotation */
+    @Prop(
         name = "versionPattern",
         isSettings = false,
         preferPopulated = false,
@@ -194,6 +530,61 @@ public final class PropertiesConfiguration {
             Note: the specified string must be escaped, so e.g. 1\\\\.1\\\\.\\\\d+ instead of 1\\.1\\.\\d+
             """)
     public @NotNull String versionPattern = "";
+
+    /** See annotation */
+    @Prop(
+        name = "noPublishedSources",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Optional parameter to prevent the source code from being published.
+            """)
+    public boolean noPublishedSources = false;
+
+    /** See annotation */
+    @Prop(
+        name = "disableSpotless",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Uncomment this to disable Spotless checks.
+            This should only be uncommented to keep it easier to sync with upstream/other forks.
+            That is, if there is no other active fork/upstream, NEVER change this.
+            """)
+    public boolean disableSpotless = false;
+
+    /** See annotation */
+    @Prop(
+        name = "disableCheckstyle",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Uncomment this to disable Checkstyle checks (currently wildcard import check).
+            """)
+    public boolean disableCheckstyle = false;
+
+    /** See annotation */
+    @Prop(
+        name = "ideaOverrideBuildType",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Override the IDEA build type. Valid values are: "" (leave blank, do not override), "idea" (force use native IDEA build), "gradle"
+            (force use delegated build).
+            This is meant to be set in $HOME/.gradle/gradle.properties.
+            e.g. add "systemProp.org.gradle.project.ideaOverrideBuildType=idea" will override the build type to be native build.
+            WARNING: If you do use this option, it will overwrite whatever you have in your existing projects. This might not be what you want!
+            Usually there is no need to uncomment this here as other developers do not necessarily use the same build type as you.
+            """)
+    public @NotNull String ideaOverrideBuildType = "";
 
     // API
     /** Fills all properties with default values. */
@@ -233,7 +624,10 @@ public final class PropertiesConfiguration {
      */
     public PropertiesConfiguration(final Project project) {
         this();
-        initFromProperties(project.getProperties(), project::setProperty);
+        initFromProperties(
+            project.getProperties(),
+            project.getExtensions()
+                .getExtraProperties()::set);
     }
 
     private void initFromProperties(Map<?, ?> props, BiConsumer<String, Object> onMissing) {
