@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.FileWriter;
+import java.nio.file.Files;
 
 import com.google.common.collect.ImmutableMap;
 import org.gradle.testkit.runner.GradleRunner;
@@ -61,6 +62,9 @@ class GTNHGradlePluginFunctionalTest {
         writeString(getSettingsFile(), SIMPLE_SETTINGS_FILE);
         writeString(getBuildFile(), SIMPLE_BUILD_FILE);
         writeString(getPropertiesFile(), SIMPLE_PROPERTIES_FILE);
+        Files.createDirectories(
+            projectDir.toPath()
+                .resolve("src/main/javacom/myname/mymodid"));
 
         // Run the build
         GradleRunner runner = GradleRunner.create()

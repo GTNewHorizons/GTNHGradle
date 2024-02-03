@@ -90,6 +90,26 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "Sets up the Java/Scala/Kotlin toolchain for mod compilation.")
     public boolean moduleToolchain = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.structureCheck",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Checks the project structure for obvious mistakes.")
+    public boolean moduleStructureCheck = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.accessTransformers",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Loads and packages access transformers.")
+    public boolean moduleAccessTransformers = true;
     // </editor-fold>
 
     // <editor-fold desc="Various settings">

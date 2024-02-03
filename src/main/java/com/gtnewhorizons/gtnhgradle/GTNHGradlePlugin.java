@@ -6,8 +6,10 @@ package com.gtnewhorizons.gtnhgradle;
 import com.diffplug.blowdryer.Blowdryer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
+import com.gtnewhorizons.gtnhgradle.modules.StructureCheckModule;
 import com.gtnewhorizons.gtnhgradle.modules.ToolchainModule;
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
@@ -94,7 +96,9 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public static final List<Class<? extends GTNHModule>> ALL_MODULES = ImmutableList.of( //
             GitVersionModule.class,
             CodeStyleModule.class,
-            ToolchainModule.class
+            ToolchainModule.class,
+            StructureCheckModule.class,
+            AccessTransformerModule.class
         //
         );
         /** A map of all available modules, indexed by their class name */
