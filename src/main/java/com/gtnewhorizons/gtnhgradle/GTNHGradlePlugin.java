@@ -73,6 +73,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
     /**
      * The object registered as {@code project.gtnhGradle}
      */
+    @SuppressWarnings("unused") // Forms the public API
     public static abstract class GTNHExtension implements ExtensionAware {
 
         /** Logging service used by the plugin */

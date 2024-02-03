@@ -21,6 +21,7 @@ import java.util.Properties;
 /**
  * A helper for accessing gradle Properties entries configuring the GTNH plugins.
  */
+@SuppressWarnings("CanBeFinal")
 public final class PropertiesConfiguration {
 
     // === Settings properties
@@ -60,7 +61,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         trim = true,
         docComment = "Whether to automatically set the version based on the VERSION environment variable or the current git status.")
-    public boolean moduleGitVersion;
+    public boolean moduleGitVersion = true;
     // == Other
     /** See annotation */
     @Prop(name = "versionPattern", isSettings = false, preferPopulated = false, trim = true, docComment = """

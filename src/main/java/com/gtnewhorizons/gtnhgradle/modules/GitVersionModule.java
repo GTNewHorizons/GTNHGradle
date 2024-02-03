@@ -30,7 +30,7 @@ public class GitVersionModule implements GTNHModule {
     }
 
     @Override
-    public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
+    public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) {
         final Path projectDir = gtnh.getProjectLayout()
             .getProjectDirectory()
             .getAsFile()

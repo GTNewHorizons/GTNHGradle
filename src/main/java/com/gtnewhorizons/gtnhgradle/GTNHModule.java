@@ -24,6 +24,7 @@ public interface GTNHModule {
      * @param project The project to activate the module on
      * @throws Throwable Any exception to allow easier module writing
      */
+    @SuppressWarnings("RedundantThrows")
     void apply(@NotNull GTNHGradlePlugin.GTNHExtension gtnh, @NotNull Project project) throws Throwable;
 
     /**

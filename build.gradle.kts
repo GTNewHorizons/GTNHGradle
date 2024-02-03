@@ -60,6 +60,7 @@ dependencies {
     }
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 gradlePlugin {
@@ -171,6 +172,8 @@ tasks.check {
 tasks.test {
     // Use JUnit Jupiter for unit tests.
     useJUnitPlatform()
+    // Skip git-based versioning inside the tests
+    environment("VERSION", "1.0.0")
 }
 
 

@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.FileWriter;
+
+import com.google.common.collect.ImmutableMap;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.TaskOutcome;
@@ -42,7 +44,8 @@ class GTNHGradlePluginFunctionalTest {
         writeString(getBuildFile(), SIMPLE_BUILD_FILE);
 
         // Run the build
-        GradleRunner runner = GradleRunner.create();
+        GradleRunner runner = GradleRunner.create()
+            .withEnvironment(ImmutableMap.of("VERSION", "1.0.0"));
         runner.forwardOutput();
         runner.withPluginClasspath();
         runner.withArguments("downloadVanillaJars");
