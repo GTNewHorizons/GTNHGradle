@@ -70,6 +70,26 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "Whether to automatically set the version based on the VERSION environment variable or the current git status.")
     public boolean moduleGitVersion = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.codeStyle",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Sets up code style plugins like Spotless and Checkstyle.")
+    public boolean moduleCodeStyle = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.toolchain",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Sets up the Java/Scala/Kotlin toolchain for mod compilation.")
+    public boolean moduleToolchain = true;
     // </editor-fold>
 
     // <editor-fold desc="Various settings">

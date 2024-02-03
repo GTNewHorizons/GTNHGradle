@@ -26,4 +26,11 @@ public class GTNHConstants {
           </module>
         </module>
         """;
+
+    /** The default directory for Java sources */
+    public static final @NotNull String JAVA_SOURCES_DIR = "src/main/java";
+    /** The default directory for Scala sources */
+    public static final @NotNull String SCALA_SOURCES_DIR = "src/main/scala";
+    /** The default directory for Kotlin sources */
+    public static final @NotNull String KOTLIN_SOURCES_DIR = "src/main/kotlin";
 }

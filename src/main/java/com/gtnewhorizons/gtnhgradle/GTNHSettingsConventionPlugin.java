@@ -24,6 +24,7 @@ public class GTNHSettingsConventionPlugin implements Plugin<Settings> {
                 .apply(BlowdryerSetupPlugin.class);
             final BlowdryerSetup blowdryer = target.getExtensions()
                 .getByType(BlowdryerSetup.class);
+            blowdryer.repoSubfolder("gtnhShared");
             if ("LOCAL".equals(config.blowdryerTag)) {
                 blowdryer.devLocal(".");
             } else {

@@ -4,8 +4,6 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * A toggleable module of the GTNH buildscript plugin.
  */
@@ -52,15 +50,8 @@ public interface GTNHModule {
             return;
         }
 
-        final GTNHModule instance;
-        try {
-            instance = moduleClass.getConstructor()
-                .newInstance();
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getCause());
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
+        final GTNHModule instance = gtnh.getObjectFactory()
+            .newInstance(moduleClass);
 
         final boolean enabled = instance.isEnabled(gtnh.configuration);
         if (enabled) {

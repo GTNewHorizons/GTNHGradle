@@ -3,9 +3,12 @@
  */
 package com.gtnewhorizons.gtnhgradle;
 
+import com.diffplug.blowdryer.Blowdryer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
+import com.gtnewhorizons.gtnhgradle.modules.ToolchainModule;
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
 import org.ajoberstar.grgit.gradle.GrgitPlugin;
@@ -64,10 +67,15 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         plugins.apply(UserDevPlugin.class); // RFG
 
         // Create the gtnhGradle extension as a Gradle DSL-extensible object
-        final GTNHExtension extension = project.getObjects()
+        final GTNHExtension gtnh = project.getObjects()
             .newInstance(GTNHExtension.class, project);
         project.getExtensions()
-            .add(GTNHExtension.class, PROJECT_EXT_NAME, extension);
+            .add(GTNHExtension.class, PROJECT_EXT_NAME, gtnh);
+        if (!gtnh.configuration.blowdryerTag.isEmpty()) {
+            // Make blowdryer available in "apply from:" scripts
+            project.getExtensions()
+                .add(Class.class, "Blowdryer", Blowdryer.class);
+        }
     }
 
     /**
@@ -83,7 +91,12 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public @NotNull PropertiesConfiguration configuration;
 
         /** A list of all available modules to activate */
-        public static final List<Class<? extends GTNHModule>> ALL_MODULES = ImmutableList.of(GitVersionModule.class);
+        public static final List<Class<? extends GTNHModule>> ALL_MODULES = ImmutableList.of( //
+            GitVersionModule.class,
+            CodeStyleModule.class,
+            ToolchainModule.class
+        //
+        );
         /** A map of all available modules, indexed by their class name */
         public static final Map<String, Class<? extends GTNHModule>> MODULES_BY_NAME;
 
