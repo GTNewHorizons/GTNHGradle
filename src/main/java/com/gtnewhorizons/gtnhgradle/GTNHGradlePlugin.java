@@ -97,6 +97,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public @NotNull PropertiesConfiguration configuration;
 
         /** A list of all available modules to activate */
+        @SuppressWarnings("unchecked") // too long, varargs can't handle generics
         public static final List<Class<? extends GTNHModule>> ALL_MODULES = ImmutableList.of( //
             GitVersionModule.class,
             CodeStyleModule.class,
@@ -108,6 +109,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             WellKnownRepositoriesModule.class,
             StandardScriptsModules.RepositoriesScriptModule.class,
             MixinModule.class,
+            StandardScriptsModules.DependenciesScriptModule.class,
             StandardScriptsModules.LateAddonScriptModule.class
         //
         );

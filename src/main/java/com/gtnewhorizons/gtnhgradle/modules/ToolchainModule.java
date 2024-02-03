@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
@@ -9,6 +10,7 @@ import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
+import com.gtnewhorizons.retrofuturagradle.util.ProviderToStringWrapper;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -28,6 +30,7 @@ import org.gradle.jvm.toolchain.JavaCompiler;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
+import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension;
 
@@ -319,6 +322,38 @@ public abstract class ToolchainModule implements GTNHModule {
                             details.because("Pick obfuscated jar");
                         }
                     });
+            });
+
+        // mcmod.info processing
+        tasks.named("processResources", ProcessResources.class)
+            .configure(t -> {
+                final String modVersion = Objects.requireNonNull(
+                    project.getExtensions()
+                        .getExtraProperties()
+                        .get(GTNHConstants.MOD_VERSION_PROPERTY))
+                    .toString();
+                t.getInputs()
+                    .property("version", modVersion);
+                t.getInputs()
+                    .property("mcversion", minecraft.getMcVersion());
+                t.getInputs()
+                    .property("modId", gtnh.configuration.modId);
+                t.getInputs()
+                    .property("modName", gtnh.configuration.modName);
+                t.exclude("spotless.gradle");
+
+                t.filesMatching("mcmod.info", fcd -> {
+                    fcd.expand(
+                        ImmutableMap.of(
+                            "minecraftVersion",
+                            new ProviderToStringWrapper(minecraft.getMcVersion()),
+                            "modVersion",
+                            modVersion,
+                            "modId",
+                            gtnh.configuration.modId,
+                            "modName",
+                            gtnh.configuration.modName));
+                });
             });
     }
 }
