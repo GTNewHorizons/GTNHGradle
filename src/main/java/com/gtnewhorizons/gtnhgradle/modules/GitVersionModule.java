@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
@@ -93,7 +94,7 @@ public class GitVersionModule implements GTNHModule {
         project.setVersion(identifiedVersion);
         project.getExtensions()
             .getExtraProperties()
-            .set("modVersion", identifiedVersion);
+            .set(GTNHConstants.MOD_VERSION_PROPERTY, identifiedVersion);
 
         if (identifiedVersion.equals(versionOverride)) {
             gtnh.logger.warn("Version override set to {}!", identifiedVersion);

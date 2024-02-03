@@ -8,9 +8,6 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 /** Checks the project structure for obvious mistakes */
 public class StructureCheckModule implements GTNHModule {
 
@@ -28,12 +25,12 @@ public class StructureCheckModule implements GTNHModule {
         String targetPackageScala = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath;
         String targetPackageKotlin = GTNHConstants.KOTLIN_SOURCES_DIR + modGroupPath;
 
-        final Path projectRoot = project.getProjectDir()
-            .toPath();
-
-        if (!(Files.exists(projectRoot.resolve(targetPackageJava))
-            || Files.exists(projectRoot.resolve(targetPackageScala))
-            || Files.exists(projectRoot.resolve(targetPackageKotlin)))) {
+        if (!(project.file(targetPackageJava)
+            .exists()
+            || project.file(targetPackageScala)
+                .exists()
+            || project.file(targetPackageKotlin)
+                .exists())) {
             throw new GradleException(
                 "Could not resolve \"modGroup\"! Could not find " + targetPackageJava
                     + " or "
@@ -46,15 +43,102 @@ public class StructureCheckModule implements GTNHModule {
             targetPackageJava = GTNHConstants.JAVA_SOURCES_DIR + modGroupPath + "/" + apiPackagePath;
             targetPackageScala = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath + "/" + apiPackagePath;
             targetPackageKotlin = GTNHConstants.KOTLIN_SOURCES_DIR + modGroupPath + "/" + apiPackagePath;
-            if (!(Files.exists(projectRoot.resolve(targetPackageJava))
-                || Files.exists(projectRoot.resolve(targetPackageScala))
-                || Files.exists(projectRoot.resolve(targetPackageKotlin)))) {
+            if (!(project.file(targetPackageJava)
+                .exists()
+                || project.file(targetPackageScala)
+                    .exists()
+                || project.file(targetPackageKotlin)
+                    .exists())) {
                 throw new GradleException(
                     "Could not resolve \"apiPackage\"! Could not find " + targetPackageJava
                         + " or "
                         + targetPackageScala
                         + " or "
                         + targetPackageKotlin);
+            }
+        }
+
+        if (gtnh.configuration.usesMixins) {
+            if (gtnh.configuration.mixinsPackage.isEmpty()) {
+                throw new GradleException("\"usesMixins\" requires \"mixinsPackage\" to be set!");
+            }
+            final String mixinPackagePath = gtnh.configuration.mixinsPackage.replaceAll("\\.", "/");
+            final String mixinPluginPath = gtnh.configuration.mixinPlugin.replaceAll("\\.", "/");
+
+            targetPackageJava = GTNHConstants.JAVA_SOURCES_DIR + modGroupPath + "/" + mixinPackagePath;
+            targetPackageScala = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath + "/" + mixinPackagePath;
+            targetPackageKotlin = GTNHConstants.KOTLIN_SOURCES_DIR + modGroupPath + "/" + mixinPackagePath;
+            if (!(project.file(targetPackageJava)
+                .exists()
+                || project.file(targetPackageScala)
+                    .exists()
+                || project.file(targetPackageKotlin)
+                    .exists())) {
+                throw new GradleException(
+                    "Could not resolve \"mixinsPackage\"! Could not find " + targetPackageJava
+                        + " or "
+                        + targetPackageScala
+                        + " or "
+                        + targetPackageKotlin);
+            }
+
+            if (!gtnh.configuration.mixinPlugin.isEmpty()) {
+                String targetFileJava = GTNHConstants.JAVA_SOURCES_DIR + modGroupPath + "/" + mixinPluginPath + ".java";
+                String targetFileScala = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath
+                    + "/"
+                    + mixinPluginPath
+                    + ".scala";
+                String targetFileScalaJava = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath
+                    + "/"
+                    + mixinPluginPath
+                    + ".java";
+                String targetFileKotlin = GTNHConstants.KOTLIN_SOURCES_DIR + modGroupPath
+                    + "/"
+                    + mixinPluginPath
+                    + ".kt";
+                if (!(project.file(targetFileJava)
+                    .exists()
+                    || project.file(targetFileScala)
+                        .exists()
+                    || project.file(targetFileScalaJava)
+                        .exists()
+                    || project.file(targetFileKotlin)
+                        .exists())) {
+                    throw new GradleException(
+                        "Could not resolve \"mixinPlugin\"! Could not find " + targetFileJava
+                            + " or "
+                            + targetFileScala
+                            + " or "
+                            + targetFileScalaJava
+                            + " or "
+                            + targetFileKotlin);
+                }
+            }
+        }
+
+        if (!gtnh.configuration.coreModClass.isEmpty()) {
+            final String coreModPath = gtnh.configuration.coreModClass.toString()
+                .replaceAll("\\.", "/");
+            String targetFileJava = GTNHConstants.JAVA_SOURCES_DIR + modGroupPath + "/" + coreModPath + ".java";
+            String targetFileScala = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath + "/" + coreModPath + ".scala";
+            String targetFileScalaJava = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath + "/" + coreModPath + ".java";
+            String targetFileKotlin = GTNHConstants.KOTLIN_SOURCES_DIR + modGroupPath + "/" + coreModPath + ".kt";
+            if (!(project.file(targetFileJava)
+                .exists()
+                || project.file(targetFileScala)
+                    .exists()
+                || project.file(targetFileScalaJava)
+                    .exists()
+                || project.file(targetFileKotlin)
+                    .exists())) {
+                throw new GradleException(
+                    "Could not resolve \"coreModClass\"! Could not find " + targetFileJava
+                        + " or "
+                        + targetFileScala
+                        + " or "
+                        + targetFileScalaJava
+                        + " or "
+                        + targetFileKotlin);
             }
         }
     }

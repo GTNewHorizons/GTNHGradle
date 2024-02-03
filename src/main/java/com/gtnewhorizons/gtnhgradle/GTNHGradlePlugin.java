@@ -9,8 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
+import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
+import com.gtnewhorizons.gtnhgradle.modules.OldGradleEmulationModule;
+import com.gtnewhorizons.gtnhgradle.modules.StandardScriptsModules;
 import com.gtnewhorizons.gtnhgradle.modules.StructureCheckModule;
 import com.gtnewhorizons.gtnhgradle.modules.ToolchainModule;
+import com.gtnewhorizons.gtnhgradle.modules.WellKnownRepositoriesModule;
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
 import org.ajoberstar.grgit.gradle.GrgitPlugin;
@@ -98,7 +102,13 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             CodeStyleModule.class,
             ToolchainModule.class,
             StructureCheckModule.class,
-            AccessTransformerModule.class
+            AccessTransformerModule.class,
+            StandardScriptsModules.AddonScriptModule.class,
+            OldGradleEmulationModule.class,
+            WellKnownRepositoriesModule.class,
+            StandardScriptsModules.RepositoriesScriptModule.class,
+            MixinModule.class,
+            StandardScriptsModules.LateAddonScriptModule.class
         //
         );
         /** A map of all available modules, indexed by their class name */

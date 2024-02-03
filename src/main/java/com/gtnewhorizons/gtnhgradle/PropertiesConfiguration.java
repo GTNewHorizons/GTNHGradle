@@ -110,6 +110,36 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "Loads and packages access transformers.")
     public boolean moduleAccessTransformers = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.mixin",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Easy UniMixins support.")
+    public boolean moduleMixin = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.standardScripts",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Standard script loading, like addon.gradle.")
+    public boolean moduleStandardScripts = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.oldGradleEmulation",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Emulates various old gradle version behaviours for backwards compatibility - HTTP protocol support, \"compile\" configuration, etc.")
+    public boolean moduleOldGradleEmulation = true;
     // </editor-fold>
 
     // <editor-fold desc="Various settings">
@@ -143,6 +173,18 @@ public final class PropertiesConfiguration {
             Root package of the mod, used to find various classes in other properties, mcmod.info substitution, enabling assertions in run tasks, etc.
             """)
     public @NotNull String modGroup = "com.myname.mymodid";
+
+    /** See annotation */
+    @Prop(
+        name = "useModGroupForPublishing",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Whether to use modGroup as the maven publishing group. Due to a history of using JitPack, the default is com.github.GTNewHorizons for all mods.
+            """)
+    public boolean useModGroupForPublishing = false;
 
     /** See annotation */
     @Prop(
@@ -274,6 +316,43 @@ public final class PropertiesConfiguration {
             Name of the token containing the project's current version to generate/replace.
             """)
     public @NotNull String gradleTokenVersion = "VERSION";
+
+    /** See annotation */
+    @Prop(
+        name = "gradleTokenModId",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        hidden = true,
+        docComment = """
+            [DEPRECATED] Mod ID replacement token.
+            """)
+    public @NotNull String deprecatedGradleTokenModId = "";
+    /** See annotation */
+    @Prop(
+        name = "gradleTokenModName",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        hidden = true,
+        docComment = """
+            [DEPRECATED] Mod name replacement token.
+            """)
+    public @NotNull String deprecatedGradleTokenModName = "";
+    /** See annotation */
+    @Prop(
+        name = "gradleTokenModGroup",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        hidden = true,
+        docComment = """
+            [DEPRECATED] Mod Group replacement token.
+            """)
+    public @NotNull String deprecatedGradleTokenModGroup = "";
 
     /** See annotation */
     @Prop(
@@ -734,19 +813,22 @@ public final class PropertiesConfiguration {
         String name();
 
         /** @return Is the property is used globally across many projects from a settings.gradle context? */
-        boolean isSettings();
+        boolean isSettings() default false;
 
         /** @return Should the property's value be frozen in the properties file on plugin update? */
-        boolean preferPopulated();
+        boolean preferPopulated() default true;
 
         /** @return Should the property's value be trimmed before parsing/saving? */
-        boolean trim();
+        boolean trim() default true;
 
         /** @return Should a missing value for this property raise an error? */
-        boolean required();
+        boolean required() default false;
+
+        /** @return Should the property be hidden from properties if not already defined? */
+        boolean hidden() default false;
 
         /** @return User documentation for the property */
         @NotNull
-        String docComment();
+        String docComment() default "";
     }
 }

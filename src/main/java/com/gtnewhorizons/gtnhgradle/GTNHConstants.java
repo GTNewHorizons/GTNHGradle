@@ -33,4 +33,6 @@ public class GTNHConstants {
     public static final @NotNull String SCALA_SOURCES_DIR = "src/main/scala";
     /** The default directory for Kotlin sources */
     public static final @NotNull String KOTLIN_SOURCES_DIR = "src/main/kotlin";
+    /** Name of the String property defined on the project that contains the detected version */
+    public static final @NotNull String MOD_VERSION_PROPERTY = "modVersion";
 }
