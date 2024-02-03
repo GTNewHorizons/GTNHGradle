@@ -17,7 +17,7 @@ class GTNHGradlePluginTest {
         final Project project = ProjectBuilder.builder()
             .build();
         project.getPlugins()
-            .apply("com.gtnewhorizons.gtnhgradle");
+            .apply("com.gtnewhorizons.gtnhconvention");
         return project;
     }
 

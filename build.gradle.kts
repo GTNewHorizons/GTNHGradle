@@ -109,6 +109,7 @@ spotless {
 
         toggleOffOn()
         removeUnusedImports()
+        trimTrailingWhitespace()
         eclipse("4.19").configFile("spotless.eclipseformat.xml")
     }
 }
