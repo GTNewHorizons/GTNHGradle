@@ -24,10 +24,10 @@ import java.util.function.BiConsumer;
 /**
  * A helper for accessing gradle Properties entries configuring the GTNH plugins.
  */
-@SuppressWarnings("CanBeFinal")
+@SuppressWarnings({ "CanBeFinal", "unused" })
 public final class PropertiesConfiguration {
 
-    // === Settings properties
+    // <editor-fold desc="Settings.gradle properties">
     /** See annotation */
     @Prop(
         name = "gtnh.settings.exampleModGithubOwner",
@@ -57,9 +57,10 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "ExampleMod tag to use as Blowdryer (Spotless, etc.) settings version, leave empty to disable. LOCAL to test local config updates.")
     public @NotNull String blowdryerTag = "0.2.2";
+    // </editor-fold>
 
-    // === Project properties
-    // == Module toggles
+    // <editor-fold desc="Project properties">
+    // <editor-fold desc="Module toggles">
     /** See annotation */
     @Prop(
         name = "gtnh.modules.gitVersion",
@@ -69,7 +70,9 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "Whether to automatically set the version based on the VERSION environment variable or the current git status.")
     public boolean moduleGitVersion = true;
-    // == Other
+    // </editor-fold>
+
+    // <editor-fold desc="Various settings">
     /** See annotation */
     @Prop(name = "modName", isSettings = false, preferPopulated = true, trim = true, required = true, docComment = """
         Human-readable mod name, available for mcmod.info population.
@@ -585,6 +588,8 @@ public final class PropertiesConfiguration {
             Usually there is no need to uncomment this here as other developers do not necessarily use the same build type as you.
             """)
     public @NotNull String ideaOverrideBuildType = "";
+    // </editor-fold>
+    // </editor-fold>
 
     // API
     /** Fills all properties with default values. */
