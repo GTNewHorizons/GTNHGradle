@@ -1,9 +1,9 @@
 plugins {
     `java-gradle-plugin`
     id("com.palantir.git-version") version "3.0.0"
-    id("maven-publish")
-    id("com.diffplug.spotless") version "6.12.0"
-    id("com.github.gmazzo.buildconfig") version "3.1.0"
+    `maven-publish`
+    id("com.diffplug.spotless") version "6.25.0"
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -17,8 +17,7 @@ val functionalTestSourceSet = sourceSets.create("functionalTest") {}
 repositories {
     maven {
         name = "gtnh"
-        isAllowInsecureProtocol = true
-        url = uri("http://jenkins.usrv.eu:8081/nexus/content/groups/public/")
+        url = uri("https://nexus.gtnewhorizons.com/repository/public/")
     }
     mavenCentral()
     gradlePluginPortal()
@@ -29,12 +28,18 @@ fun pluginDep(name: String, version: String): String {
 }
 
 dependencies {
-    annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.0")
-    testAnnotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.0")
-    compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.0") { isTransitive = false }
+    annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
+    testAnnotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
+    compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") { isTransitive = false }
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.3.8"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.3.32"))
+
+    // Settings plugins
+    api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
+    api(pluginDep("org.gradle.toolchains.foojay-resolver-convention", "0.7.0"))
+
+    // Project plugins
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
     api(pluginDep("com.palantir.git-version", "3.0.0"))
     api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.7"))
@@ -43,10 +48,10 @@ dependencies {
     api(pluginDep("com.google.devtools.ksp", "1.8.0-1.0.9"))
     api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
-    api(pluginDep("de.undercouch.download", "5.4.0"))
+    api(pluginDep("de.undercouch.download", "5.5.0"))
     api(pluginDep("com.github.gmazzo.buildconfig", "3.1.0")) // Unused, available for addon.gradle
     api(pluginDep("com.diffplug.spotless", "6.13.0")) // 6.13.0 is the last jvm8 supporting version
-    api(pluginDep("com.modrinth.minotaur", "2.+"))
+    api(pluginDep("com.modrinth.minotaur", "2.8.7"))
     api(pluginDep("com.matthewprenger.cursegradle", "1.4.0"))
 
     api(pluginDep("com.diffplug.spotless", "6.12.0")) {
@@ -67,6 +72,20 @@ gradlePlugin {
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin"
             displayName = "GTNHGradle"
             description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods"
+            tags.set(listOf("minecraft", "modding"))
+        }
+        create("gtnhConvention") {
+            id = "com.gtnewhorizons.gtnhconvention"
+            implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHConventionPlugin"
+            displayName = "GTNHConvention"
+            description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods - automatically applies all features"
+            tags.set(listOf("minecraft", "modding"))
+        }
+        create("gtnhSettingsConvention") {
+            id = "com.gtnewhorizons.gtnhsettingsconvention"
+            implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHSettingsConventionPlugin"
+            displayName = "GTNHConvention"
+            description = "Shared Settings logic for all GTNH mods and some other 1.7.10 mods"
             tags.set(listOf("minecraft", "modding"))
         }
     }
@@ -90,7 +109,7 @@ spotless {
 
         toggleOffOn()
         removeUnusedImports()
-        eclipse("4.19.0").configFile("spotless.eclipseformat.xml")
+        eclipse("4.19").configFile("spotless.eclipseformat.xml")
     }
 }
 
@@ -108,7 +127,7 @@ tasks.javadoc {
         languageVersion.set(JavaLanguageVersion.of(17))
         vendor.set(JvmVendorSpec.AZUL)
     })
-    with((options as StandardJavadocDocletOptions)) {
+    with(options as StandardJavadocDocletOptions) {
         links(
             "https://docs.gradle.org/${gradle.gradleVersion}/javadoc/",
             "https://docs.oracle.com/en/java/javase/17/docs/api/"
@@ -124,6 +143,11 @@ tasks.withType<JavaCompile> {
         languageVersion.set(JavaLanguageVersion.of(17))
         vendor.set(JvmVendorSpec.AZUL)
     })
+}
+
+tasks.wrapper.configure {
+    gradleVersion = "8.5"
+    distributionType = Wrapper.DistributionType.ALL
 }
 
 configurations["functionalTestImplementation"].extendsFrom(configurations["testImplementation"])
@@ -181,8 +205,7 @@ publishing {
 
     repositories {
         maven {
-            url = uri("http://jenkins.usrv.eu:8081/nexus/content/repositories/releases")
-            isAllowInsecureProtocol = true
+            url = uri("https://nexus.gtnewhorizons.com/repository/releases/")
             credentials {
                 username = System.getenv("MAVEN_USER") ?: "NONE"
                 password = System.getenv("MAVEN_PASSWORD") ?: "NONE"
