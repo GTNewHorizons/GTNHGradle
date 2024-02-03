@@ -140,6 +140,16 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "Emulates various old gradle version behaviours for backwards compatibility - HTTP protocol support, \"compile\" configuration, etc.")
     public boolean moduleOldGradleEmulation = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.modernJava",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Modern Java run support via lwjgl3ify.")
+    public boolean moduleModernJava = true;
     // </editor-fold>
 
     // <editor-fold desc="Various settings">

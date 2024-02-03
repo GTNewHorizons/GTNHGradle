@@ -10,6 +10,7 @@ import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
 import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
+import com.gtnewhorizons.gtnhgradle.modules.ModernJavaModule;
 import com.gtnewhorizons.gtnhgradle.modules.OldGradleEmulationModule;
 import com.gtnewhorizons.gtnhgradle.modules.StandardScriptsModules;
 import com.gtnewhorizons.gtnhgradle.modules.StructureCheckModule;
@@ -110,6 +111,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             StandardScriptsModules.RepositoriesScriptModule.class,
             MixinModule.class,
             StandardScriptsModules.DependenciesScriptModule.class,
+            ModernJavaModule.class,
             StandardScriptsModules.LateAddonScriptModule.class
         //
         );

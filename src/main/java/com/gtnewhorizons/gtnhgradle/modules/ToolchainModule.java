@@ -6,6 +6,7 @@ import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
+import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
@@ -129,12 +130,9 @@ public abstract class ToolchainModule implements GTNHModule {
                 ecr.filter(f -> { f.includeGroup("me.eigenraven.java8unsupported"); });
             });
             final DependencyHandler deps = project.getDependencies();
-            deps.add(
-                JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
-                "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1");
-            ((ModuleDependency) deps
-                .add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1"))
-                    .setTransitive(false);
+            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL);
+            ((ModuleDependency) deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL))
+                .setTransitive(false);
             // Workaround for https://github.com/bsideup/jabel/issues/174
             deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.13.0");
             // Allow using jdk.unsupported classes like sun.misc.Unsafe in the compiled code, working around
@@ -278,7 +276,7 @@ public abstract class ToolchainModule implements GTNHModule {
         minecraft.getUsername()
             .set(gtnh.configuration.developmentEnvironmentUserName);
         minecraft.getLwjgl3Version()
-            .set("3.3.2");
+            .set(UpdateableConstants.NEWEST_LWJGL3);
         minecraft.getExtraRunJvmArguments()
             .add("-ea:" + gtnh.configuration.modGroup);
 
