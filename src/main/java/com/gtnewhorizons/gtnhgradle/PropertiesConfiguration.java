@@ -1,7 +1,9 @@
 package com.gtnewhorizons.gtnhgradle;
 
+import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
+import org.gradle.api.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 
 /**
  * A helper for accessing gradle Properties entries configuring the GTNH plugins.
@@ -31,6 +34,7 @@ public final class PropertiesConfiguration {
         isSettings = true,
         preferPopulated = false,
         trim = true,
+        required = false,
         docComment = "Github owner of the ExampleMod repo to use")
     public @NotNull String exampleModGithubOwner = "GTNewHorizons";
 
@@ -40,6 +44,7 @@ public final class PropertiesConfiguration {
         isSettings = true,
         preferPopulated = false,
         trim = true,
+        required = false,
         docComment = "Github project name of the ExampleMod repo to use")
     public @NotNull String exampleModGithubProject = "ExampleMod1.7.10";
 
@@ -49,6 +54,7 @@ public final class PropertiesConfiguration {
         isSettings = true,
         preferPopulated = true,
         trim = true,
+        required = false,
         docComment = "ExampleMod tag to use as Blowdryer (Spotless, etc.) settings version, leave empty to disable. LOCAL to test local config updates.")
     public @NotNull String blowdryerTag = "0.2.2";
 
@@ -60,16 +66,133 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = false,
         trim = true,
+        required = false,
         docComment = "Whether to automatically set the version based on the VERSION environment variable or the current git status.")
     public boolean moduleGitVersion = true;
     // == Other
     /** See annotation */
-    @Prop(name = "versionPattern", isSettings = false, preferPopulated = false, trim = true, docComment = """
-        Optional parameter to have the build automatically fail if an illegal version is used.
-        This can be useful if you e.g. only want to allow versions in the form of '1.1.xxx'.
-        The check is ONLY performed if the version is a git tag.
-        Note: the specified string must be escaped, so e.g. 1\\\\.1\\\\.\\\\d+ instead of 1\\.1\\.\\d+
+    @Prop(name = "modName", isSettings = false, preferPopulated = true, trim = true, required = true, docComment = """
+        Human-readable mod name, available for mcmod.info population.
         """)
+    public @NotNull String modName = "MyMod";
+
+    /** See annotation */
+    @Prop(
+        name = "modId",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = true,
+        docComment = """
+            Case-sensitive identifier string, available for mcmod.info population and used for automatic mixin JSON generation.
+            Conventionally lowercase.
+            """)
+    public @NotNull String modId = "mymodid";
+
+    /** See annotation */
+    @Prop(
+        name = "modGroup",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = true,
+        docComment = """
+            Root package of the mod, used to find various classes in other properties, mcmod.info substitution, enabling assertions in run tasks, etc.
+            """)
+    public @NotNull String modGroup = "com.myname.mymodid";
+
+    /** See annotation */
+    @Prop(
+        name = "autoUpdateBuildScript",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = true,
+        docComment = """
+            Updates your build.gradle and settings.gradle automatically whenever an update is available.
+            """)
+    public boolean autoUpdateBuildScript = false;
+
+    /** See annotation */
+    @Prop(
+        name = "minecraftVersion",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = true,
+        docComment = """
+            Version of Minecraft to target
+            """)
+    public @NotNull String minecraftVersion = "1.7.10";
+
+    /** See annotation */
+    @Prop(
+        name = "forgeVersion",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = true,
+        docComment = """
+            Version of Minecraft Forge to target
+            """)
+    public @NotNull String forgeVersion = "10.13.4.1614";
+
+    /** See annotation */
+    @Prop(
+        name = "generateGradleTokenClass",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = false,
+        docComment = """
+            Generate a class with a String field for the mod version named as defined below.
+            If generateGradleTokenClass is empty or not missing, no such class will be generated.
+            If gradleTokenVersion is empty or missing, the field will not be present in the class.
+            """)
+    public @NotNull String generateGradleTokenClass = "";
+
+    /** See annotation */
+    @Prop(
+        name = "gradleTokenVersion",
+        isSettings = false,
+        preferPopulated = true,
+        trim = true,
+        required = true,
+        docComment = """
+            Name of the token containing the project's current version to generate/replace.
+            """)
+    public @NotNull String gradleTokenVersion = "VERSION";
+
+    /** See annotation */
+    @Prop(
+        name = "replaceGradleTokenInFile",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            [DEPRECATED]
+            Multiple source files can be defined here by providing a comma-separated list: Class1.java,Class2.java,Class3.java
+            public static final String VERSION = "GRADLETOKEN_VERSION";
+            The string's content will be replaced with your mod's version when compiled. You should use this to specify your mod's
+            version in @Mod([...], version = VERSION, [...]).
+            Leave these properties empty to skip individual token replacements.
+            """)
+    public @NotNull String replaceGradleTokenInFile = "";
+
+    /** See annotation */
+    @Prop(
+        name = "versionPattern",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Optional parameter to have the build automatically fail if an illegal version is used.
+            This can be useful if you e.g. only want to allow versions in the form of '1.1.xxx'.
+            The check is ONLY performed if the version is a git tag.
+            Note: the specified string must be escaped, so e.g. 1\\\\.1\\\\.\\\\d+ instead of 1\\.1\\.\\d+
+            """)
     public @NotNull String versionPattern = "";
 
     // API
@@ -100,7 +223,7 @@ public final class PropertiesConfiguration {
             .entrySet()) {
             props.setProperty(entry.getKey(), entry.getValue());
         }
-        initFromProperties(props);
+        initFromProperties(props, null);
     }
 
     /**
@@ -110,10 +233,10 @@ public final class PropertiesConfiguration {
      */
     public PropertiesConfiguration(final Project project) {
         this();
-        initFromProperties(project.getProperties());
+        initFromProperties(project.getProperties(), project::setProperty);
     }
 
-    private void initFromProperties(Map<?, ?> props) {
+    private void initFromProperties(Map<?, ?> props, BiConsumer<String, Object> onMissing) {
         final Field[] fields = getClass().getDeclaredFields();
         for (final Field field : fields) {
             final Prop prop = field.getAnnotation(Prop.class);
@@ -122,16 +245,28 @@ public final class PropertiesConfiguration {
             }
             final String key = prop.name();
             final Object value = props.getOrDefault(key, null);
-            if (value == null) {
-                continue;
-            }
-            String strValue = value.toString();
-            if (strValue == null) {
-                strValue = "";
-            } else if (prop.trim()) {
-                strValue = strValue.trim();
-            }
             try {
+                if (value == null) {
+                    if (prop.required()) {
+                        Logging.getLogger(GTNHGradlePlugin.class)
+                            .error(
+                                "Required gradle property {} is missing from project properties! Documentation: {}",
+                                key,
+                                prop.docComment());
+                        throw new InvalidUserDataException(
+                            "Required gradle property " + key + " missing from project properties!");
+                    }
+                    if (onMissing != null) {
+                        onMissing.accept(key, field.get(this));
+                    }
+                    continue;
+                }
+                String strValue = value.toString();
+                if (strValue == null) {
+                    strValue = "";
+                } else if (prop.trim()) {
+                    strValue = strValue.trim();
+                }
                 if (field.getType() == String.class) {
                     field.set(this, strValue);
                 } else if (field.getType() == boolean.class) {
@@ -167,6 +302,9 @@ public final class PropertiesConfiguration {
 
         /** @return Should the property's value be trimmed before parsing/saving? */
         boolean trim();
+
+        /** @return Should a missing value for this property raise an error? */
+        boolean required();
 
         /** @return User documentation for the property */
         @NotNull
