@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.gtnewhorizons.gtnhgradle"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.gtnewhorizons.gtnhgradle"},{"l":"com.gtnewhorizons.gtnhgradle.modules"}];updateSearchResults();
