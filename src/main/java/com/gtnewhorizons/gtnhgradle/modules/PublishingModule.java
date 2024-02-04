@@ -90,7 +90,7 @@ public class PublishingModule implements GTNHModule {
 
         // Modrinth
         final String mrToken = System.getenv("MODRINTH_TOKEN");
-        if (!gtnh.configuration.modrinthProjectId.isEmpty() && !mrToken.isEmpty()) {
+        if (!gtnh.configuration.modrinthProjectId.isEmpty() && mrToken != null) {
             project.getPlugins()
                 .apply(Minotaur.class);
             final ModrinthExtension mr = project.getExtensions()

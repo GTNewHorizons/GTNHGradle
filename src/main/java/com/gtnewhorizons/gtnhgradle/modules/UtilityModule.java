@@ -263,7 +263,7 @@ public class UtilityModule implements GTNHModule {
         });
         final ModUtils modUtils = project.getExtensions()
             .getByType(ModUtils.class);
-        return modUtils.deobfuscate(obfFile);
+        return modUtils.deobfuscate(project.files(obfFile));
     }
 
     /**

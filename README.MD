@@ -13,3 +13,42 @@ and then registers the `gtnhGradle` extension object which can be used to activa
 
 `test` tests make sure that applying the plugin works correctly in a simple Gradle setup.
 Bulk of the testing is done in `functionalTest` which uses [Gradle TestKit](https://docs.gradle.org/8.1.1/userguide/test_kit.html) to test entire workflows in sandboxed Gradle environments.
+
+## Updating from the previous buildscript
+
+0. Make sure you're on the latest `master` commit and you pulled the recent repository changes ;-)
+1. Copy over the `gradle/` directory and `build.gradle`, `gradlew` and `gradlew.bat` files to the mod folder.
+2. Update `settings.gradle` `pluginManagement{}` and `plugins{}` block to the following: (keep the old blowdryerSetup as-is)
+   ```groovy
+    pluginManagement {
+        repositories {
+            maven {
+                // RetroFuturaGradle
+                name "GTNH Maven"
+                url "https://nexus.gtnewhorizons.com/repository/public/"
+                mavenContent {
+                    includeGroup("com.gtnewhorizons")
+                    includeGroupByRegex("com\\.gtnewhorizons\\..+")
+                }
+            }
+            gradlePluginPortal()
+            mavenCentral()
+            mavenLocal()
+        }
+    }
+
+    plugins {
+        id 'com.gtnewhorizons.gtnhsettingsconvention' version '1.0.1'
+    }
+   ```
+3. Comment out the blowdryer setup block contents to avoid a crash on gradle startup (do not remove, it is used by the next migration step)
+    ```patch
+    -repoSubfolder 'gtnhShared'
+    -github('GTNewHorizons/ExampleMod1.7.10', 'tag', '0.2.0')
+    +// repoSubfolder 'gtnhShared'
+    +// github('GTNewHorizons/ExampleMod1.7.10', 'tag', '0.2.0')
+    ```
+4. Run the automated migration with `./gradlew updateBuildscript`
+5. Check the updated files for any obvious mistakes
+6. Commit
+

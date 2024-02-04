@@ -111,6 +111,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             StructureCheckModule.class,
             AccessTransformerModule.class,
             ShadowModule.class,
+            UtilityModule.class,
             StandardScriptsModules.AddonScriptModule.class,
             OldGradleEmulationModule.class,
             WellKnownRepositoriesModule.class,
@@ -120,7 +121,6 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             ModernJavaModule.class,
             IdeIntegrationModule.class,
             PublishingModule.class,
-            UtilityModule.class,
             UpdaterModule.class,
             StandardScriptsModules.LateAddonScriptModule.class
         //
