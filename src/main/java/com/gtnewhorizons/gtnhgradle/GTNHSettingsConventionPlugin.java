@@ -15,7 +15,7 @@ public class GTNHSettingsConventionPlugin implements Plugin<Settings> {
 
     @Override
     public void apply(final @NotNull Settings target) {
-        final PropertiesConfiguration config = new PropertiesConfiguration(target);
+        final PropertiesConfiguration config = PropertiesConfiguration.GradleUtils.makePropertiesFrom(target);
 
         target.getPlugins()
             .apply(FoojayToolchainsConventionPlugin.class);
@@ -34,5 +34,15 @@ public class GTNHSettingsConventionPlugin implements Plugin<Settings> {
                     config.blowdryerTag);
             }
         }
+
+        target.getGradle()
+            .beforeProject(p -> {
+                p.getExtensions()
+                    .getExtraProperties()
+                    .set(
+                        GTNHConstants.SETTINGS_GRADLE_FILE_PROPERTY,
+                        target.getBuildscript()
+                            .getSourceFile());
+            });
     }
 }

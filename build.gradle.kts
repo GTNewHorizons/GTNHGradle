@@ -9,7 +9,8 @@ plugins {
 val gitVersion: groovy.lang.Closure<String> by extra
 
 group = "com.gtnewhorizons"
-version = gitVersion()
+val detectedVersion: String = System.getenv("VERSION") ?: gitVersion()
+version = detectedVersion
 
 // Add a source set for the functional test suite
 val functionalTestSourceSet = sourceSets.create("functionalTest") {}
@@ -113,6 +114,12 @@ spotless {
         trimTrailingWhitespace()
         eclipse("4.19").configFile("spotless.eclipseformat.xml")
     }
+}
+
+buildConfig {
+    useJavaOutput()
+    this.packageName = "com.gtnewhorizons.gtnhgradle"
+    buildConfigField("VERSION", detectedVersion)
 }
 
 // Enable Jabel for java 8 bytecode from java 17 sources

@@ -35,4 +35,7 @@ public class GTNHConstants {
     public static final @NotNull String KOTLIN_SOURCES_DIR = "src/main/kotlin/";
     /** Name of the String property defined on the project that contains the detected version */
     public static final @NotNull String MOD_VERSION_PROPERTY = "modVersion";
+    /** Name of the String property defined on the project that contains the settings.gradle File instance */
+    public static final @NotNull String SETTINGS_GRADLE_FILE_PROPERTY = "gtnhGradleSettingsLocation";
+
 }

@@ -3,10 +3,13 @@ package com.gtnewhorizons.gtnhgradle;
 import org.jetbrains.annotations.NotNull;
 
 /** Collections of version numbers and other similar "constants" that may need frequent updating. */
+// Developer note: Do not depend on any other classes here, this class is parsed during the update process for
+// collecting metadata about the next version.
 public class UpdateableConstants {
 
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
+    @SuppressWarnings("unused") // Used via reflection
     public static final @NotNull String NEWEST_GRADLE_VERSION = "8.6";
 
     /** Latest tag of ExampleMod with blowdryer settings */
@@ -35,4 +38,7 @@ public class UpdateableConstants {
     // https://github.com/HotswapProjects/HotswapAgent/releases
     public static final @NotNull String NEWEST_HOTSWAPAGENT = "https://github.com/HotswapProjects/HotswapAgent/releases/download/1.4.2-SNAPSHOT/hotswap-agent-1.4.2-SNAPSHOT.jar";
 
+    /** Specifier for the latest GTNHGradle version to update to */
+    // Only update once a new major change is made, ensure a backport to the previous major's updater is released first.
+    public static final @NotNull String NEWEST_GTNHGRADLE_SPEC = "com.gtnewhorizons:gtnhgradle:1.+";
 }

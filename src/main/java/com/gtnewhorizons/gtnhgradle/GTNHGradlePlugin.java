@@ -145,7 +145,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         @ApiStatus.Internal
         public GTNHExtension(final Project project) {
             logger = Logging.getLogger(GTNHGradlePlugin.class);
-            configuration = new PropertiesConfiguration(project);
+            configuration = PropertiesConfiguration.GradleUtils.makePropertiesFrom(project);
         }
 
         /**

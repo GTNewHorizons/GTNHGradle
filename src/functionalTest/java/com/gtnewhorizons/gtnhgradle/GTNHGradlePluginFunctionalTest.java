@@ -38,6 +38,22 @@ class GTNHGradlePluginFunctionalTest {
     }
 
     private static final String SIMPLE_SETTINGS_FILE = """
+        pluginManagement {
+            repositories {
+                maven {
+                    // RetroFuturaGradle
+                    name "GTNH Maven"
+                    url "https://nexus.gtnewhorizons.com/repository/public/"
+                    mavenContent {
+                        includeGroup("com.gtnewhorizons")
+                        includeGroupByRegex("com\\\\.gtnewhorizons\\\\..+")
+                    }
+                }
+                gradlePluginPortal()
+                mavenCentral()
+                mavenLocal()
+            }
+        }
         plugins {
             id('com.gtnewhorizons.gtnhsettingsconvention')
         }
@@ -46,6 +62,9 @@ class GTNHGradlePluginFunctionalTest {
     private static final String SIMPLE_BUILD_FILE = """
         plugins {
             id('com.gtnewhorizons.gtnhconvention')
+        }
+        repositories {
+            mavenLocal()
         }
         """;
 
@@ -68,7 +87,8 @@ class GTNHGradlePluginFunctionalTest {
 
         // Run the build
         GradleRunner runner = GradleRunner.create()
-            .withEnvironment(ImmutableMap.of("VERSION", "1.0.0"));
+            .withEnvironment(ImmutableMap.of("VERSION", "1.0.0"))
+            .withArguments("--stacktrace");
         runner.forwardOutput();
         runner.withPluginClasspath();
         runner.withArguments("downloadVanillaJars");
