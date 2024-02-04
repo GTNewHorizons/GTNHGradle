@@ -32,7 +32,7 @@ public class MixinModule implements GTNHModule {
             .getByType(ModUtils.class);
 
         if (gtnh.configuration.usesMixins || gtnh.configuration.forceEnableMixins) {
-            if (gtnh.configuration.usesMixinsDebug) {
+            if (gtnh.configuration.usesMixinDebug) {
                 minecraft.getExtraRunJvmArguments()
                     .addAll(
                         "-Dmixin.debug.countInjections=true",
@@ -55,7 +55,7 @@ public class MixinModule implements GTNHModule {
             deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.guava:guava:24.1.1-jre");
             deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.code.gson:gson:2.8.6");
             deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, mixinProviderSpec);
-            if (gtnh.configuration.usesMixinsDebug) {
+            if (gtnh.configuration.usesMixinDebug) {
                 deps.add("runtimeOnlyNonPublishable", "org.jetbrains:intellij-fernflower:1.2.1.16");
             }
             deps.add(

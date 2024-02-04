@@ -406,10 +406,10 @@ public final class PropertiesConfiguration {
     public boolean usesMixins = false;
 
     /** See annotation */
-    @Prop(name = "usesMixinsDebug", isSettings = false, preferPopulated = true, required = false, docComment = """
+    @Prop(name = "usesMixinDebug", isSettings = false, preferPopulated = true, required = false, docComment = """
         Adds some debug arguments like verbose output and class export.
         """)
-    public boolean usesMixinsDebug = false;
+    public boolean usesMixinDebug = false;
 
     /** See annotation */
     @Prop(name = "mixinPlugin", isSettings = false, preferPopulated = true, required = false, docComment = """
