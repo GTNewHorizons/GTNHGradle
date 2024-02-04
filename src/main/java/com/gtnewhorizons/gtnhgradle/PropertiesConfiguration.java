@@ -839,7 +839,7 @@ public final class PropertiesConfiguration {
                 sb.append(newline);
             }
             if (!originalValues.isEmpty()) {
-                sb.append("# Non-GTNH properties");
+                sb.append("# Non-GTNH properties\n");
                 for (final Map.Entry<String, String> entry : originalValues.entrySet()) {
                     sb.append(entry.getKey());
                     sb.append(" = ");
