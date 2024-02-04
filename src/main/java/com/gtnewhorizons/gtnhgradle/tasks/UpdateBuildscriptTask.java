@@ -95,16 +95,17 @@ public abstract class UpdateBuildscriptTask extends DefaultTask {
         }
     }
 
-    private void updateSettings(URLClassLoader newJarLoader) throws Exception {
-        //
-    }
-
     private void updateProperties(URLClassLoader newJarLoader) throws Exception {
+        final Path settingsPath = getSettingsGradle().getAsFile()
+            .get()
+            .toPath();
+
         final Class<?> propsClass = Class
             .forName("com.gtnewhorizons.gtnhgradle.PropertiesConfiguration", true, newJarLoader);
         final Object propsObject = propsClass.getConstructor()
             .newInstance();
-        final Method generateUpdatedPropertiesMethod = propsClass.getMethod("generateUpdatedProperties", Map.class);
+        final Method generateUpdatedPropertiesMethod = propsClass
+            .getMethod("generateUpdatedProperties", Path.class, Map.class);
 
         final Properties p = new Properties();
         final Path propertiesPath = getPropertiesGradle().getAsFile()
@@ -122,7 +123,20 @@ public abstract class UpdateBuildscriptTask extends DefaultTask {
                     .toString());
         }
 
-        final String newProps = (String) generateUpdatedPropertiesMethod.invoke(propsObject, originalProps);
+        final String newProps = (String) generateUpdatedPropertiesMethod
+            .invoke(propsObject, settingsPath, originalProps);
         Files.write(propertiesPath, newProps.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void updateSettings(URLClassLoader newJarLoader) throws Exception {
+        final Path settingsPath = getSettingsGradle().getAsFile()
+            .get()
+            .toPath();
+        final Class<?> upClass = Class
+            .forName("com.gtnewhorizons.gtnhgradle.tasks.SettingsUpdater", true, newJarLoader);
+        final Object upInstance = upClass.getConstructor()
+            .newInstance();
+        final Method update = upClass.getMethod("update", Path.class);
+        update.invoke(upInstance, settingsPath);
     }
 }

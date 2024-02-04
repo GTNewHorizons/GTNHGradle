@@ -18,6 +18,8 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A helper for accessing gradle Properties entries configuring the GTNH plugins.
@@ -765,11 +767,27 @@ public final class PropertiesConfiguration {
         }
     }
 
+    private static final Pattern BLOWDRYER_SETTINGS_PATTERN = Pattern
+        .compile("'GTNewHorizons/ExampleMod1\\.7\\.10'\\s*,\\s*'tag'\\s*,\\s*'([^']+)'\\s*\\)");
+
     /**
+     * @param settingsPath   Path to the settings.gradle file
      * @param originalValues The old parsed properties
      * @return An updated properties file contents
+     * @throws Throwable for convenience
      */
-    public String generateUpdatedProperties(Map<String, String> originalValues) {
+    public String generateUpdatedProperties(Path settingsPath, Map<String, String> originalValues) throws Throwable {
+        final String settingsContents = new String(Files.readAllBytes(settingsPath), StandardCharsets.UTF_8);
+
+        // Migrate from pre-GTNHGradle buildscript
+        final Matcher blowdryerMatch = BLOWDRYER_SETTINGS_PATTERN.matcher(settingsContents);
+        if (blowdryerMatch.find()) {
+            final String group = blowdryerMatch.group(1);
+            originalValues.put("gtnh.settings.blowdryerTag", group);
+            System.out
+                .println("Found old settings blowdryer tag pointing to " + group + ", migrating to gradle.properties");
+        }
+
         final StringBuilder sb = new StringBuilder();
         final String newline = System.lineSeparator();
 
