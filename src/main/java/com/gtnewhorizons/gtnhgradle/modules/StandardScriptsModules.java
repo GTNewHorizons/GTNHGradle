@@ -59,7 +59,7 @@ public class StandardScriptsModules {
 
         @Override
         public @NotNull String getScriptName() {
-            return "dependencies";
+            return "repositories";
         }
     }
 
