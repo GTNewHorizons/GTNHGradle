@@ -239,20 +239,19 @@ public abstract class ToolchainModule implements GTNHModule {
                             .set(klass);
                     });
         }
-        if (!gtnh.configuration.replaceGradleTokenInFile.isEmpty()) {
-            if (!gtnh.configuration.deprecatedGradleTokenModId.isEmpty()) {
-                minecraft.getInjectedTags()
-                    .put(gtnh.configuration.deprecatedGradleTokenModId, gtnh.configuration.modId);
-            }
-            if (!gtnh.configuration.deprecatedGradleTokenModGroup.isEmpty()) {
-                minecraft.getInjectedTags()
-                    .put(gtnh.configuration.deprecatedGradleTokenModGroup, gtnh.configuration.modGroup);
-            }
-            if (!gtnh.configuration.deprecatedGradleTokenModName.isEmpty()) {
-                minecraft.getInjectedTags()
-                    .put(gtnh.configuration.deprecatedGradleTokenModName, gtnh.configuration.modName);
-            }
-        } else {
+        if (!gtnh.configuration.deprecatedGradleTokenModId.isEmpty()) {
+            minecraft.getInjectedTags()
+                .put(gtnh.configuration.deprecatedGradleTokenModId, gtnh.configuration.modId);
+        }
+        if (!gtnh.configuration.deprecatedGradleTokenModGroup.isEmpty()) {
+            minecraft.getInjectedTags()
+                .put(gtnh.configuration.deprecatedGradleTokenModGroup, gtnh.configuration.modGroup);
+        }
+        if (!gtnh.configuration.deprecatedGradleTokenModName.isEmpty()) {
+            minecraft.getInjectedTags()
+                .put(gtnh.configuration.deprecatedGradleTokenModName, gtnh.configuration.modName);
+        }
+        if (gtnh.configuration.replaceGradleTokenInFile.isEmpty()) {
             if (!gtnh.configuration.deprecatedGradleTokenModId.isEmpty()) {
                 gtnh.logger.error("gradleTokenModId is deprecated! The field will no longer be generated.");
             }
