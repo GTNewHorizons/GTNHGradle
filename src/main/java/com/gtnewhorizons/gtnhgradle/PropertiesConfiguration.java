@@ -275,7 +275,7 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            # Select a default username for testing your mod. You can always override this per-run by running
+            Select a default username for testing your mod. You can always override this per-run by running
             `./gradlew runClient --username=AnotherPlayer`, or configuring this command in your IDE.
             """)
     public @NotNull String developmentEnvironmentUserName = "Developer";
@@ -813,7 +813,7 @@ public final class PropertiesConfiguration {
                     .trim()
                     .split("\n");
                 for (final String docLine : docComment) {
-                    sb.append("# ");
+                    sb.append(docLine.isEmpty() ? "#" : "# ");
                     sb.append(docLine);
                     sb.append(newline);
                 }
