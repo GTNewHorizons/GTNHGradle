@@ -17,7 +17,7 @@ Bulk of the testing is done in `functionalTest` which uses [Gradle TestKit](http
 ## Updating from the previous buildscript
 
 0. Make sure you're on the latest `master` commit and you pulled the recent repository changes ;-)
-1. Copy over the `gradle/` directory and `build.gradle`, `gradlew` and `gradlew.bat` files to the mod folder.
+1. Copy over the `gradle/` directory and `build.gradle`, `gradlew` and `gradlew.bat` files from ExampleMod1.7.10 to the mod folder.
 2. Update `settings.gradle` `pluginManagement{}` and `plugins{}` block to the following: (keep the old blowdryerSetup as-is)
    ```groovy
     pluginManagement {
