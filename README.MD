@@ -38,17 +38,10 @@ Bulk of the testing is done in `functionalTest` which uses [Gradle TestKit](http
     }
 
     plugins {
-        id 'com.gtnewhorizons.gtnhsettingsconvention' version '1.0.1'
+        id 'com.gtnewhorizons.gtnhsettingsconvention' version '1.0.4'
     }
    ```
-3. Comment out the blowdryer setup block contents to avoid a crash on gradle startup (do not remove, it is used by the next migration step)
-    ```patch
-    -repoSubfolder 'gtnhShared'
-    -github('GTNewHorizons/ExampleMod1.7.10', 'tag', '0.2.0')
-    +// repoSubfolder 'gtnhShared'
-    +// github('GTNewHorizons/ExampleMod1.7.10', 'tag', '0.2.0')
-    ```
-4. Run the automated migration with `./gradlew updateBuildscript`
-5. Check the updated files for any obvious mistakes
-6. Commit
+3. Run the automated migration while temporarily ignoring the new blowdryer setup with `./gradlew updateBuildscript -Pgtnh.settings.blowdryerTag=MIGRATION-MAGIC`
+4. Check the updated files for any obvious mistakes
+5. Commit
 

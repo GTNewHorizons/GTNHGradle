@@ -24,14 +24,16 @@ public class GTNHSettingsConventionPlugin implements Plugin<Settings> {
                 .apply(BlowdryerSetupPlugin.class);
             final BlowdryerSetup blowdryer = target.getExtensions()
                 .getByType(BlowdryerSetup.class);
-            blowdryer.repoSubfolder("gtnhShared");
-            if ("LOCAL".equals(config.blowdryerTag)) {
-                blowdryer.devLocal(".");
-            } else {
-                blowdryer.github(
-                    config.exampleModGithubOwner + "/" + config.exampleModGithubProject,
-                    BlowdryerSetup.GitAnchorType.TAG,
-                    config.blowdryerTag);
+            if (!config.blowdryerTag.equals("MIGRATION-MAGIC")) {
+                blowdryer.repoSubfolder("gtnhShared");
+                if ("LOCAL".equals(config.blowdryerTag)) {
+                    blowdryer.devLocal(".");
+                } else {
+                    blowdryer.github(
+                        config.exampleModGithubOwner + "/" + config.exampleModGithubProject,
+                        BlowdryerSetup.GitAnchorType.TAG,
+                        config.blowdryerTag);
+                }
             }
         }
 
