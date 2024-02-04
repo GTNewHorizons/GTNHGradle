@@ -130,7 +130,7 @@ public class PublishingModule implements GTNHModule {
                     }
                     final String[] parts = dep.split(":");
                     final String[] qual = parts[0].split("-");
-                    addModrinthDep(project, qual[0], qual[1], qual[2]);
+                    addModrinthDep(project, qual[0], qual[1], parts[1]);
                 }
             }
             if (gtnh.configuration.usesMixins) {

@@ -38,7 +38,7 @@ Bulk of the testing is done in `functionalTest` which uses [Gradle TestKit](http
     }
 
     plugins {
-        id 'com.gtnewhorizons.gtnhsettingsconvention' version '1.0.4'
+        id 'com.gtnewhorizons.gtnhsettingsconvention' version '1.0.5'
     }
    ```
 3. Run the automated migration while temporarily ignoring the new blowdryer setup with `./gradlew updateBuildscript -Pgtnh.settings.blowdryerTag=MIGRATION-MAGIC`
