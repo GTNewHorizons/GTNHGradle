@@ -9,9 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
+import com.gtnewhorizons.gtnhgradle.modules.IdeIntegrationModule;
 import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
 import com.gtnewhorizons.gtnhgradle.modules.ModernJavaModule;
 import com.gtnewhorizons.gtnhgradle.modules.OldGradleEmulationModule;
+import com.gtnewhorizons.gtnhgradle.modules.PublishingModule;
+import com.gtnewhorizons.gtnhgradle.modules.ShadowModule;
 import com.gtnewhorizons.gtnhgradle.modules.StandardScriptsModules;
 import com.gtnewhorizons.gtnhgradle.modules.StructureCheckModule;
 import com.gtnewhorizons.gtnhgradle.modules.ToolchainModule;
@@ -105,6 +108,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             ToolchainModule.class,
             StructureCheckModule.class,
             AccessTransformerModule.class,
+            ShadowModule.class,
             StandardScriptsModules.AddonScriptModule.class,
             OldGradleEmulationModule.class,
             WellKnownRepositoriesModule.class,
@@ -112,6 +116,8 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             MixinModule.class,
             StandardScriptsModules.DependenciesScriptModule.class,
             ModernJavaModule.class,
+            IdeIntegrationModule.class,
+            PublishingModule.class,
             StandardScriptsModules.LateAddonScriptModule.class
         //
         );

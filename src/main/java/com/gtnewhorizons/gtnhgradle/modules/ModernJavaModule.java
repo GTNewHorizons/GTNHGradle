@@ -5,7 +5,9 @@ import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
+import com.gtnewhorizons.gtnhgradle.tasks.RunHotswappableMinecraftTask;
 import com.gtnewhorizons.gtnhgradle.tasks.SetupHotswapAgentTask;
+import com.gtnewhorizons.retrofuturagradle.util.Distribution;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -16,16 +18,18 @@ import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JavaToolchainSpec;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.jetbrains.annotations.NotNull;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /** Support module for modern Java runs via lwjgl3ify */
-public class ModernJavaModule implements GTNHModule {
+public abstract class ModernJavaModule implements GTNHModule {
 
     /** Default Java 17 JVM arguments */
     public final String[] JAVA_17_ARGS = new String[] { "-Dfile.encoding=UTF-8", "-Djava.security.manager=allow",
@@ -42,6 +46,10 @@ public class ModernJavaModule implements GTNHModule {
     public final String[] HOTSWAP_JVM_ARGS = new String[] {
         // DCEVM advanced hot reload
         "-XX:+AllowEnhancedClassRedefinition", "-XX:HotswapAgent=fatjar" };
+
+    /** @return Gradle-provided */
+    @Inject
+    public abstract JavaToolchainService getToolchainService();
 
     @Override
     public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
@@ -70,6 +78,13 @@ public class ModernJavaModule implements GTNHModule {
                 .set(JvmVendorSpec.JETBRAINS); // for enhanced HotSwap
         };
         ext.set("java17Toolchain", java17Toolchain);
+        final Action<JavaToolchainSpec> java21Toolchain = (spec) -> {
+            spec.getLanguageVersion()
+                .set(JavaLanguageVersion.of(21));
+            spec.getVendor()
+                .set(JvmVendorSpec.JETBRAINS); // for enhanced HotSwap
+        };
+        ext.set("java21Toolchain", java17Toolchain);
         final Configuration java17DependenciesCfg = cfgs.create("java17Dependencies", c -> {
             c.extendsFrom(cfgs.getByName("runtimeClasspath"));
             c.setCanBeResolved(true);
@@ -102,5 +117,44 @@ public class ModernJavaModule implements GTNHModule {
             SetupHotswapAgentTask.class,
             t -> { t.setTargetForToolchain(java17Toolchain); });
         ext.set("setupHotswapAgentTask", setupHotswapAgent17);
+
+        final TaskProvider<SetupHotswapAgentTask> setupHotswapAgent21 = tasks.register(
+            "setupHotswapAgent21",
+            SetupHotswapAgentTask.class,
+            t -> { t.setTargetForToolchain(java21Toolchain); });
+
+        final TaskProvider<RunHotswappableMinecraftTask> runClient17Task = tasks
+            .register("runClient17", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
+        runClient17Task.configure(t -> {
+            t.dependsOn(setupHotswapAgent17);
+            t.setup(project, gtnh);
+            t.getJavaLauncher()
+                .set(getToolchainService().launcherFor(java17Toolchain));
+        });
+        final TaskProvider<RunHotswappableMinecraftTask> runServer17Task = tasks
+            .register("runServer17", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
+        runServer17Task.configure(t -> {
+            t.dependsOn(setupHotswapAgent17);
+            t.setup(project, gtnh);
+            t.getJavaLauncher()
+                .set(getToolchainService().launcherFor(java17Toolchain));
+        });
+
+        final TaskProvider<RunHotswappableMinecraftTask> runClient21Task = tasks
+            .register("runClient21", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
+        runClient21Task.configure(t -> {
+            t.dependsOn(setupHotswapAgent21);
+            t.setup(project, gtnh);
+            t.getJavaLauncher()
+                .set(getToolchainService().launcherFor(java21Toolchain));
+        });
+        final TaskProvider<RunHotswappableMinecraftTask> runServer21Task = tasks
+            .register("runServer21", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
+        runServer21Task.configure(t -> {
+            t.dependsOn(setupHotswapAgent21);
+            t.setup(project, gtnh);
+            t.getJavaLauncher()
+                .set(getToolchainService().launcherFor(java21Toolchain));
+        });
     }
 }

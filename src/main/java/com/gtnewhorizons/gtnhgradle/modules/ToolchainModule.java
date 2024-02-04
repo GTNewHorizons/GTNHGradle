@@ -11,6 +11,7 @@ import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
+import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
 import com.gtnewhorizons.retrofuturagradle.util.ProviderToStringWrapper;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -20,13 +21,18 @@ import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.ModuleVersionSelector;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
+import org.gradle.api.java.archives.Manifest;
 import org.gradle.api.plugins.BasePluginExtension;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.scala.ScalaCompile;
+import org.gradle.jvm.tasks.Jar;
 import org.gradle.jvm.toolchain.JavaCompiler;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaToolchainService;
@@ -353,5 +359,65 @@ public abstract class ToolchainModule implements GTNHModule {
                             gtnh.configuration.modName));
                 });
             });
+        // Configure the output manifest
+        final TaskProvider<Jar> devJar = tasks.named("jar", Jar.class);
+        final TaskProvider<ReobfuscatedJar> obfJar = tasks.named("reobfJar", ReobfuscatedJar.class);
+        devJar.configure(t -> {
+            final Manifest manifest = t.getManifest();
+            final PropertiesConfiguration props = gtnh.configuration;
+            if (!props.containsMixinsAndOrCoreModOnly && (props.usesMixins || !props.coreModClass.isEmpty())) {
+                manifest.attributes(ImmutableMap.of("FMLCorePluginContainsFMLMod", true));
+            }
+            if (!props.accessTransformersFile.isEmpty()) {
+                manifest.attributes(ImmutableMap.of("FMLAT", props.accessTransformersFile));
+            }
+            if (!props.coreModClass.isEmpty()) {
+                manifest.attributes(ImmutableMap.of("FMLCorePlugin", props.modGroup + "." + props.coreModClass));
+            }
+            if (props.usesMixins) {
+                manifest.attributes(
+                    ImmutableMap.of(
+                        "TweakClass",
+                        "org.spongepowered.asm.launch.MixinTweaker",
+                        "MixinConfigs",
+                        "mixins." + props.modId + ".json",
+                        "ForceLoadAsMod",
+                        !props.containsMixinsAndOrCoreModOnly));
+            }
+        });
+        project.getExtensions()
+            .getExtraProperties()
+            .set("publishableDevJar", devJar);
+        project.getExtensions()
+            .getExtraProperties()
+            .set("publishableObfJar", obfJar);
+
+        // API Jar
+        final String modGroupPath = gtnh.configuration.modGroup.replace('.', '/');
+        final String apiPackagePath = gtnh.configuration.apiPackage.replace('.', '/');
+        final SourceSetContainer sourceSets = project.getExtensions()
+            .getByType(JavaPluginExtension.class)
+            .getSourceSets();
+        tasks.register("apiJar", Jar.class, t -> {
+            final SourceSet main = sourceSets.getByName("main");
+            t.from(main.getAllSource(), cs -> { cs.include(modGroupPath + "/" + apiPackagePath + "/**"); });
+            t.from(main.getOutput(), cs -> { cs.include(modGroupPath + "/" + apiPackagePath + "/**"); });
+            t.from(
+                main.getResources()
+                    .getSrcDirs(),
+                cs -> { cs.include("LICENSE"); });
+            t.getArchiveClassifier()
+                .set("api");
+        });
+
+        // Artifacts
+        if (!gtnh.configuration.noPublishedSources) {
+            project.getArtifacts()
+                .add("archives", tasks.named("sourcesJar"));
+        }
+        if (!gtnh.configuration.apiPackage.isEmpty()) {
+            project.getArtifacts()
+                .add("archives", tasks.named("apiJar"));
+        }
     }
 }

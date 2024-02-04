@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
+import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.GenerateMixinAssetsTask;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
@@ -40,13 +41,7 @@ public class MixinModule implements GTNHModule {
             }
         }
 
-        final String mixinProviderGroup = "io.github.legacymoddingmc";
-        final String mixinProviderModule = "unimixins";
-        final String mixinProviderVersion = "0.1.15";
-        final String mixinProviderSpecNoClassifer = mixinProviderGroup + ":"
-            + mixinProviderModule
-            + ":"
-            + mixinProviderVersion;
+        final String mixinProviderSpecNoClassifer = UpdateableConstants.NEWEST_UNIMIXINS;
         final String mixinProviderSpec = mixinProviderSpecNoClassifer + ":dev";
         project.getExtensions()
             .getExtraProperties()

@@ -2,8 +2,15 @@ package com.gtnewhorizons.gtnhgradle;
 
 import org.jetbrains.annotations.NotNull;
 
-/** Collections of version numbers and other similar updateable constants. */
+/** Collections of version numbers and other similar "constants" that may need frequent updating. */
 public class UpdateableConstants {
+
+    /** Latest tag of ExampleMod with blowdryer settings */
+    // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
+    public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.2";
+
+    /** Latest version of UniMixins */
+    public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.15";
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";

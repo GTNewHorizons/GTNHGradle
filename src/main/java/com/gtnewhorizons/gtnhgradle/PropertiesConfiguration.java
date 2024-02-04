@@ -56,7 +56,7 @@ public final class PropertiesConfiguration {
         trim = true,
         required = false,
         docComment = "ExampleMod tag to use as Blowdryer (Spotless, etc.) settings version, leave empty to disable. LOCAL to test local config updates.")
-    public @NotNull String blowdryerTag = "0.2.2";
+    public @NotNull String blowdryerTag = UpdateableConstants.NEWEST_BLOWDRYER_TAG;
     // </editor-fold>
 
     // <editor-fold desc="Project properties">
@@ -150,6 +150,26 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "Modern Java run support via lwjgl3ify.")
     public boolean moduleModernJava = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.ideIntegration",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "IDE Integration (IntelliJ, Eclipse)")
+    public boolean moduleIdeIntegration = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.publishing",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Publishing targets (Maven, mod hosting platforms).")
+    public boolean modulePublishing = true;
     // </editor-fold>
 
     // <editor-fold desc="Various settings">
@@ -717,6 +737,19 @@ public final class PropertiesConfiguration {
             Usually there is no need to uncomment this here as other developers do not necessarily use the same build type as you.
             """)
     public @NotNull String ideaOverrideBuildType = "";
+
+    /** See annotation */
+    @Prop(
+        name = "ideaCheckSpotlessOnBuild",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = """
+            Whether IDEA should run spotless checks when pressing the Build button.
+            This is meant to be set in $HOME/.gradle/gradle.properties.
+            """)
+    public boolean ideaCheckSpotlessOnBuild = true;
     // </editor-fold>
     // </editor-fold>
 
