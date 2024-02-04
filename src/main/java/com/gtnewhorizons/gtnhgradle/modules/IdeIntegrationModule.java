@@ -112,22 +112,28 @@ public class IdeIntegrationModule implements GTNHModule {
         runs.register("0. Build and Test", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("build")); });
         runs.register("1. Run Client", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("runClient")); });
         runs.register("2. Run Server", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("runServer")); });
-        runs.register(
-            "1a. Run Client (Java 17)",
-            Gradle.class,
-            run -> { run.setTaskNames(ImmutableList.of("runClient17")); });
-        runs.register(
-            "2a. Run Server (Java 17)",
-            Gradle.class,
-            run -> { run.setTaskNames(ImmutableList.of("runServer17")); });
-        runs.register("1b. Run Client (Java 17, Hotswap)", Gradle.class, run -> {
-            run.setTaskNames(ImmutableList.of("runClient17"));
-            run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
-        });
-        runs.register("2b. Run Server (Java 17, Hotswap)", Gradle.class, run -> {
-            run.setTaskNames(ImmutableList.of("runServer17"));
-            run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
-        });
+        char suffix = 'a';
+        for (final int javaVer : ImmutableList.of(17, 21)) {
+            final char mySuffix = suffix;
+            final char myHsSuffix = (char) (suffix + 1);
+            suffix += 2;
+            runs.register(
+                "1" + mySuffix + ". Run Client (Java " + javaVer + ")",
+                Gradle.class,
+                run -> { run.setTaskNames(ImmutableList.of("runClient" + javaVer)); });
+            runs.register(
+                "2" + mySuffix + ". Run Server (Java " + javaVer + ")",
+                Gradle.class,
+                run -> { run.setTaskNames(ImmutableList.of("runServer" + javaVer)); });
+            runs.register("1" + myHsSuffix + ". Run Client (Java " + javaVer + ", Hotswap)", Gradle.class, run -> {
+                run.setTaskNames(ImmutableList.of("runClient" + javaVer));
+                run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
+            });
+            runs.register("2" + myHsSuffix + ". Run Server (Java " + javaVer + ", Hotswap)", Gradle.class, run -> {
+                run.setTaskNames(ImmutableList.of("runServer" + javaVer));
+                run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
+            });
+        }
         runs.register(
             "3. Run Obfuscated Client",
             Gradle.class,
@@ -143,35 +149,37 @@ public class IdeIntegrationModule implements GTNHModule {
                 run -> { run.setTaskNames(ImmutableList.of("spotlessApply")); });
         }
 
-        runs.register("Run Client (IJ Native)", Application.class, run -> {
+        final var ijClientRun = runs.register("Run Client (IJ Native)", Application.class, run -> {
             run.setMainClass("GradleStart");
             run.setModuleName(project.getName() + ".ideVirtualMain");
-            project.afterEvaluate(_p -> {
-                final RunMinecraftTask runClient = tasks.named("runClient", RunMinecraftTask.class)
-                    .get();
-                run.setWorkingDirectory(
-                    runClient.getWorkingDir()
-                        .getAbsolutePath());
-                run.setProgramParameters(quotedJoin(runClient.calculateArgs(project)));
-                run.setJvmArgs(
-                    quotedJoin(runClient.calculateJvmArgs(project)) + ' '
-                        + quotedPropJoin(runClient.getSystemProperties()));
-            });
         });
-        runs.register("Run Server (IJ Native)", Application.class, run -> {
+        project.afterEvaluate(_p -> {
+            final RunMinecraftTask runClient = tasks.named("runClient", RunMinecraftTask.class)
+                .get();
+            final var run = ijClientRun.get();
+            run.setWorkingDirectory(
+                runClient.getWorkingDir()
+                    .getAbsolutePath());
+            run.setProgramParameters(quotedJoin(runClient.calculateArgs(project)));
+            run.setJvmArgs(
+                quotedJoin(runClient.calculateJvmArgs(project)) + ' '
+                    + quotedPropJoin(runClient.getSystemProperties()));
+        });
+        final var ijServerRun = runs.register("Run Server (IJ Native)", Application.class, run -> {
             run.setMainClass("GradleStartServer");
             run.setModuleName(project.getName() + ".ideVirtualMain");
-            project.afterEvaluate(_p -> {
-                final RunMinecraftTask runServer = tasks.named("runServer", RunMinecraftTask.class)
-                    .get();
-                run.setWorkingDirectory(
-                    runServer.getWorkingDir()
-                        .getAbsolutePath());
-                run.setProgramParameters(quotedJoin(runServer.calculateArgs(project)));
-                run.setJvmArgs(
-                    quotedJoin(runServer.calculateJvmArgs(project)) + ' '
-                        + quotedPropJoin(runServer.getSystemProperties()));
-            });
+        });
+        project.afterEvaluate(_p -> {
+            final RunMinecraftTask runServer = tasks.named("runServer", RunMinecraftTask.class)
+                .get();
+            final var run = ijServerRun.get();
+            run.setWorkingDirectory(
+                runServer.getWorkingDir()
+                    .getAbsolutePath());
+            run.setProgramParameters(quotedJoin(runServer.calculateArgs(project)));
+            run.setJvmArgs(
+                quotedJoin(runServer.calculateJvmArgs(project)) + ' '
+                    + quotedPropJoin(runServer.getSystemProperties()));
         });
 
         ideaExt.withIDEADir(ideaDir -> {
