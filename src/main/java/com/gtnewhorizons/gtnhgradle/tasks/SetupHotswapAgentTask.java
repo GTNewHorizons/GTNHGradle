@@ -73,7 +73,7 @@ public abstract class SetupHotswapAgentTask extends DefaultTask {
         final File target = getTargetFile().getAsFile()
             .get();
         final File parent = target.getParentFile();
-        FileUtils.forceMkdirParent(parent);
+        FileUtils.forceMkdir(parent);
         final DownloadExtension download = getProject().getExtensions()
             .findByType(DownloadExtension.class);
         Objects.requireNonNull(download);

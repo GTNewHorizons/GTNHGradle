@@ -64,7 +64,7 @@ class GTNHGradlePluginFunctionalTest {
         writeString(getPropertiesFile(), SIMPLE_PROPERTIES_FILE);
         Files.createDirectories(
             projectDir.toPath()
-                .resolve("src/main/javacom/myname/mymodid"));
+                .resolve("src/main/java/com/myname/mymodid"));
 
         // Run the build
         GradleRunner runner = GradleRunner.create()

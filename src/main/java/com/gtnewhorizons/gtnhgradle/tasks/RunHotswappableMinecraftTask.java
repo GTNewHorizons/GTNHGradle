@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 /** Helper for running Minecraft with modern Java */
 public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
@@ -72,7 +73,7 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
             .getByType(MinecraftTasks.class);
 
         this.getExtraJvmArgs()
-            .addAll((String) project.property("java17JvmArgs"));
+            .addAll((List<String>) Objects.requireNonNull(project.property("java17JvmArgs")));
         this.getExtraJvmArgs()
             .addAll(
                 getEnableHotswap().map(

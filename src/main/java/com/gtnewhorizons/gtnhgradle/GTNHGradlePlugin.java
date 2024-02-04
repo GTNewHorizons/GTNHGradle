@@ -18,6 +18,8 @@ import com.gtnewhorizons.gtnhgradle.modules.ShadowModule;
 import com.gtnewhorizons.gtnhgradle.modules.StandardScriptsModules;
 import com.gtnewhorizons.gtnhgradle.modules.StructureCheckModule;
 import com.gtnewhorizons.gtnhgradle.modules.ToolchainModule;
+import com.gtnewhorizons.gtnhgradle.modules.UpdaterModule;
+import com.gtnewhorizons.gtnhgradle.modules.UtilityModule;
 import com.gtnewhorizons.gtnhgradle.modules.WellKnownRepositoriesModule;
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
@@ -118,6 +120,8 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             ModernJavaModule.class,
             IdeIntegrationModule.class,
             PublishingModule.class,
+            UtilityModule.class,
+            UpdaterModule.class,
             StandardScriptsModules.LateAddonScriptModule.class
         //
         );

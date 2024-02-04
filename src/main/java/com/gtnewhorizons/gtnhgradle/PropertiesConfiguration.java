@@ -170,6 +170,26 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = "Publishing targets (Maven, mod hosting platforms).")
     public boolean modulePublishing = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.utility",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Utility tasks and functions.")
+    public boolean moduleUtility = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.updater",
+        isSettings = false,
+        preferPopulated = false,
+        trim = true,
+        required = false,
+        docComment = "Buildscript updater module.")
+    public boolean moduleUpdater = true;
     // </editor-fold>
 
     // <editor-fold desc="Various settings">

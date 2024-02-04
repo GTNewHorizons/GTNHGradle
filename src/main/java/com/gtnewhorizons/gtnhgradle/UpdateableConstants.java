@@ -5,6 +5,10 @@ import org.jetbrains.annotations.NotNull;
 /** Collections of version numbers and other similar "constants" that may need frequent updating. */
 public class UpdateableConstants {
 
+    /** Latest Gradle version to update to. */
+    // https://github.com/gradle/gradle/releases
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.6";
+
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
     public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.2";
