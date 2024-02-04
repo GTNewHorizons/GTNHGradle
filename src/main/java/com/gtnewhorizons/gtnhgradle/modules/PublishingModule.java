@@ -22,6 +22,8 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
+import org.gradle.api.tasks.TaskProvider;
+import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -167,9 +169,19 @@ public class PublishingModule implements GTNHModule {
             prj.setReleaseType(modVersion.endsWith("-pre") ? "beta" : "release");
             prj.addGameVersion(gtnh.configuration.minecraftVersion);
             prj.addGameVersion("Forge");
-            prj.mainArtifact(ext.get("publishableObfJar"));
+            @SuppressWarnings("unchecked")
+            final File obfFile = ((TaskProvider<Jar>) Objects.requireNonNull(ext.get("publishableObfJar"))).get()
+                .getArchiveFile()
+                .get()
+                .getAsFile();
+            prj.mainArtifact(obfFile);
             for (final Object secondary : getSecondaryArtifacts(project, gtnh)) {
-                prj.addArtifact(secondary);
+                @SuppressWarnings("unchecked")
+                final File secondaryFile = ((TaskProvider<Jar>) secondary).get()
+                    .getArchiveFile()
+                    .get()
+                    .getAsFile();
+                prj.addArtifact(secondaryFile);
             }
             curse.getCurseProjects()
                 .add(prj);
