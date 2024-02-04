@@ -35,9 +35,13 @@ public class ShadowModule implements GTNHModule {
         final TaskContainer tasks = project.getTasks();
 
         final Configuration shadowRuntimeElements = cfgs.getByName("shadowRuntimeElements");
-        final Configuration shadowImplementation = cfgs.getByName("shadowImplementation");
-        final Configuration shadeCompile = cfgs.getByName("shadeCompile");
-        final Configuration shadowCompile = cfgs.getByName("shadowCompile");
+        final Configuration shadowImplementation = cfgs.maybeCreate("shadowImplementation");
+        final Configuration shadeCompile = cfgs.maybeCreate("shadeCompile");
+        final Configuration shadowCompile = cfgs.maybeCreate("shadowCompile");
+        for (final Configuration shadowConf : ImmutableList.of(shadowImplementation, shadeCompile, shadowCompile)) {
+            shadowConf.setCanBeConsumed(false);
+            shadowConf.setCanBeResolved(true);
+        }
 
         for (final String config : ImmutableList
             .of("compileClasspath", "runtimeClasspath", "testCompileClasspath", "testRuntimeClasspath")) {
