@@ -31,7 +31,6 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.JavaCompile;
-import org.gradle.api.tasks.scala.ScalaCompile;
 import org.gradle.jvm.tasks.Jar;
 import org.gradle.jvm.toolchain.JavaCompiler;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
@@ -169,14 +168,6 @@ public abstract class ToolchainModule implements GTNHModule {
                         .set(jabelCompiler);
                 });
         }
-
-        // Set up Scala
-        tasks.withType(ScalaCompile.class)
-            .configureEach(
-                sc -> {
-                    sc.getOptions()
-                        .setEncoding(StandardCharsets.UTF_8.name());
-                });
 
         // Set up Kotlin if enabled
         project.getPlugins()

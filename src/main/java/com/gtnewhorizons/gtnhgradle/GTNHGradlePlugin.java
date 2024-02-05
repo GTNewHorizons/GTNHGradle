@@ -14,6 +14,7 @@ import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
 import com.gtnewhorizons.gtnhgradle.modules.ModernJavaModule;
 import com.gtnewhorizons.gtnhgradle.modules.OldGradleEmulationModule;
 import com.gtnewhorizons.gtnhgradle.modules.PublishingModule;
+import com.gtnewhorizons.gtnhgradle.modules.ScalaModule;
 import com.gtnewhorizons.gtnhgradle.modules.ShadowModule;
 import com.gtnewhorizons.gtnhgradle.modules.StandardScriptsModules;
 import com.gtnewhorizons.gtnhgradle.modules.StructureCheckModule;
@@ -35,14 +36,11 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.PluginManager;
-import org.gradle.api.plugins.scala.ScalaPlugin;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
-import org.gradle.plugins.ide.eclipse.EclipsePlugin;
 import org.gradle.process.ExecOperations;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.gradle.ext.IdeaExtPlugin;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -70,9 +68,6 @@ public class GTNHGradlePlugin implements Plugin<Project> {
 
         // Apply shared plugins used by all mods
         plugins.apply(JavaLibraryPlugin.class);
-        plugins.apply(IdeaExtPlugin.class);
-        plugins.apply(EclipsePlugin.class);
-        plugins.apply(ScalaPlugin.class);
         plugins.apply(MavenPublishPlugin.class);
         plugins.apply(GrgitPlugin.class);
         plugins.apply(DownloadTaskPlugin.class);
@@ -108,6 +103,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             GitVersionModule.class,
             CodeStyleModule.class,
             ToolchainModule.class,
+            ScalaModule.class,
             StructureCheckModule.class,
             AccessTransformerModule.class,
             ShadowModule.class,

@@ -7,10 +7,13 @@ import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.plugins.ide.eclipse.EclipsePlugin;
+import org.gradle.plugins.ide.eclipse.model.EclipseJdt;
 import org.gradle.plugins.ide.eclipse.model.EclipseModel;
 import org.gradle.plugins.ide.idea.model.IdeaModel;
 import org.gradle.plugins.ide.idea.model.IdeaProject;
@@ -19,6 +22,7 @@ import org.jetbrains.gradle.ext.ActionDelegationConfig;
 import org.jetbrains.gradle.ext.Application;
 import org.jetbrains.gradle.ext.Gradle;
 import org.jetbrains.gradle.ext.IdeaCompilerConfiguration;
+import org.jetbrains.gradle.ext.IdeaExtPlugin;
 import org.jetbrains.gradle.ext.ProjectSettings;
 import org.jetbrains.gradle.ext.RunConfigurationContainer;
 import org.w3c.dom.Document;
@@ -60,6 +64,12 @@ public class IdeIntegrationModule implements GTNHModule {
 
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
+
+        project.getPluginManager()
+            .apply(IdeaExtPlugin.class);
+        project.getPluginManager()
+            .apply(EclipsePlugin.class);
+
         final TaskContainer tasks = project.getTasks();
         final EclipseModel eclipse = project.getExtensions()
             .getByType(EclipseModel.class);
@@ -67,6 +77,14 @@ public class IdeIntegrationModule implements GTNHModule {
             .setDownloadSources(true);
         eclipse.getClasspath()
             .setDownloadJavadoc(true);
+        final EclipseJdt ejdt = eclipse.getJdt();
+        ejdt.setTargetCompatibility(JavaVersion.VERSION_1_8);
+        ejdt.setJavaRuntimeName("JavaSE-1.8");
+        if (gtnh.configuration.enableModernJavaSyntax) {
+            ejdt.setSourceCompatibility(JavaVersion.VERSION_17);
+        } else {
+            ejdt.setSourceCompatibility(JavaVersion.VERSION_1_8);
+        }
 
         final IdeaModel idea = project.getExtensions()
             .getByType(IdeaModel.class);
