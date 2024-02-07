@@ -6,7 +6,6 @@ import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.ObjectUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
-import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.text.StringEscapeUtils;
 import com.palantir.gradle.gitversion.GitVersionCacheService;
 import com.palantir.gradle.gitversion.GitVersionPlugin;
 import com.palantir.gradle.gitversion.VersionDetails;
@@ -99,7 +98,7 @@ public class GitVersionModule implements GTNHModule {
         if (identifiedVersion.equals(versionOverride)) {
             gtnh.logger.warn("Version override set to {}!", identifiedVersion);
         } else if (checkVersion && !StringUtils.isBlank(gtnh.configuration.versionPattern)) {
-            final String rawPattern = StringEscapeUtils.unescapeJava(gtnh.configuration.versionPattern);
+            final String rawPattern = gtnh.configuration.versionPattern;
             final Pattern pattern = Pattern.compile(rawPattern);
             if (!pattern.matcher(identifiedVersion)
                 .matches()) {

@@ -879,7 +879,8 @@ public final class PropertiesConfiguration {
     private static void appendPropertySafeString(StringBuilder sb, String text) {
         final AtomicInteger counter = new AtomicInteger(0);
         text.chars()
-            .forEachOrdered(chr -> {
+            .forEachOrdered(intChr -> {
+                final char chr = (char) intChr;
                 switch (chr) {
                     case ' ' -> {
                         if (counter.get() == 0) {
