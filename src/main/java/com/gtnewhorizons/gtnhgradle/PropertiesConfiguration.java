@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -833,7 +834,7 @@ public final class PropertiesConfiguration {
                     }
                 if (!valueToPrint.isEmpty()) {
                     sb.append(' ');
-                    sb.append(valueToPrint);
+                    appendPropertySafeString(sb, valueToPrint);
                 }
                 sb.append(newline);
                 sb.append(newline);
@@ -843,7 +844,7 @@ public final class PropertiesConfiguration {
                 for (final Map.Entry<String, String> entry : originalValues.entrySet()) {
                     sb.append(entry.getKey());
                     sb.append(" = ");
-                    sb.append(entry.getValue());
+                    appendPropertySafeString(sb, entry.getValue());
                     sb.append(newline);
                 }
             }
@@ -852,6 +853,32 @@ public final class PropertiesConfiguration {
         }
 
         return sb.toString();
+    }
+
+    /** Escapes characters unsafe for use in properties files. */
+    private static void appendPropertySafeString(StringBuilder sb, String text) {
+        final AtomicInteger counter = new AtomicInteger(0);
+        text.chars()
+            .forEachOrdered(chr -> {
+                switch (chr) {
+                    case ' ' -> {
+                        if (counter.get() == 0) {
+                            sb.append('\\');
+                        }
+                        sb.append(' ');
+                    }
+                    case '\\', '=', ':', '#', '!' -> {
+                        sb.append('\\');
+                        sb.append(chr);
+                    }
+                    case '\t' -> sb.append("\\t");
+                    case '\n' -> sb.append("\\n");
+                    case '\r' -> sb.append("\\r");
+                    case '\f' -> sb.append("\\f");
+                    default -> sb.append(chr);
+                }
+                counter.incrementAndGet();
+            });
     }
 
     /** Property metadata */
