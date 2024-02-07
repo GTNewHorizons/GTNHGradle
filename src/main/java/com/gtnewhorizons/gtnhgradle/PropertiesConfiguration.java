@@ -348,7 +348,7 @@ public final class PropertiesConfiguration {
     public @NotNull String deprecatedGradleTokenModName = "";
     /** See annotation */
     @Prop(
-        name = "gradleTokenModGroup",
+        name = "gradleTokenGroupName",
         isSettings = false,
         preferPopulated = true,
         required = false,
@@ -356,7 +356,7 @@ public final class PropertiesConfiguration {
         docComment = """
             [DEPRECATED] Mod Group replacement token.
             """)
-    public @NotNull String deprecatedGradleTokenModGroup = "";
+    public @NotNull String deprecatedGradleTokenGroupName = "";
 
     /** See annotation */
     @Prop(

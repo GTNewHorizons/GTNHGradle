@@ -243,9 +243,9 @@ public abstract class ToolchainModule implements GTNHModule {
             minecraft.getInjectedTags()
                 .put(gtnh.configuration.deprecatedGradleTokenModId, gtnh.configuration.modId);
         }
-        if (!gtnh.configuration.deprecatedGradleTokenModGroup.isEmpty()) {
+        if (!gtnh.configuration.deprecatedGradleTokenGroupName.isEmpty()) {
             minecraft.getInjectedTags()
-                .put(gtnh.configuration.deprecatedGradleTokenModGroup, gtnh.configuration.modGroup);
+                .put(gtnh.configuration.deprecatedGradleTokenGroupName, gtnh.configuration.modGroup);
         }
         if (!gtnh.configuration.deprecatedGradleTokenModName.isEmpty()) {
             minecraft.getInjectedTags()
@@ -255,7 +255,7 @@ public abstract class ToolchainModule implements GTNHModule {
             if (!gtnh.configuration.deprecatedGradleTokenModId.isEmpty()) {
                 gtnh.logger.error("gradleTokenModId is deprecated! The field will no longer be generated.");
             }
-            if (!gtnh.configuration.deprecatedGradleTokenModGroup.isEmpty()) {
+            if (!gtnh.configuration.deprecatedGradleTokenGroupName.isEmpty()) {
                 gtnh.logger.error("gradleTokenModGroup is deprecated! The field will no longer be generated.");
             }
             if (!gtnh.configuration.deprecatedGradleTokenModName.isEmpty()) {
