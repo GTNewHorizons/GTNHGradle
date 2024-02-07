@@ -116,7 +116,14 @@ public class MixinModule implements GTNHModule {
 
         if (gtnh.configuration.usesMixins) {
             tasks.named("processResources")
-                .configure(t -> t.dependsOn(genTask, "compileJava", "compileScala"));
+                .configure(t -> t.dependsOn(genTask, "compileJava"));
+            project.getPluginManager()
+                .withPlugin(
+                    "scala",
+                    _plugin -> {
+                        tasks.named("processResources")
+                            .configure(t -> t.dependsOn("compileScala"));
+                    });
             tasks.named("compileJava", JavaCompile.class)
                 .configure(jc -> {
                     // Elan: from what I understand they are just some linter configs so you get some warning on how to
