@@ -60,6 +60,18 @@ public final class PropertiesConfiguration {
             LOCAL to test local config updates.
             """)
     public @NotNull String blowdryerTag = UpdateableConstants.NEWEST_BLOWDRYER_TAG;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.settings.dynamicSpotlessVersion",
+        isSettings = true,
+        preferPopulated = false,
+        required = false,
+        hidden = true,
+        docComment = """
+            Whether to enable a pluginManagement spotless version resolution rule to use a newer spotless build on new JVMs.
+            """)
+    public @NotNull boolean dynamicSpotlessVersion = true;
     // </editor-fold>
 
     // <editor-fold desc="Project properties">
