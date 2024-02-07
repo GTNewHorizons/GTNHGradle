@@ -33,6 +33,12 @@ public class UpdateableConstants {
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.3.2";
+    /** Latest version of Spotless compatible with Java 8 */
+    // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
+    public static final @NotNull String NEWEST_SPOTLESS_JAVA8 = "6.13.0";
+    /** Latest version of Spotless compatible with modern Java versions */
+    // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
+    public static final @NotNull String NEWEST_SPOTLESS = "6.25.0";
 
     /** Latest HotSwapAgent release jar URL */
     // https://github.com/HotswapProjects/HotswapAgent/releases

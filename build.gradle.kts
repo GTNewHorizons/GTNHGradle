@@ -51,14 +51,8 @@ dependencies {
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
     api(pluginDep("de.undercouch.download", "5.5.0"))
     api(pluginDep("com.github.gmazzo.buildconfig", "3.1.0")) // Unused, available for addon.gradle
-    api(pluginDep("com.diffplug.spotless", "6.13.0")) // 6.13.0 is the last jvm8 supporting version
     api(pluginDep("com.modrinth.minotaur", "2.8.7"))
     api(pluginDep("com.matthewprenger.cursegradle", "1.4.0"))
-
-    api(pluginDep("com.diffplug.spotless", "6.12.0")) {
-        exclude("org.codehaus.groovy", "groovy")
-        exclude("org.codehaus.groovy", "groovy-xml")
-    }
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

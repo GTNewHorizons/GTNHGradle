@@ -2,8 +2,12 @@ package com.gtnewhorizons.gtnhgradle;
 
 import com.diffplug.blowdryer.BlowdryerSetup;
 import com.diffplug.blowdryer.BlowdryerSetupPlugin;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
+import org.gradle.api.plugins.PluginManager;
 import org.gradle.toolchains.foojay.FoojayToolchainsConventionPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,17 +15,35 @@ import org.jetbrains.annotations.NotNull;
  * Applies some shared settings.gradle logic used by the GTNH mod development ecosystem.
  */
 @SuppressWarnings("unused") // used by Gradle
-public class GTNHSettingsConventionPlugin implements Plugin<Settings> {
+public abstract class GTNHSettingsConventionPlugin implements Plugin<Settings> {
 
     @Override
     public void apply(final @NotNull Settings target) {
+        final Logger logger = Logging.getLogger(GTNHSettingsConventionPlugin.class);
         final PropertiesConfiguration config = PropertiesConfiguration.GradleUtils.makePropertiesFrom(target);
+        final PluginManager plugins = target.getPluginManager();
+        final JavaVersion currentJava = JavaVersion.current();
 
-        target.getPlugins()
-            .apply(FoojayToolchainsConventionPlugin.class);
+        if (config.dynamicSpotlessVersion) {
+            // Add the correct version of spotless to classpath
+            final String spotlessVersion;
+            if (currentJava.isCompatibleWith(JavaVersion.VERSION_17)) {
+                spotlessVersion = UpdateableConstants.NEWEST_SPOTLESS;
+            } else {
+                spotlessVersion = UpdateableConstants.NEWEST_SPOTLESS_JAVA8;
+            }
+            logger.info("Adding Spotless {} to classpath due to Java {}", spotlessVersion, currentJava);
+            target.getGradle()
+                .beforeProject(prj -> {
+                    prj.getBuildscript()
+                        .getDependencies()
+                        .add("classpath", "com.diffplug.spotless:spotless-plugin-gradle:" + spotlessVersion);
+                });
+        }
+
+        plugins.apply(FoojayToolchainsConventionPlugin.class);
         if (!config.blowdryerTag.isEmpty()) {
-            target.getPlugins()
-                .apply(BlowdryerSetupPlugin.class);
+            plugins.apply(BlowdryerSetupPlugin.class);
             final BlowdryerSetup blowdryer = target.getExtensions()
                 .getByType(BlowdryerSetup.class);
             if (!config.blowdryerTag.equals("MIGRATION-MAGIC")) {

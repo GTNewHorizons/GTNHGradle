@@ -1,7 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
 import com.diffplug.blowdryer.Blowdryer;
-import com.diffplug.gradle.spotless.SpotlessPlugin;
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
@@ -26,8 +25,9 @@ public class CodeStyleModule implements GTNHModule {
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) {
         if (!gtnh.configuration.disableSpotless) {
-            project.getPlugins()
-                .apply(SpotlessPlugin.class);
+            // Version dynamically configured by GTNHSettingsConventionPlugin
+            project.getPluginManager()
+                .apply("com.diffplug.spotless");
             project.apply(oca -> { oca.from(Blowdryer.file("spotless.gradle")); });
         }
         if (!gtnh.configuration.disableCheckstyle) {
