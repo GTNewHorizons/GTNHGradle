@@ -101,7 +101,17 @@ public final class PropertiesConfiguration {
         required = false,
         hidden = true,
         docComment = "Sets up the Scala toolchain for mod compilation if src/main/scala is present.")
-    public boolean scalaToolchain = true;
+    public boolean moduleScala = true;
+
+    /** See annotation */
+    @Prop(
+        name = "gtnh.modules.scala.forceEnable",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        hidden = true,
+        docComment = "Sets up the Scala toolchain for mod compilation unconditionally if the Scala module is enabled.")
+    public boolean forceEnableScala = false;
 
     /** See annotation */
     @Prop(

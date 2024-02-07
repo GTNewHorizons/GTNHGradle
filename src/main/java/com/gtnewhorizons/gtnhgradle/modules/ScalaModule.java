@@ -15,12 +15,12 @@ public class ScalaModule implements GTNHModule {
 
     @Override
     public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
-        return configuration.scalaToolchain;
+        return configuration.moduleScala;
     }
 
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
-        if (!project.file("src/main/scala")
+        if (!gtnh.configuration.forceEnableScala && !project.file("src/main/scala")
             .exists()) {
             gtnh.logger.debug("No src/main/scala detected, skipping Scala initialization.");
             return;
