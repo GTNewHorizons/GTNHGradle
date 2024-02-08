@@ -32,9 +32,11 @@ dependencies {
     annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
     testAnnotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
     compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") { isTransitive = false }
+    // workaround for https://github.com/bsideup/jabel/issues/174
+    annotationProcessor("net.java.dev.jna:jna-platform:5.13.0")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.3.32"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.3.33"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
@@ -182,6 +184,7 @@ tasks.test {
 publishing {
     publications {
         create<MavenPublication>("gtnhGradle") {
+            artifactId = "gtnhgradle"
             from(components["java"])
         }
         // From org.gradle.plugin.devel.plugins.MavenPluginPublishPlugin.createMavenMarkerPublication

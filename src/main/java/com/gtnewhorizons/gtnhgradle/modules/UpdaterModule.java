@@ -7,6 +7,7 @@ import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.UpdateBuildscriptTask;
+import com.gtnewhorizons.gtnhgradle.tasks.UpdateDependenciesTask;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
@@ -127,6 +128,16 @@ public class UpdaterModule implements GTNHModule {
                     project.getLayout()
                         .file(latestPluginArtifact.map(ResolvedArtifact::getFile)));
         });
+
+        final File dependenciesGradle = new File(rootDir, "dependencies.gradle");
+
+        tasks.register(
+            "updateDependencies",
+            UpdateDependenciesTask.class,
+            t -> t.getDependenciesGradle()
+                .set(
+                    project.getLayout()
+                        .file(project.provider(() -> dependenciesGradle))));
     }
 
     private static String getGradleVersionFromPlugin(final ResolvedArtifact artifact) {
