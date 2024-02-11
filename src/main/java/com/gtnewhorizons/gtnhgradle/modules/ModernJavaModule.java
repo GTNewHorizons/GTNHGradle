@@ -84,7 +84,7 @@ public abstract class ModernJavaModule implements GTNHModule {
             spec.getVendor()
                 .set(JvmVendorSpec.JETBRAINS); // for enhanced HotSwap
         };
-        ext.set("java21Toolchain", java17Toolchain);
+        ext.set("java21Toolchain", java21Toolchain);
         final Configuration java17DependenciesCfg = cfgs.create("java17Dependencies", c -> {
             c.extendsFrom(cfgs.getByName("runtimeClasspath"));
             c.setCanBeResolved(true);
