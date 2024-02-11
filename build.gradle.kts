@@ -203,7 +203,7 @@ publishing {
                         val groupId = dependency.appendChild(document.createElement("groupId"))
                         groupId.textContent = project.group.toString()
                         val artifactId = dependency.appendChild(document.createElement("artifactId"))
-                        artifactId.textContent = project.name
+                        artifactId.textContent = "gtnhgradle"
                         val version = dependency.appendChild(document.createElement("version"))
                         version.textContent = project.version.toString()
                     }
