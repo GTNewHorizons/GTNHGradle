@@ -23,10 +23,11 @@ public class StandardScriptsModules {
         @Override
         public final void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project)
             throws Throwable {
-            final String groovyName = getScriptName() + ".gradle";
-            final String ktsName = groovyName + ".gradle.kts";
-            final String localGroovyName = getScriptName() + ".local.gradle";
-            final String localKtsName = getScriptName() + ".local.gradle.kts";
+            final String scriptName = getScriptName();
+            final String groovyName = scriptName + ".gradle";
+            final String ktsName = scriptName + ".gradle.kts";
+            final String localGroovyName = scriptName + ".local.gradle";
+            final String localKtsName = scriptName + ".local.gradle.kts";
             for (final String name : ImmutableList.of(groovyName, ktsName, localGroovyName, localKtsName)) {
                 if (project.file(name)
                     .exists()) {
