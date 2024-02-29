@@ -215,7 +215,13 @@ public class IdeIntegrationModule implements GTNHModule {
                         final DocumentBuilder builder = DocumentBuilderFactory.newInstance()
                             .newDocumentBuilder();
                         final Document doc = builder.parse(miscFile);
-                        final NodeList components = doc.getElementsByTagName("component");
+                        Element docRoot = doc.getDocumentElement();
+                        if (docRoot == null) {
+                            docRoot = doc.createElement("project");
+                            docRoot.setAttribute("version", "4");
+                            docRoot.appendChild(docRoot);
+                        }
+                        final NodeList components = docRoot.getElementsByTagName("component");
                         Element foundComponent = null;
                         if (components != null) {
                             for (int i = 0; i < components.getLength(); i++) {
@@ -239,7 +245,7 @@ public class IdeIntegrationModule implements GTNHModule {
                             Element e = doc.createElement("component");
                             e.setAttribute("name", "ProjectRootManager");
                             e.setAttribute("version", "2");
-                            doc.appendChild(e);
+                            docRoot.appendChild(e);
                             foundComponent = e;
                         }
                         final NodeList outputs = foundComponent.getElementsByTagName("output");
