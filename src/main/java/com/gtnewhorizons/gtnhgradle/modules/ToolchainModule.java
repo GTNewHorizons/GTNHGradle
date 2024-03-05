@@ -12,7 +12,6 @@ import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
-import com.gtnewhorizons.retrofuturagradle.util.ProviderToStringWrapper;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -25,6 +24,7 @@ import org.gradle.api.java.archives.Manifest;
 import org.gradle.api.plugins.BasePluginExtension;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -51,6 +52,9 @@ public abstract class ToolchainModule implements GTNHModule {
     /** @return Gradle-provided */
     @Inject
     public abstract JavaToolchainService getToolchainService();
+
+    /** @return mcmod.info properties expanded by the Groovy template engine */
+    public abstract MapProperty<String, String> getMcmodInfoProperties();
 
     /** For dependency injection */
     @Inject
@@ -63,6 +67,8 @@ public abstract class ToolchainModule implements GTNHModule {
 
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
+        gtnh.getExtensions()
+            .add(ToolchainModule.class, "toolchainModule", this);
         final TaskContainer tasks = project.getTasks();
         final JavaPluginExtension java = project.getExtensions()
             .getByType(JavaPluginExtension.class);
@@ -319,36 +325,30 @@ public abstract class ToolchainModule implements GTNHModule {
             });
 
         // mcmod.info processing
-        tasks.named("processResources", ProcessResources.class)
-            .configure(t -> {
-                final String modVersion = Objects.requireNonNull(
-                    project.getExtensions()
-                        .getExtraProperties()
-                        .get(GTNHConstants.MOD_VERSION_PROPERTY))
-                    .toString();
-                t.getInputs()
-                    .property("version", modVersion);
-                t.getInputs()
-                    .property("mcversion", minecraft.getMcVersion());
-                t.getInputs()
-                    .property("modId", gtnh.configuration.modId);
-                t.getInputs()
-                    .property("modName", gtnh.configuration.modName);
-                t.exclude("spotless.gradle");
+        {
+            final MapProperty<String, String> props = getMcmodInfoProperties();
+            final Provider<String> modVersion = gtnh.getProviderFactory()
+                .provider(
+                    () -> Objects.requireNonNull(project.getVersion())
+                        .toString());
+            props.put("minecraftVersion", minecraft.getMcVersion());
+            props.put("modId", gtnh.configuration.modId);
+            props.put("modName", gtnh.configuration.modName);
+            props.put("modVersion", modVersion);
+        }
 
-                t.filesMatching("mcmod.info", fcd -> {
-                    fcd.expand(
-                        ImmutableMap.of(
-                            "minecraftVersion",
-                            new ProviderToStringWrapper(minecraft.getMcVersion()),
-                            "modVersion",
-                            modVersion,
-                            "modId",
-                            gtnh.configuration.modId,
-                            "modName",
-                            gtnh.configuration.modName));
+        tasks.named("processResources", ProcessResources.class)
+            .configure(t -> { t.exclude("spotless.gradle"); });
+        project.afterEvaluate(p -> {
+            p.getTasks()
+                .named("processResources", ProcessResources.class)
+                .configure(t -> {
+                    final Map<String, String> expandedProperties = getMcmodInfoProperties().get();
+                    t.getInputs()
+                        .properties(expandedProperties);
+                    t.filesMatching("mcmod.info", fcd -> { fcd.expand(expandedProperties); });
                 });
-            });
+        });
         // Configure the output manifest
         final TaskProvider<Jar> devJar = tasks.named("jar", Jar.class);
         final TaskProvider<ReobfuscatedJar> obfJar = tasks.named("reobfJar", ReobfuscatedJar.class);
