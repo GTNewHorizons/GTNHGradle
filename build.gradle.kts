@@ -54,7 +54,7 @@ dependencies {
     api(pluginDep("de.undercouch.download", "5.5.0"))
     api(pluginDep("com.github.gmazzo.buildconfig", "3.1.0")) // Unused, available for addon.gradle
     api(pluginDep("com.modrinth.minotaur", "2.8.7"))
-    api(pluginDep("com.matthewprenger.cursegradle", "1.4.0"))
+    api(pluginDep("net.darkhax.curseforgegradle", "1.1.18"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

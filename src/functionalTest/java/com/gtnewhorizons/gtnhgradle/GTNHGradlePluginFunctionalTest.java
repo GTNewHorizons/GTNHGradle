@@ -9,7 +9,7 @@ import java.io.Writer;
 import java.io.FileWriter;
 import java.nio.file.Files;
 
-import com.google.common.collect.ImmutableMap;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.TaskOutcome;
