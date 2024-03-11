@@ -113,6 +113,10 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
             getExtraArgs().add("nogui");
         }
 
+        // Use RFB alternate main class
+        systemProperty("gradlestart.bouncerClient", "com.gtnewhorizons.retrofuturabootstrap.Main");
+        systemProperty("gradlestart.bouncerServer", "com.gtnewhorizons.retrofuturabootstrap.Main");
+
         if (gtnh.configuration.usesMixins) {
             this.getExtraJvmArgs()
                 .addAll(project.provider(() -> {
