@@ -130,27 +130,29 @@ public class IdeIntegrationModule implements GTNHModule {
         runs.register("0. Build and Test", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("build")); });
         runs.register("1. Run Client", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("runClient")); });
         runs.register("2. Run Server", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("runServer")); });
-        char suffix = 'a';
-        for (final int javaVer : ImmutableList.of(17, 21)) {
-            final char mySuffix = suffix;
-            final char myHsSuffix = (char) (suffix + 1);
-            suffix += 2;
-            runs.register(
-                "1" + mySuffix + ". Run Client (Java " + javaVer + ")",
-                Gradle.class,
-                run -> { run.setTaskNames(ImmutableList.of("runClient" + javaVer)); });
-            runs.register(
-                "2" + mySuffix + ". Run Server (Java " + javaVer + ")",
-                Gradle.class,
-                run -> { run.setTaskNames(ImmutableList.of("runServer" + javaVer)); });
-            runs.register("1" + myHsSuffix + ". Run Client (Java " + javaVer + ", Hotswap)", Gradle.class, run -> {
-                run.setTaskNames(ImmutableList.of("runClient" + javaVer));
-                run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
-            });
-            runs.register("2" + myHsSuffix + ". Run Server (Java " + javaVer + ", Hotswap)", Gradle.class, run -> {
-                run.setTaskNames(ImmutableList.of("runServer" + javaVer));
-                run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
-            });
+        if (gtnh.configuration.moduleModernJava) {
+            char suffix = 'a';
+            for (final int javaVer : ImmutableList.of(17, 21)) {
+                final char mySuffix = suffix;
+                final char myHsSuffix = (char) (suffix + 1);
+                suffix += 2;
+                runs.register(
+                    "1" + mySuffix + ". Run Client (Java " + javaVer + ")",
+                    Gradle.class,
+                    run -> { run.setTaskNames(ImmutableList.of("runClient" + javaVer)); });
+                runs.register(
+                    "2" + mySuffix + ". Run Server (Java " + javaVer + ")",
+                    Gradle.class,
+                    run -> { run.setTaskNames(ImmutableList.of("runServer" + javaVer)); });
+                runs.register("1" + myHsSuffix + ". Run Client (Java " + javaVer + ", Hotswap)", Gradle.class, run -> {
+                    run.setTaskNames(ImmutableList.of("runClient" + javaVer));
+                    run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
+                });
+                runs.register("2" + myHsSuffix + ". Run Server (Java " + javaVer + ", Hotswap)", Gradle.class, run -> {
+                    run.setTaskNames(ImmutableList.of("runServer" + javaVer));
+                    run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));
+                });
+            }
         }
         runs.register(
             "3. Run Obfuscated Client",
@@ -303,7 +305,8 @@ public class IdeIntegrationModule implements GTNHModule {
             .configure(t -> {
                 // Make IntelliJ "Build project" build the mod jars
                 t.dependsOn("jar", "reobfJar");
-                if (!gtnh.configuration.disableSpotless && gtnh.configuration.ideaCheckSpotlessOnBuild) {
+                if (gtnh.configuration.moduleCodeStyle && !gtnh.configuration.disableSpotless
+                    && gtnh.configuration.ideaCheckSpotlessOnBuild) {
                     t.dependsOn("spotlessCheck");
                 }
             });
