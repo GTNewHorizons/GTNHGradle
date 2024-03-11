@@ -44,8 +44,11 @@ public abstract class UpdateDependenciesTask extends DefaultTask {
     @PathSensitive(PathSensitivity.NAME_ONLY)
     public abstract RegularFileProperty getDependenciesGradle();
 
+    /**
+     * For dependency injection
+     */
     @Inject
-    public UpdateDependenciesTask() {
+    protected UpdateDependenciesTask() {
         this.setGroup("GTNH Buildscript");
         this.setDescription("Updates dependencies under GTNH maven to the latest versions");
         // Ensure the task always runs
@@ -53,13 +56,18 @@ public abstract class UpdateDependenciesTask extends DefaultTask {
             .upToDateWhen(Specs.satisfyNone());
     }
 
+    /**
+     * Updates the dependencies in dependencies.gradle
+     *
+     * @throws IOException in case of underlying disk and network errors
+     */
     @TaskAction
     public void updateDependencies() throws IOException {
         File dependenciesFile = getDependenciesGradle().getAsFile()
             .get();
         Path dependenciesPath = dependenciesFile.toPath();
         if (!dependenciesFile.isFile()) {
-            getLogger().error("File does not exist: " + dependenciesPath);
+            getLogger().error("File does not exist: {}", dependenciesPath);
             return;
         }
 
@@ -80,7 +88,7 @@ public abstract class UpdateDependenciesTask extends DefaultTask {
                 continue;
             }
             if (versions.isEmpty()) {
-                getLogger().warn(String.format("No releases found on %s", modName));
+                getLogger().warn("No releases found on {}", modName);
                 continue;
             }
             int currentVersionIndex = -1;
@@ -98,14 +106,14 @@ public abstract class UpdateDependenciesTask extends DefaultTask {
                 }
             }
             if (latestVersionIndex == -1) {
-                getLogger().warn(String.format("%s does not contain non-pre release", modName));
+                getLogger().warn("{} does not contain non-pre release", modName);
                 continue;
             }
             // currentVersionIndex == -1 can happen when release is removed from maven
             if (latestVersionIndex > currentVersionIndex) {
                 String newVersion = versions.get(latestVersionIndex);
                 lines.set(lineIndex, line.replace(currentVersion, newVersion));
-                getLogger().lifecycle(String.format("Updated %s: %s -> %s", modName, currentVersion, newVersion));
+                getLogger().lifecycle("Updated {}: {} -> {}", modName, currentVersion, newVersion);
                 updated = true;
             }
         }
