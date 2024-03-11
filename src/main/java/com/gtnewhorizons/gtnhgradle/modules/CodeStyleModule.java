@@ -1,7 +1,7 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
 import com.diffplug.blowdryer.Blowdryer;
-import com.google.common.collect.ImmutableList;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;

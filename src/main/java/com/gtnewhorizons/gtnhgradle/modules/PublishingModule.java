@@ -1,27 +1,23 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
-import com.google.common.collect.ImmutableSet;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
-import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.ObjectUtils;
-import com.matthewprenger.cursegradle.CurseArtifact;
-import com.matthewprenger.cursegradle.CurseExtension;
-import com.matthewprenger.cursegradle.CurseGradlePlugin;
-import com.matthewprenger.cursegradle.CurseProject;
-import com.matthewprenger.cursegradle.CurseRelation;
-import com.matthewprenger.cursegradle.Options;
 import com.modrinth.minotaur.Minotaur;
 import com.modrinth.minotaur.ModrinthExtension;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.ModDependency;
 import com.modrinth.minotaur.dependencies.VersionDependency;
+import net.darkhax.curseforgegradle.CurseForgeGradlePlugin;
+import net.darkhax.curseforgegradle.TaskPublishCurseForge;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.NotNull;
@@ -46,8 +42,6 @@ public class PublishingModule implements GTNHModule {
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
         final PublishingExtension publishing = project.getExtensions()
             .getByType(PublishingExtension.class);
-        final MinecraftExtension mc = project.getExtensions()
-            .getByType(MinecraftExtension.class);
 
         final ExtraPropertiesExtension ext = project.getExtensions()
             .getExtraProperties();
@@ -148,64 +142,63 @@ public class PublishingModule implements GTNHModule {
 
         // Curseforge
         final String cfToken = System.getenv("CURSEFORGE_TOKEN");
-        if (!gtnh.configuration.curseForgeProjectId.isEmpty() && cfToken != null) {
+        if (!gtnh.configuration.curseForgeProjectId.isEmpty()) {
             project.getPlugins()
-                .apply(CurseGradlePlugin.class);
-            final CurseExtension curse = project.getExtensions()
-                .getByType(CurseExtension.class);
-            curse.setApiKey(cfToken);
-            final Options opts = curse.getCurseGradleOptions();
-            opts.setJavaIntegration(false);
-            opts.setForgeGradleIntegration(false);
-            opts.setDebug(false);
+                .apply(CurseForgeGradlePlugin.class);
+            final TaskProvider<TaskPublishCurseForge> publishCurseforge = project.getTasks()
+                .register("publishCurseforge", TaskPublishCurseForge.class, task -> {
+                    task.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
+                    task.setDescription("Publishes the mod to Curseforge");
+                    task.dependsOn("assemble");
 
-            final CurseProject prj = new CurseProject();
-            prj.setApiKey(cfToken);
-            prj.setId(gtnh.configuration.curseForgeProjectId);
-            if (changelogFile.exists()) {
-                prj.setChangelogType("markdown");
-                prj.setChangelog(changelogFile);
-            }
-            prj.setReleaseType(modVersion.endsWith("-pre") ? "beta" : "release");
-            prj.addGameVersion(gtnh.configuration.minecraftVersion);
-            prj.addGameVersion("Forge");
-            @SuppressWarnings("unchecked")
-            final File obfFile = ((TaskProvider<Jar>) Objects.requireNonNull(ext.get("publishableObfJar"))).get()
-                .getArchiveFile()
-                .get()
-                .getAsFile();
-            prj.mainArtifact(obfFile);
-            for (final Object secondary : getSecondaryArtifacts(project, gtnh)) {
-                @SuppressWarnings("unchecked")
-                final File secondaryFile = ((TaskProvider<Jar>) secondary).get()
-                    .getArchiveFile()
-                    .get()
-                    .getAsFile();
-                prj.addArtifact(secondaryFile);
-            }
-            curse.getCurseProjects()
-                .add(prj);
+                    @SuppressWarnings("unchecked")
+                    final File obfFile = ((TaskProvider<Jar>) Objects.requireNonNull(ext.get("publishableObfJar")))
+                        .get()
+                        .getArchiveFile()
+                        .get()
+                        .getAsFile();
 
-            if (!gtnh.configuration.curseForgeRelations.isEmpty()) {
-                final String[] deps = gtnh.configuration.curseForgeRelations.split(";");
-                for (String dep : deps) {
-                    dep = dep.trim();
-                    if (dep.isEmpty()) {
-                        continue;
-                    }
-                    final String[] parts = dep.split(":");
-                    addCurseForgeRelation(project, parts[0], parts[1]);
-                }
+                    task.apiToken = cfToken;
+                    task.disableVersionDetection();
+                    task.upload(gtnh.configuration.curseForgeProjectId, obfFile, artifact -> {
+                        if (changelogFile.exists()) {
+                            artifact.changelogType = "markdown";
+                            artifact.changelog = changelogFile;
+                        }
+                        artifact.releaseType = modVersion.endsWith("-pre") ? "beta" : "release";
+                        artifact.addGameVersion(gtnh.configuration.minecraftVersion, "Forge");
+                        artifact.addModLoader("Forge");
+
+                        if (!gtnh.configuration.curseForgeRelations.isEmpty()) {
+                            final String[] deps = gtnh.configuration.curseForgeRelations.split(";");
+                            for (String dep : deps) {
+                                dep = dep.trim();
+                                if (dep.isEmpty()) {
+                                    continue;
+                                }
+                                final String[] parts = dep.split(":");
+                                artifact.addRelation(parts[1], parts[0]);
+                            }
+                        }
+                        if (gtnh.configuration.usesMixins) {
+                            artifact.addRelation("unimixins", "requiredDependency");
+                        }
+
+                        for (final Object secondary : getSecondaryArtifacts(project, gtnh)) {
+                            @SuppressWarnings("unchecked")
+                            final File secondaryFile = ((TaskProvider<Jar>) secondary).get()
+                                .getArchiveFile()
+                                .get()
+                                .getAsFile();
+                            artifact.withAdditionalFile(secondaryFile);
+                        }
+                    });
+                });
+            if (cfToken != null) {
+                project.getTasks()
+                    .named(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)
+                    .configure(task -> task.dependsOn(publishCurseforge));
             }
-            if (gtnh.configuration.usesMixins) {
-                addCurseForgeRelation(project, "requiredDependency", "unimixins");
-            }
-            project.getTasks()
-                .named("curseforge")
-                .configure(t -> t.dependsOn("build"));
-            project.getTasks()
-                .named("publish")
-                .configure(t -> t.dependsOn("curseforge"));
         }
     }
 
@@ -217,41 +210,15 @@ public class PublishingModule implements GTNHModule {
         if (!VALID_MODRINTH_SCOPES.contains(scope)) {
             throw new IllegalArgumentException("Invalid modrinthh dependency scope: " + scope);
         }
-        switch (type) {
-            case "project":
-                dep = new ModDependency(name, scope);
-                break;
-            case "version":
-                dep = new VersionDependency(name, scope);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid modrinth dependency type: " + type);
-        }
+        dep = switch (type) {
+            case "project" -> new ModDependency(name, scope);
+            case "version" -> new VersionDependency(name, scope);
+            default -> throw new IllegalArgumentException("Invalid modrinth dependency type: " + type);
+        };
         final ModrinthExtension mr = project.getExtensions()
             .getByType(ModrinthExtension.class);
         mr.getDependencies()
             .add(dep);
-    }
-
-    private static final Set<String> VALID_CF_RELATIONS = ImmutableSet
-        .of("requiredDependency", "embeddedLibrary", "optionalDependency", "tool", "incompatible");
-
-    private static void addCurseForgeRelation(Project project, String type, String name) {
-        if (!VALID_CF_RELATIONS.contains(type)) {
-            throw new IllegalArgumentException("Invalid CurseForge relation type: " + type);
-        }
-        final CurseExtension curse = project.getExtensions()
-            .getByType(CurseExtension.class);
-        final CurseArtifact artifact = curse.getCurseProjects()
-            .iterator()
-            .next()
-            .getMainArtifact();
-        CurseRelation rel = artifact.getCurseRelations();
-        if (rel == null) {
-            rel = new CurseRelation();
-            artifact.setCurseRelations(rel);
-        }
-        rel.invokeMethod(type, new Object[] { name });
     }
 
     private static List<Object> getSecondaryArtifacts(Project project, GTNHGradlePlugin.GTNHExtension gtnh) {

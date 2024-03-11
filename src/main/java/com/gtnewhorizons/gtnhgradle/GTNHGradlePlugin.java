@@ -4,8 +4,8 @@
 package com.gtnewhorizons.gtnhgradle;
 
 import com.diffplug.blowdryer.Blowdryer;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
