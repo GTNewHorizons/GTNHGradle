@@ -45,3 +45,19 @@ Bulk of the testing is done in `functionalTest` which uses [Gradle TestKit](http
 4. Check the updated files for any obvious mistakes
 5. Commit
 
+## Disabling modules
+
+GTNHGradle uses some hidden [properties](src/main/java/com/gtnewhorizons/gtnhgradle/PropertiesConfiguration.java) to disable full modules of the plugin.
+Not every combination of toggles is supported, but here are a couple useful ones for non-GTNH projects:
+```properties
+
+# Disable git-based version detection, make sure to set project.version to a sensible value yourself
+gtnh.modules.gitVersion = false
+
+# Disable all GTNH code style checks (like Spotless autoformatting, CheckStyle rules, and any future additions)
+gtnh.modules.codeStyle = false
+
+# Disables lwjgl3ify-based utilities for working with and running with modern Java versions
+gtnh.modules.modernJava = false
+
+```
