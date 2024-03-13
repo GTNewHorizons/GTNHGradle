@@ -48,7 +48,7 @@ public abstract class UpdateDependenciesTask extends DefaultTask {
      * For dependency injection
      */
     @Inject
-    protected UpdateDependenciesTask() {
+    public UpdateDependenciesTask() {
         this.setGroup("GTNH Buildscript");
         this.setDescription("Updates dependencies under GTNH maven to the latest versions");
         // Ensure the task always runs
