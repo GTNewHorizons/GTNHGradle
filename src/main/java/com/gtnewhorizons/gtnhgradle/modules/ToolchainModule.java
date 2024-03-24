@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
@@ -15,6 +16,7 @@ import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.DependencySubstitutions;
 import org.gradle.api.artifacts.ExternalModuleDependency;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.ModuleVersionSelector;
@@ -218,6 +220,8 @@ public abstract class ToolchainModule implements GTNHModule {
             .getByType(MinecraftExtension.class);
         final MCPTasks mcpTasks = project.getExtensions()
             .getByType(MCPTasks.class);
+        final ModUtils modUtils = project.getExtensions()
+            .getByType(ModUtils.class);
 
         // Tag injection
         if (!gtnh.configuration.replaceGradleTokenInFile.isEmpty()) {
@@ -287,23 +291,37 @@ public abstract class ToolchainModule implements GTNHModule {
         minecraft.getGroupsToExcludeFromAutoReobfMapping()
             .addAll("com.diffplug", "com.diffplug.durian", "net.industrial-craft");
 
+        // Ensure IC2 gets deobfed by RFG
+        if (gtnh.configuration.useIC2FromCurseforge) {
+            modUtils.deobfuscate(UpdateableConstants.NEWEST_IC2_SPEC);
+        }
+
         // Custom reobfuscation auto-mappings
         project.getConfigurations()
             .configureEach(c -> {
-                c.getDependencies()
-                    .configureEach(dep -> {
-                        if (dep instanceof ExternalModuleDependency mdep) {
-                            if ("net.industrial-craft".equals(mdep.getGroup())
-                                && "industrialcraft-2".equals(mdep.getName())) {
-                                // https://www.curseforge.com/minecraft/mc-mods/industrial-craft/files/2353971
-                                project.getDependencies()
-                                    .add(
-                                        mcpTasks.getReobfJarConfiguration()
-                                            .getName(),
-                                        "curse.maven:ic2-242638:2353971");
+                if (gtnh.configuration.useIC2FromCurseforge) {
+                    final DependencySubstitutions ds = c.getResolutionStrategy()
+                        .getDependencySubstitution();
+                    ds.substitute(ds.module("net.industrial-craft:industrialcraft-2:2.2.828-experimental"))
+                        .using(ds.module(UpdateableConstants.NEWEST_IC2_SPEC))
+                        .withoutClassifier()
+                        .because("Use a much more reliable Maven repository for IC2");
+                } else {
+                    c.getDependencies()
+                        .configureEach(dep -> {
+                            if (dep instanceof ExternalModuleDependency mdep) {
+                                if ("net.industrial-craft".equals(mdep.getGroup())
+                                    && "industrialcraft-2".equals(mdep.getName())) {
+                                    // https://www.curseforge.com/minecraft/mc-mods/industrial-craft/files/2353971
+                                    project.getDependencies()
+                                        .add(
+                                            mcpTasks.getReobfJarConfiguration()
+                                                .getName(),
+                                            UpdateableConstants.NEWEST_IC2_SPEC);
+                                }
                             }
-                        }
-                    });
+                        });
+                }
                 final ObfuscationAttribute obfuscationAttr = c.getAttributes()
                     .getAttribute(ObfuscationAttribute.OBFUSCATION_ATTRIBUTE);
                 if (obfuscationAttr == null || !obfuscationAttr.getName()

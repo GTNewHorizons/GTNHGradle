@@ -108,6 +108,9 @@ public abstract class ModernJavaModule implements GTNHModule {
         if (!gtnh.configuration.modId.equals("hodgepodge")) {
             deps.add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
         }
+        deps.getConstraints()
+            .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_UNIMIXINS)
+            .because("Use latest UniMixins known to GTNHGradle.");
 
         final List<String> java17JvmArgs = new ArrayList<>(Arrays.asList(JAVA_17_ARGS));
         final List<String> hotswapJvmArgs = new ArrayList<>(Arrays.asList(HOTSWAP_JVM_ARGS));

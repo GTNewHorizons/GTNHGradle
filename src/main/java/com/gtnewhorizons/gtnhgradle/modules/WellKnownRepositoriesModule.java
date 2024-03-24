@@ -35,16 +35,6 @@ public class WellKnownRepositoriesModule implements GTNHModule {
             }));
             ec.filter(f -> { f.includeGroup("maven.modrinth"); });
         });
-        repos.maven(mvn -> {
-            mvn.setName("ic2");
-            mvn.setUrl(
-                modUtils.getLiveMirrorURL(10_000, "https://maven2.ic2.player.to/", "https://maven.ic2.player.to/"));
-            mvn.mavenContent(c -> { c.includeGroup("net.industrial-craft"); });
-            mvn.getMetadataSources()
-                .artifact();
-            mvn.getMetadataSources()
-                .mavenPom();
-        });
         // MMD maven often goes down with a broken certificate
         project.afterEvaluate(p -> {
             repos.maven(mvn -> {

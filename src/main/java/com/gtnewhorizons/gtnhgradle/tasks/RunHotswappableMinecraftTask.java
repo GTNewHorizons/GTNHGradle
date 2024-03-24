@@ -80,25 +80,15 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
                     enable -> enable ? (List<String>) project.property("hotswapJvmArgs") : Collections.emptyList()));
 
         this.classpath(project.property("java17PatchDependenciesCfg"));
-        if (side == Distribution.CLIENT) {
-            this.classpath(mcTasks.getLwjgl3Configuration());
-        }
-        // Use a raw provider instead of map to not create a dependency on the task
+        this.classpath(mcpTasks.getTaskPackageMcLauncher());
+        this.classpath(mcpTasks.getTaskPackagePatchedMc());
+        this.classpath(mcpTasks.getPatchedConfiguration());
         this.classpath(
-            project.provider(
-                () -> project.getTasks()
-                    .named(superTask, RunMinecraftTask.class)
-                    .get()
-                    .getClasspath()));
+            project.getTasks()
+                .named("jar"));
         this.classpath(project.property("java17DependenciesCfg"));
 
         super.setup(project);
-
-        this.setClasspath(
-            this.getClasspath()
-                .filter(
-                    file -> !file.getPath()
-                        .contains("2.9.4-nightly-20150209")));
 
         dependsOn(
             mcpTasks.getLauncherSources()
