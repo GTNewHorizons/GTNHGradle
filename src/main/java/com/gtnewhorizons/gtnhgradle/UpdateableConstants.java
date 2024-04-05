@@ -10,14 +10,14 @@ public class UpdateableConstants {
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
     @SuppressWarnings("unused") // Used via reflection
-    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.6";
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.7";
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
     public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.2";
 
     /** Latest version of UniMixins */
-    public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.16";
+    public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.17";
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
@@ -26,10 +26,10 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.2.10";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.0.0";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.0.2";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.4.35";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.4.40";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.3.2";
@@ -47,4 +47,7 @@ public class UpdateableConstants {
     /** Specifier for the latest GTNHGradle version to update to */
     // Only update once a new major change is made, ensure a backport to the previous major's updater is released first.
     public static final @NotNull String NEWEST_GTNHGRADLE_SPEC = "com.gtnewhorizons:gtnhgradle:1.+";
+
+    /** Latest Industrial Craft 2 version */
+    public static final @NotNull String NEWEST_IC2_SPEC = "curse.maven:ic2-242638:2353971";
 }

@@ -532,9 +532,21 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Adds the GTNH maven, CurseMaven, IC2/Player maven, and some more well-known 1.7.10 repositories.
+            Adds the GTNH maven, CurseMaven, Modrinth, and some more well-known 1.7.10 repositories.
             """)
     public boolean includeWellKnownRepositories = true;
+
+    /** See annotation */
+    @Prop(
+        name = "useIC2FromCurseforge",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        hidden = true,
+        docComment = """
+            Adds a dependency override rule to use RFG-deobfuscated https://www.curseforge.com/minecraft/mc-mods/industrial-craft/files/2353971 instead of net.industrial-craft:industrialcraft-2:2.2.828-experimental:dev
+            """)
+    public boolean useIC2FromCurseforge = true;
 
     /** See annotation */
     @Prop(
