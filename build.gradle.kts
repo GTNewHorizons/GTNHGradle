@@ -45,16 +45,16 @@ dependencies {
     // Project plugins
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
     api(pluginDep("com.palantir.git-version", "3.0.0"))
-    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.7"))
+    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.8"))
     api(pluginDep("org.jetbrains.kotlin.jvm", "1.8.0"))
     api(pluginDep("org.jetbrains.kotlin.kapt", "1.8.0"))
     api(pluginDep("com.google.devtools.ksp", "1.8.0-1.0.9"))
     api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
-    api(pluginDep("de.undercouch.download", "5.5.0"))
+    api(pluginDep("de.undercouch.download", "5.6.0"))
     api(pluginDep("com.github.gmazzo.buildconfig", "3.1.0")) // Unused, available for addon.gradle
     api(pluginDep("com.modrinth.minotaur", "2.8.7"))
-    api(pluginDep("net.darkhax.curseforgegradle", "1.1.18"))
+    api(pluginDep("net.darkhax.curseforgegradle", "1.1.23"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
