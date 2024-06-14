@@ -180,10 +180,9 @@ public class IdeIntegrationModule implements GTNHModule {
             run.setWorkingDirectory(
                 runClient.getWorkingDir()
                     .getAbsolutePath());
-            run.setProgramParameters(quotedJoin(runClient.calculateArgs(project)));
+            run.setProgramParameters(quotedJoin(runClient.calculateArgs()));
             run.setJvmArgs(
-                quotedJoin(runClient.calculateJvmArgs(project)) + ' '
-                    + quotedPropJoin(runClient.getSystemProperties()));
+                quotedJoin(runClient.calculateJvmArgs()) + ' ' + quotedPropJoin(runClient.getSystemProperties()));
         });
         final var ijServerRun = runs.register("Run Server (IJ Native)", Application.class, run -> {
             run.setMainClass("GradleStartServer");
@@ -196,10 +195,9 @@ public class IdeIntegrationModule implements GTNHModule {
             run.setWorkingDirectory(
                 runServer.getWorkingDir()
                     .getAbsolutePath());
-            run.setProgramParameters(quotedJoin(runServer.calculateArgs(project)));
+            run.setProgramParameters(quotedJoin(runServer.calculateArgs()));
             run.setJvmArgs(
-                quotedJoin(runServer.calculateJvmArgs(project)) + ' '
-                    + quotedPropJoin(runServer.getSystemProperties()));
+                quotedJoin(runServer.calculateJvmArgs()) + ' ' + quotedPropJoin(runServer.getSystemProperties()));
         });
 
         ideaExt.withIDEADir(ideaDir -> {
