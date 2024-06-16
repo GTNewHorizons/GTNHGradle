@@ -61,3 +61,5 @@ gtnh.modules.codeStyle = false
 gtnh.modules.modernJava = false
 
 ```
+
+Run `./gradlew propertiesHelp` to list all the available properties along with their descriptions.

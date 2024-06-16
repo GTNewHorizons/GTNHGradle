@@ -61,6 +61,12 @@ public class UtilityModule implements GTNHModule {
                 });
         });
 
+        tasks.register("propertiesHelp", t -> {
+            t.setGroup("GTNH Buildscript");
+            t.setDescription("Prints descriptions for all the settings available in gradle.properties");
+            t.doLast(inner -> { PropertiesConfiguration.printPropertyDocs(System.out); });
+        });
+
         tasks.register("deobfParams", t -> {
             t.setGroup("GTNH Buildscript");
             t.setDescription("Rename all obfuscated parameter names inherited from Minecraft classes");

@@ -5,6 +5,7 @@ import org.gradle.api.initialization.Settings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Reader;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -924,6 +925,48 @@ public final class PropertiesConfiguration {
                 }
                 counter.incrementAndGet();
             });
+    }
+
+    /**
+     * Prints documentation for all the available properties
+     *
+     * @param out The stream to write to.
+     */
+    public static void printPropertyDocs(final PrintStream out) {
+        out.println("GTNHGradle supports various Gradle properties to change its behaviour:");
+        final Field[] fields = PropertiesConfiguration.class.getDeclaredFields();
+        final PropertiesConfiguration defaultCfg = new PropertiesConfiguration();
+        try {
+            for (final Field field : fields) {
+                final Prop prop = field.getAnnotation(Prop.class);
+                if (prop == null) {
+                    continue;
+                }
+                final String key = prop.name();
+                Object defaultValue = field.get(defaultCfg);
+                if (defaultValue instanceof String) {
+                    defaultValue = '"' + (String) defaultValue + '"';
+                } else if (defaultValue == null) {
+                    defaultValue = "null";
+                }
+                out.println();
+                out.print("Key: ");
+                out.println(key);
+                out.printf(
+                    "Affects settings.gradle: %s  Required: %s  Default: %s%n",
+                    prop.isSettings(),
+                    prop.required(),
+                    defaultValue);
+                out.println("Description: ");
+                String docOut = "\n" + prop.docComment()
+                    .trim();
+                // indent everything two spaces
+                docOut = docOut.replace("\n", "\n  ");
+                out.println(docOut);
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /** Property metadata */
