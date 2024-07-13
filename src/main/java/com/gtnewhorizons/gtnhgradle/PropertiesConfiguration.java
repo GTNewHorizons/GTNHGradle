@@ -528,14 +528,32 @@ public final class PropertiesConfiguration {
 
     /** See annotation */
     @Prop(
+        name = "extraRepositories",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            Adds extra maven repositories by default. This is a more configurable replacement for includeWellKnownRepositories
+            If wellKnownRepositories is enabled, this setting will not be applied.
+            The value should be a space separated list of strings, available options are:
+            CurseMaven (https://cursemaven.com)
+            Modrinth (https://api.modrinth.com/maven)
+            MMD (https://maven/mcmoddev.com)
+            """)
+    public @NotNull String extraRepositories = "cursemaven modrinth mmd";
+
+    /** See annotation */
+    @Prop(
         name = "includeWellKnownRepositories",
         isSettings = false,
         preferPopulated = true,
         required = false,
         docComment = """
+            [DEPRECATED]
+            Should prefer using the extraRepositories configuation. If this is enabled, extraRepositories will do nothing.
             Adds the GTNH maven, CurseMaven, Modrinth, and some more well-known 1.7.10 repositories.
             """)
-    public boolean includeWellKnownRepositories = true;
+    public boolean includeWellKnownRepositories = false;
 
     /** See annotation */
     @Prop(

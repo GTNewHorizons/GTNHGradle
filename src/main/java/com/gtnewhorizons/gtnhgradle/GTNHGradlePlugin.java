@@ -8,6 +8,7 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
+import com.gtnewhorizons.gtnhgradle.modules.ExtraRepositoriesModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
 import com.gtnewhorizons.gtnhgradle.modules.IdeIntegrationModule;
 import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
@@ -110,6 +111,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             UtilityModule.class,
             StandardScriptsModules.AddonScriptModule.class,
             OldGradleEmulationModule.class,
+            ExtraRepositoriesModule.class,
             WellKnownRepositoriesModule.class,
             StandardScriptsModules.RepositoriesScriptModule.class,
             MixinModule.class,
