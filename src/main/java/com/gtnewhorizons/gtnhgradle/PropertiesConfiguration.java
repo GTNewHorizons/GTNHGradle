@@ -533,9 +533,23 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Adds the GTNH maven, CurseMaven, Modrinth, and some more well-known 1.7.10 repositories.
+            Adds CurseMaven, Modrinth, and some more well-known 1.7.10 repositories.
             """)
     public boolean includeWellKnownRepositories = true;
+
+    /** See annotation */
+    @Prop(
+        name = "excludeWellKnownRepositories",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            A list of repositories to exclude from the includeWellKnownRepositories setting. Should be a space separated
+            list of strings, with the acceptable keys being(case does not matter):
+            cursemaven
+            modrinth
+            """)
+    public @NotNull String excludeWellKnownRepositories = "";
 
     /** See annotation */
     @Prop(

@@ -8,6 +8,9 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.List;
+
 /** Provides various well-known repositories to the buildscript */
 public class WellKnownRepositoriesModule implements GTNHModule {
 
@@ -21,26 +24,29 @@ public class WellKnownRepositoriesModule implements GTNHModule {
         final RepositoryHandler repos = project.getRepositories();
         final ModUtils modUtils = project.getExtensions()
             .getByType(ModUtils.class);
-        repos.exclusiveContent(ec -> {
-            ec.forRepositories(repos.maven(mvn -> {
-                mvn.setName("CurseMaven");
-                mvn.setUrl("https://cursemaven.com");
-            }));
-            ec.filter(f -> { f.includeGroup("curse.maven"); });
-        });
-        repos.exclusiveContent(ec -> {
-            ec.forRepositories(repos.maven(mvn -> {
-                mvn.setName("Modrinth");
-                mvn.setUrl("https://api.modrinth.com/maven");
-            }));
-            ec.filter(f -> { f.includeGroup("maven.modrinth"); });
-        });
-        // MMD maven often goes down with a broken certificate
-        project.afterEvaluate(p -> {
-            repos.maven(mvn -> {
-                mvn.setName("MMD Maven");
-                mvn.setUrl("https://maven.mcmoddev.com/");
+
+        List<String> excludes = Arrays.asList(
+            gtnh.configuration.excludeWellKnownRepositories.toUpperCase()
+                .split(" "));
+
+        if (!excludes.contains("CURSEMAVEN")) {
+            repos.exclusiveContent(ec -> {
+                ec.forRepositories(repos.maven(mvn -> {
+                    mvn.setName("CurseMaven");
+                    mvn.setUrl("https://cursemaven.com");
+                }));
+                ec.filter(f -> { f.includeGroup("curse.maven"); });
             });
-        });
+        }
+
+        if (!excludes.contains("MODRINTH")) {
+            repos.exclusiveContent(ec -> {
+                ec.forRepositories(repos.maven(mvn -> {
+                    mvn.setName("Modrinth");
+                    mvn.setUrl("https://api.modrinth.com/maven");
+                }));
+                ec.filter(f -> { f.includeGroup("maven.modrinth"); });
+            });
+        }
     }
 }
