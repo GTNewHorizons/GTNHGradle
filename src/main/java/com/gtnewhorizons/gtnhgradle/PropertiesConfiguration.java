@@ -535,7 +535,7 @@ public final class PropertiesConfiguration {
         docComment = """
             Adds CurseMaven, Modrinth, and some more well-known 1.7.10 repositories.
             """)
-    public boolean includeWellKnownRepositories = false;
+    public boolean includeWellKnownRepositories = true;
 
     /** See annotation */
     @Prop(
