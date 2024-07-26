@@ -64,10 +64,14 @@ public class StructureCheckModule implements GTNHModule {
             }
             final String mixinPackagePath = gtnh.configuration.mixinsPackage.replaceAll("\\.", "/");
             final String mixinPluginPath = gtnh.configuration.mixinPlugin.replaceAll("\\.", "/");
+            String mixinSourceSet = gtnh.configuration.separateMixinSourceSet.trim();
+            if (mixinSourceSet.isEmpty()) {
+                mixinSourceSet = "main";
+            }
 
-            targetPackageJava = GTNHConstants.JAVA_SOURCES_DIR + modGroupPath + "/" + mixinPackagePath;
-            targetPackageScala = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath + "/" + mixinPackagePath;
-            targetPackageKotlin = GTNHConstants.KOTLIN_SOURCES_DIR + modGroupPath + "/" + mixinPackagePath;
+            targetPackageJava = "src/" + mixinSourceSet + "/java/" + modGroupPath + "/" + mixinPackagePath;
+            targetPackageScala = "src/" + mixinSourceSet + "/scala/" + modGroupPath + "/" + mixinPackagePath;
+            targetPackageKotlin = "src/" + mixinSourceSet + "/kotlin/" + modGroupPath + "/" + mixinPackagePath;
             if (!(project.file(targetPackageJava)
                 .exists()
                 || project.file(targetPackageScala)

@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
@@ -10,10 +11,15 @@ import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySubstitutions;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.NotNull;
 
 /** Easy Unimixins support. */
@@ -48,22 +54,76 @@ public class MixinModule implements GTNHModule {
             .set("mixinProviderSpec", mixinProviderSpec);
 
         final String mixingConfigRefMap = "mixins." + gtnh.configuration.modId + ".refmap.json";
+        final String mixinSourceSetName = gtnh.configuration.separateMixinSourceSet.trim();
+        final SourceSetContainer sourceSets = project.getExtensions()
+            .getByType(JavaPluginExtension.class)
+            .getSourceSets();
+        final SourceSet mixinSourceSet;
+        final SourceSet mainSourceSet = sourceSets.getByName("main");
+
+        if (!mixinSourceSetName.isEmpty()) {
+            mixinSourceSet = sourceSets.create(mixinSourceSetName);
+            ConfigurableFileCollection classpath = project.getObjects()
+                .fileCollection();
+            classpath.from(mixinSourceSet.getCompileClasspath());
+            classpath.from(mainSourceSet.getCompileClasspath());
+            classpath.from(mainSourceSet.getOutput());
+            mixinSourceSet.setCompileClasspath(classpath);
+            classpath = project.getObjects()
+                .fileCollection();
+            classpath.from(mixinSourceSet.getRuntimeClasspath());
+            classpath.from(mainSourceSet.getRuntimeClasspath());
+            mixinSourceSet.setRuntimeClasspath(classpath);
+            classpath = project.getObjects()
+                .fileCollection();
+            classpath.from(mixinSourceSet.getAnnotationProcessorPath());
+            classpath.from(mainSourceSet.getAnnotationProcessorPath());
+            mixinSourceSet.setAnnotationProcessorPath(classpath);
+
+            project.getTasks()
+                .named(JavaPlugin.JAR_TASK_NAME, Jar.class)
+                .configure(jar -> { jar.from(mixinSourceSet.getOutput()); });
+            if (!gtnh.configuration.noPublishedSources) {
+                project.getTasks()
+                    .named("sourcesJar", Jar.class)
+                    .configure(jar -> {
+                        jar.from(mixinSourceSet.getAllSource());
+                        jar.from(mixinSourceSet.getResources());
+                    });
+            }
+            if (gtnh.configuration.usesShadowedDependencies) {
+                project.getTasks()
+                    .named("shadowJar", ShadowJar.class)
+                    .configure(jar -> { jar.from(mixinSourceSet.getOutput()); });
+            }
+        } else {
+            mixinSourceSet = mainSourceSet;
+        }
+        modUtils.mixinSourceSet.set(mixinSourceSet);
 
         final DependencyHandler deps = project.getDependencies();
         if (gtnh.configuration.usesMixins) {
-            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "org.ow2.asm:asm-debug-all:5.0.3");
-            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.guava:guava:24.1.1-jre");
-            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.code.gson:gson:2.8.6");
-            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, mixinProviderSpec);
+            final String apConfiguration = mixinSourceSet.getAnnotationProcessorConfigurationName();
+            deps.add(apConfiguration, "org.ow2.asm:asm-debug-all:5.0.3");
+            deps.add(apConfiguration, "com.google.guava:guava:24.1.1-jre");
+            deps.add(apConfiguration, "com.google.code.gson:gson:2.8.6");
+            deps.add(apConfiguration, mixinProviderSpec);
             if (gtnh.configuration.usesMixinDebug) {
                 deps.add("runtimeOnlyNonPublishable", "org.jetbrains:intellij-fernflower:1.2.1.16");
             }
+            // Give both the mixin and main source set Mixin API access
             deps.add(
                 JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
                 modUtils.enableMixins(mixinProviderSpec, mixingConfigRefMap));
 
             project.getPluginManager()
-                .withPlugin("org.jetbrains.kotlin.kapt", p -> { deps.add("kapt", mixinProviderSpec); });
+                .withPlugin("org.jetbrains.kotlin.kapt", p -> {
+                    if (!mixinSourceSet.getName()
+                        .equals("main")) {
+                        throw new IllegalArgumentException("Non-main source sets not supported for Kotlin mixins");
+                    }
+                    deps.add("kapt", mixinProviderSpec);
+                });
         } else if (gtnh.configuration.forceEnableMixins) {
             deps.add("runtimeOnlyNonPublishable", mixinProviderSpec);
         }
@@ -111,20 +171,16 @@ public class MixinModule implements GTNHModule {
                 t.getMixinPlugin()
                     .set(gtnh.configuration.mixinPlugin);
                 t.getOutputFile()
-                    .set(project.file("src/main/resources/mixins." + gtnh.configuration.modId + ".json"));
+                    .set(
+                        project.file(
+                            "src/" + mixinSourceSet.getName()
+                                + "/resources/mixins."
+                                + gtnh.configuration.modId
+                                + ".json"));
             });
 
         if (gtnh.configuration.usesMixins) {
-            tasks.named("processResources")
-                .configure(t -> t.dependsOn(genTask, "compileJava"));
-            project.getPluginManager()
-                .withPlugin(
-                    "scala",
-                    _plugin -> {
-                        tasks.named("processResources")
-                            .configure(t -> t.dependsOn("compileScala"));
-                    });
-            tasks.named("compileJava", JavaCompile.class)
+            tasks.named(mixinSourceSet.getCompileJavaTaskName(), JavaCompile.class)
                 .configure(jc -> {
                     // Elan: from what I understand they are just some linter configs so you get some warning on how to
                     // properly code
