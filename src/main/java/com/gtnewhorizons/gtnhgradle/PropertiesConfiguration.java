@@ -440,6 +440,19 @@ public final class PropertiesConfiguration {
     public boolean usesMixins = false;
 
     /** See annotation */
+    @Prop(
+        name = "separateMixinSourceSet",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            Set to a non-empty string to configure mixins in a separate source set under src/VALUE, instead of src/main.
+            This can speed up compile times thanks to not running the mixin annotation processor on all input sources.
+            Mixin classes will have access to "main" classes, but not the other way around.
+            """)
+    public String separateMixinSourceSet = "";
+
+    /** See annotation */
     @Prop(name = "usesMixinDebug", isSettings = false, preferPopulated = true, required = false, docComment = """
         Adds some debug arguments like verbose output and class export.
         """)
