@@ -7,6 +7,7 @@ import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.RunHotswappableMinecraftTask;
 import com.gtnewhorizons.gtnhgradle.tasks.SetupHotswapAgentTask;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.retrofuturagradle.util.Distribution;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -106,7 +107,11 @@ public abstract class ModernJavaModule implements GTNHModule {
                     .setTransitive(false);
         }
         if (!gtnh.configuration.modId.equals("hodgepodge")) {
-            deps.add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
+            final ModuleDependency hodgepodge = (ModuleDependency) deps
+                .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
+            if (gtnh.configuration.modId.equals("gtnhlib")) {
+                hodgepodge.exclude(ImmutableMap.of("module", "GTNHLib"));
+            }
         }
         deps.getConstraints()
             .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_UNIMIXINS)
