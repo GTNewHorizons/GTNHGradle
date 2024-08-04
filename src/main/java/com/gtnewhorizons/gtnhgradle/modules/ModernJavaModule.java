@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /** Support module for modern Java runs via lwjgl3ify */
@@ -106,7 +107,16 @@ public abstract class ModernJavaModule implements GTNHModule {
                     .setTransitive(false);
         }
         if (!gtnh.configuration.modId.equals("hodgepodge")) {
-            deps.add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
+            final ModuleDependency hodgepodge = (ModuleDependency) deps
+                .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
+            if (gtnh.configuration.modId.equals("gtnhlib")) {
+                hodgepodge.exclude(new HashMap<>() {
+
+                    {
+                        put("module", "GTNHLib");
+                    }
+                });
+            }
         }
         deps.getConstraints()
             .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_UNIMIXINS)
