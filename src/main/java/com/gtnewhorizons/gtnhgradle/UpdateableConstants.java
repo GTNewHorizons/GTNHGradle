@@ -29,7 +29,7 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.1";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.5.38";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.5.57";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.3.3";
