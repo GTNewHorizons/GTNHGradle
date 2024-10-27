@@ -46,9 +46,9 @@ dependencies {
     api(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
     api(pluginDep("com.palantir.git-version", "3.0.0"))
     api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.8"))
-    api(pluginDep("org.jetbrains.kotlin.jvm", "1.8.0"))
-    api(pluginDep("org.jetbrains.kotlin.kapt", "1.8.0"))
-    api(pluginDep("com.google.devtools.ksp", "1.8.0-1.0.9"))
+    api(pluginDep("org.jetbrains.kotlin.jvm", "2.0.10"))
+    api(pluginDep("org.jetbrains.kotlin.kapt", "2.0.10"))
+    api(pluginDep("com.google.devtools.ksp", "2.0.10-1.0.24"))
     api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
     api(pluginDep("io.github.goooler.shadow", "8.1.7"))
     api(pluginDep("de.undercouch.download", "5.6.0"))
