@@ -84,7 +84,10 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
-        docComment = "Whether to automatically set the version based on the VERSION environment variable or the current git status.")
+        docComment = """
+            Whether to automatically set the version based on the VERSION environment variable or the current git status.
+            If not used, make sure to set project.ext.modVersion to a String with a correct version number during project evaluation.
+            """)
     public boolean moduleGitVersion = true;
 
     /** See annotation */
