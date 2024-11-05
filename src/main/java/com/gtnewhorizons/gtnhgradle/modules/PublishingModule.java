@@ -15,6 +15,7 @@ import net.darkhax.curseforgegradle.CurseForgeGradlePlugin;
 import net.darkhax.curseforgegradle.TaskPublishCurseForge;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.plugins.PublishingPlugin;
@@ -45,8 +46,9 @@ public class PublishingModule implements GTNHModule {
 
         final ExtraPropertiesExtension ext = project.getExtensions()
             .getExtraProperties();
-        final String modVersion = Objects.requireNonNull(ext.get(GTNHConstants.MOD_VERSION_PROPERTY))
-            .toString();
+        final Provider<String> modVersion = project.provider(
+            () -> Objects.requireNonNull(ext.get(GTNHConstants.MOD_VERSION_PROPERTY))
+                .toString());
 
         // Maven
         publishing.getPublications()
@@ -65,7 +67,8 @@ public class PublishingModule implements GTNHModule {
                         project.getGroup()
                             .toString()));
                 mvn.setArtifactId(ObjectUtils.firstNonNull(System.getenv("ARTIFACT_ID"), project.getName()));
-                mvn.setVersion(ObjectUtils.firstNonNull(System.getenv("RELEASE_VERSION"), modVersion));
+                project.afterEvaluate(
+                    _p -> mvn.setVersion(ObjectUtils.firstNonNull(System.getenv("RELEASE_VERSION"), modVersion.get())));
             });
         final String mavenUser = System.getenv("MAVEN_USER");
         final String mavenPass = System.getenv("MAVEN_PASSWORD");
@@ -100,7 +103,7 @@ public class PublishingModule implements GTNHModule {
             mr.getVersionNumber()
                 .set(modVersion);
             mr.getVersionType()
-                .set(modVersion.endsWith("-pre") ? "beta" : "release");
+                .set(modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release"));
             if (changelogFile.exists()) {
                 final String contents = new String(Files.readAllBytes(changelogFile.toPath()), StandardCharsets.UTF_8);
                 mr.getChangelog()
@@ -165,7 +168,7 @@ public class PublishingModule implements GTNHModule {
                             artifact.changelogType = "markdown";
                             artifact.changelog = changelogFile;
                         }
-                        artifact.releaseType = modVersion.endsWith("-pre") ? "beta" : "release";
+                        artifact.releaseType = modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release");
                         artifact.addGameVersion(gtnh.configuration.minecraftVersion, "Forge");
                         artifact.addModLoader("Forge");
 

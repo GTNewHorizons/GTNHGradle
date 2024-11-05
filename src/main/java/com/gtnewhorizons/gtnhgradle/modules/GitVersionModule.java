@@ -11,10 +11,9 @@ import com.palantir.gradle.gitversion.GitVersionPlugin;
 import com.palantir.gradle.gitversion.VersionDetails;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 /**
@@ -31,19 +30,7 @@ public class GitVersionModule implements GTNHModule {
 
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) {
-        final Path projectDir = gtnh.getProjectLayout()
-            .getProjectDirectory()
-            .getAsFile()
-            .toPath();
         String versionOverride = System.getenv("VERSION");
-        // In submodules, .git is a file pointing to the real git dir
-        final boolean isAGitRepo = Files.exists(projectDir.resolve(".git"));
-
-        if (!isAGitRepo && versionOverride == null) {
-            gtnh.logger.error(
-                "Project is not a git repository, and no VERSION override was set. Either initialize a git repo, set a VERSION environment variable override, or disable the gitVersion module.");
-            throw new IllegalStateException("Not a git repo, and no VERSION set.");
-        }
 
         // Pulls version first from the VERSION env and then git tag
         String identifiedVersion;
@@ -81,19 +68,27 @@ public class GitVersionModule implements GTNHModule {
             } else {
                 identifiedVersion = versionOverride;
             }
-        } catch (Exception ignored) {
-            gtnh.logger.error("""
-                This mod must be version controlled by Git AND the repository must provide at least one tag,
-                or the VERSION override must be set! (Do NOT download from GitHub using the ZIP option, instead
-                clone the repository, see https://gtnh.miraheze.org/wiki/Development for details.
-                """);
+        } catch (Exception underlyingError) {
+            gtnh.logger.debug("Could not use the Git version source", underlyingError);
+            gtnh.logger.error(
+                """
+                    This mod must be version controlled by Git AND the repository must provide at least one Git tag,
+                    or the VERSION override must be set! (Do NOT download from GitHub using the ZIP option, instead
+                    clone the repository, see https://gtnh.miraheze.org/wiki/Development for details.
+
+                    If you don't want Git-based versioning, you can also replace it with a custom mechanism by setting
+                    gtnh.modules.gitVersion = false
+                    in your project's gradle.properties file, and populating project.ext.modVersion with a valid string in your buildscript.
+                    """);
             versionOverride = "NO-GIT-TAG-SET";
             identifiedVersion = versionOverride;
         }
         project.setVersion(identifiedVersion);
-        project.getExtensions()
-            .getExtraProperties()
-            .set(GTNHConstants.MOD_VERSION_PROPERTY, identifiedVersion);
+        ExtraPropertiesExtension extraProps = project.getExtensions()
+            .getExtraProperties();
+        if (!extraProps.has(GTNHConstants.MOD_VERSION_PROPERTY)) {
+            extraProps.set(GTNHConstants.MOD_VERSION_PROPERTY, identifiedVersion);
+        }
 
         if (identifiedVersion.equals(versionOverride)) {
             gtnh.logger.warn("Version override set to {}!", identifiedVersion);

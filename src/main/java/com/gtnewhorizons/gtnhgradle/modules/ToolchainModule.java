@@ -24,6 +24,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.java.archives.Manifest;
 import org.gradle.api.plugins.BasePluginExtension;
+import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.MapProperty;
@@ -264,14 +265,15 @@ public abstract class ToolchainModule implements GTNHModule {
             }
         }
         if (!gtnh.configuration.gradleTokenVersion.isEmpty()) {
+            ExtraPropertiesExtension extraProps = project.getExtensions()
+                .getExtraProperties();
             minecraft.getInjectedTags()
                 .put(
                     gtnh.configuration.gradleTokenVersion,
-                    Objects.requireNonNull(
-                        project.getExtensions()
-                            .getExtraProperties()
-                            .get(GTNHConstants.MOD_VERSION_PROPERTY))
-                        .toString());
+                    project.getProviders()
+                        .provider(
+                            () -> Objects.requireNonNull(extraProps.get(GTNHConstants.MOD_VERSION_PROPERTY))
+                                .toString()));
         }
 
         // Other assorted settings
