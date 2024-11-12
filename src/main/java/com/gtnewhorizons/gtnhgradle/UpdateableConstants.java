@@ -20,7 +20,7 @@ public class UpdateableConstants {
     public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.18";
 
     /** Latest version of MixinBooter for 1.12.2 */
-    public static final String NEWEST_MIXINBOOTER = "zone.rong:mixinbooter:9.1";
+    public static final String NEWEST_MIXINBOOTER = "zone.rong:mixinbooter:9.3";
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
@@ -31,7 +31,7 @@ public class UpdateableConstants {
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
     public static final @NotNull String NEWEST_LWJGL3IFY_1710 = "com.github.GTNewHorizons:lwjgl3ify:2.1.4";
     /** Latest version of lwjgl3ify for modern Java support on 1.12 */
-    public static final @NotNull String NEWEST_LWJGL3IFY_1122 = "io.github.twilightflower:lwjgl3ify:1.0.0";
+    public static final @NotNull String NEWEST_LWJGL3IFY_1122 = "io.github.twilightflower:lwjgl3ify:1.0.1";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.5.74";
