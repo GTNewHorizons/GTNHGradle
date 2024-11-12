@@ -45,6 +45,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -96,6 +98,18 @@ public abstract class ToolchainModule implements GTNHModule {
                 c.snapshotsOnly();
                 c.includeGroup("org.lwjgl");
             });
+        });
+        repos.maven(mvn -> {
+            mvn.setName("Cleanroom Maven");
+            mvn.setUrl("https://maven.cleanroommc.com");
+        });
+        repos.maven(mvn -> {
+            mvn.setName("GTCEu Maven");
+            mvn.setUrl("https://maven.gtceu.com");
+        });
+        repos.maven(mvn -> {
+            mvn.setName("BlameJared Maven");
+            mvn.setUrl("https://maven.blamejared.com/");
         });
 
         // Provide a runtimeOnlyNonPublishable configuration
@@ -224,6 +238,8 @@ public abstract class ToolchainModule implements GTNHModule {
         final ModUtils modUtils = project.getExtensions()
             .getByType(ModUtils.class);
 
+        minecraft.getMcVersion().set(gtnh.configuration.minecraftVersion);
+
         // Tag injection
         if (!gtnh.configuration.replaceGradleTokenInFile.isEmpty()) {
             for (final String f : gtnh.configuration.replaceGradleTokenInFile.split(",")) {
@@ -351,10 +367,10 @@ public abstract class ToolchainModule implements GTNHModule {
                 .provider(
                     () -> Objects.requireNonNull(project.getVersion())
                         .toString());
-            props.put("minecraftVersion", minecraft.getMcVersion());
+            props.put(gtnh.configuration.minecraftVersion.equals("1.7.10") ? "minecraftVersion" : "mcversion", minecraft.getMcVersion());
             props.put("modId", gtnh.configuration.modId);
             props.put("modName", gtnh.configuration.modName);
-            props.put("modVersion", modVersion);
+            props.put(gtnh.configuration.minecraftVersion.equals("1.7.10") ? "modVersion" : "version", modVersion);
         }
 
         tasks.named("processResources", ProcessResources.class)
@@ -385,14 +401,22 @@ public abstract class ToolchainModule implements GTNHModule {
                 manifest.attributes(ImmutableMap.of("FMLCorePlugin", props.modGroup + "." + props.coreModClass));
             }
             if (props.usesMixins) {
-                manifest.attributes(
-                    ImmutableMap.of(
-                        "TweakClass",
-                        "org.spongepowered.asm.launch.MixinTweaker",
-                        "MixinConfigs",
-                        "mixins." + props.modId + ".json",
-                        "ForceLoadAsMod",
-                        !props.containsMixinsAndOrCoreModOnly));
+                final Path output =  project.file(
+                        "src/" + modUtils.mixinSourceSet.get().getName()
+                            + "/resources/mixins."
+                            + gtnh.configuration.modId
+                            + ".json")
+                    .toPath();
+                if (Files.exists(output)) {
+                    manifest.attributes(
+                        ImmutableMap.of(
+                            "TweakClass",
+                            "org.spongepowered.asm.launch.MixinTweaker",
+                            "MixinConfigs",
+                            "mixins." + props.modId + ".json",
+                            "ForceLoadAsMod",
+                            !props.containsMixinsAndOrCoreModOnly));
+                }
             }
         });
         project.getExtensions()

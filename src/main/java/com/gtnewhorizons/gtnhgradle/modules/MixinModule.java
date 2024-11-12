@@ -47,8 +47,18 @@ public class MixinModule implements GTNHModule {
             }
         }
 
-        final String mixinProviderSpecNoClassifer = UpdateableConstants.NEWEST_UNIMIXINS;
-        final String mixinProviderSpec = mixinProviderSpecNoClassifer + ":dev";
+        String mixinProviderSpecNoClassifer;
+        String mixinProviderSpec;
+        if (gtnh.configuration.minecraftVersion.equals("1.7.10")) {
+            mixinProviderSpecNoClassifer = UpdateableConstants.NEWEST_UNIMIXINS;
+            mixinProviderSpec = mixinProviderSpecNoClassifer + ":dev";
+        } else if (gtnh.configuration.minecraftVersion.equals("1.12.2")) {
+            mixinProviderSpecNoClassifer = UpdateableConstants.NEWEST_MIXINBOOTER;
+            mixinProviderSpec = mixinProviderSpecNoClassifer;
+        } else {
+            throw new IllegalArgumentException("Unsupported Minecraft Version: " + gtnh.configuration.minecraftVersion);
+        }
+
         project.getExtensions()
             .getExtraProperties()
             .set("mixinProviderSpec", mixinProviderSpec);

@@ -97,6 +97,7 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
             mcpTasks.getTaskPackagePatchedMc(),
             "jar");
         getMainClass().set((side == Distribution.CLIENT) ? "GradleStart" : "GradleStartServer");
+        getMcVersion().set(gtnh.configuration.minecraftVersion);
         getUsername().set(minecraft.getUsername());
         getUserUUID().set(minecraft.getUserUUID());
         if (side == Distribution.DEDICATED_SERVER) {
@@ -108,6 +109,14 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         systemProperty("gradlestart.bouncerServer", "com.gtnewhorizons.retrofuturabootstrap.Main");
 
         if (gtnh.configuration.usesMixins) {
+            String mixinSpec;
+            if (gtnh.configuration.minecraftVersion.equals("1.7.10")) {
+                mixinSpec = UpdateableConstants.NEWEST_UNIMIXINS;
+            } else if (gtnh.configuration.minecraftVersion.equals("1.12.2")) {
+                mixinSpec = UpdateableConstants.NEWEST_MIXINBOOTER;
+            } else {
+                throw new IllegalArgumentException("Unsupported Minecraft Version: " + gtnh.configuration.minecraftVersion);
+            }
             this.getExtraJvmArgs()
                 .addAll(project.provider(() -> {
                     final Configuration mixinCfg = project.getConfigurations()

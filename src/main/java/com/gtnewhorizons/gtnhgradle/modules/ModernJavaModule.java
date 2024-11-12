@@ -100,22 +100,38 @@ public abstract class ModernJavaModule implements GTNHModule {
         });
         ext.set("java17PatchDependenciesCfg", java17PatchDependenciesCfg);
 
+        String mixinSpec = "";
+        String lwjgl3ifySpec = "";
+
+        if (gtnh.configuration.minecraftVersion.equals("1.7.10")) {
+            mixinSpec = UpdateableConstants.NEWEST_UNIMIXINS;
+            lwjgl3ifySpec = UpdateableConstants.NEWEST_LWJGL3IFY_1710;
+        } else if (gtnh.configuration.minecraftVersion.equals("1.12.2")) {
+            mixinSpec = UpdateableConstants.NEWEST_MIXINBOOTER;
+            lwjgl3ifySpec = UpdateableConstants.NEWEST_LWJGL3IFY_1122;
+        } else {
+            throw new IllegalArgumentException("Unsupported Minecraft Version: " + gtnh.configuration.minecraftVersion);
+        }
+
         if (!gtnh.configuration.modId.equals("lwjgl3ify")) {
-            deps.add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY);
+            deps.add(java17DependenciesCfg.getName(), lwjgl3ifySpec);
             ((ModuleDependency) deps
-                .add(java17PatchDependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY + ":forgePatches"))
+                .add(java17PatchDependenciesCfg.getName(), lwjgl3ifySpec + ":forgePatches"))
                     .setTransitive(false);
         }
-        if (!gtnh.configuration.modId.equals("hodgepodge")) {
+
+        if (!gtnh.configuration.modId.equals("hodgepodge") && gtnh.configuration.minecraftVersion.equals("1.7.10")) {
             final ModuleDependency hodgepodge = (ModuleDependency) deps
                 .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
             if (gtnh.configuration.modId.equals("gtnhlib")) {
                 hodgepodge.exclude(ImmutableMap.of("module", "GTNHLib"));
             }
         }
+
         deps.getConstraints()
-            .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_UNIMIXINS)
-            .because("Use latest UniMixins known to GTNHGradle.");
+            .add(java17DependenciesCfg.getName(), mixinSpec)
+            .because("Use latest UniMixins or MixinBooter known to GTNHGradle.");
+
 
         final List<String> java17JvmArgs = new ArrayList<>(Arrays.asList(JAVA_17_ARGS));
         final List<String> hotswapJvmArgs = new ArrayList<>(Arrays.asList(HOTSWAP_JVM_ARGS));
