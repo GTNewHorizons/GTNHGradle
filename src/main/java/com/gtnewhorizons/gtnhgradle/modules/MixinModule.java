@@ -49,10 +49,10 @@ public class MixinModule implements GTNHModule {
 
         String mixinProviderSpecNoClassifer;
         String mixinProviderSpec;
-        if (gtnh.configuration.minecraftVersion.equals("1.7.10")) {
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC) {
             mixinProviderSpecNoClassifer = UpdateableConstants.NEWEST_UNIMIXINS;
             mixinProviderSpec = mixinProviderSpecNoClassifer + ":dev";
-        } else if (gtnh.configuration.minecraftVersion.equals("1.12.2")) {
+        } else if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.VINTAGE) {
             mixinProviderSpecNoClassifer = UpdateableConstants.NEWEST_MIXINBOOTER;
             mixinProviderSpec = mixinProviderSpecNoClassifer;
         } else {

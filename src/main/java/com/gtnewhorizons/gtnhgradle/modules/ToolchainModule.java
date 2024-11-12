@@ -99,18 +99,17 @@ public abstract class ToolchainModule implements GTNHModule {
                 c.includeGroup("org.lwjgl");
             });
         });
-        repos.maven(mvn -> {
-            mvn.setName("Cleanroom Maven");
-            mvn.setUrl("https://maven.cleanroommc.com");
-        });
-        repos.maven(mvn -> {
-            mvn.setName("GTCEu Maven");
-            mvn.setUrl("https://maven.gtceu.com");
-        });
-        repos.maven(mvn -> {
-            mvn.setName("BlameJared Maven");
-            mvn.setUrl("https://maven.blamejared.com/");
-        });
+
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.VINTAGE) {
+            repos.maven(mvn -> {
+                mvn.setName("Cleanroom Maven");
+                mvn.setUrl("https://maven.cleanroommc.com");
+            });
+            repos.maven(mvn -> {
+                mvn.setName("GTCEu Maven");
+                mvn.setUrl("https://maven.gtceu.com");
+            });
+        }
 
         // Provide a runtimeOnlyNonPublishable configuration
         final ConfigurationContainer cfg = project.getConfigurations();
@@ -367,10 +366,10 @@ public abstract class ToolchainModule implements GTNHModule {
                 .provider(
                     () -> Objects.requireNonNull(project.getVersion())
                         .toString());
-            props.put(gtnh.configuration.minecraftVersion.equals("1.7.10") ? "minecraftVersion" : "mcversion", minecraft.getMcVersion());
+            props.put(gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "minecraftVersion" : "mcversion", minecraft.getMcVersion());
             props.put("modId", gtnh.configuration.modId);
             props.put("modName", gtnh.configuration.modName);
-            props.put(gtnh.configuration.minecraftVersion.equals("1.7.10") ? "modVersion" : "version", modVersion);
+            props.put(gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "modVersion" : "version", modVersion);
         }
 
         tasks.named("processResources", ProcessResources.class)

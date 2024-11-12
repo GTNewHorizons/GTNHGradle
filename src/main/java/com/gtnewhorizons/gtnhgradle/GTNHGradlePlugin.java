@@ -94,6 +94,8 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** Logging service used by the plugin */
         public final @NotNull Logger logger;
 
+        public final @NotNull MinecraftVersion minecraftVersion;
+
         /** Parsed properties associated with this project */
         public @NotNull PropertiesConfiguration configuration;
 
@@ -142,6 +144,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public GTNHExtension(final Project project) {
             logger = Logging.getLogger(GTNHGradlePlugin.class);
             configuration = PropertiesConfiguration.GradleUtils.makePropertiesFrom(project);
+            minecraftVersion = MinecraftVersion.getByVersionString(configuration.minecraftVersion);
         }
 
         /**
@@ -193,5 +196,28 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** @return Gradle-provided injected service */
         @Inject
         public abstract @NotNull ExecOperations getExecOperations();
+    }
+
+    public enum MinecraftVersion {
+        ARCHAIC("1.7.10"), VINTAGE("1.12.2");
+
+        private final String version;
+
+        MinecraftVersion(String version) {
+            this.version = version;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public static MinecraftVersion getByVersionString(String version) {
+            for (MinecraftVersion v : MinecraftVersion.values()) {
+                if (v.getVersion().equals(version)) {
+                    return v;
+                }
+            }
+            throw new IllegalArgumentException("Invalid Minecraft Version" + version);
+        }
     }
 }

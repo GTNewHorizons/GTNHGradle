@@ -103,10 +103,10 @@ public abstract class ModernJavaModule implements GTNHModule {
         String mixinSpec = "";
         String lwjgl3ifySpec = "";
 
-        if (gtnh.configuration.minecraftVersion.equals("1.7.10")) {
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC) {
             mixinSpec = UpdateableConstants.NEWEST_UNIMIXINS;
-            lwjgl3ifySpec = UpdateableConstants.NEWEST_LWJGL3IFY_1710;
-        } else if (gtnh.configuration.minecraftVersion.equals("1.12.2")) {
+            lwjgl3ifySpec = UpdateableConstants.NEWEST_LWJGL3IFY;
+        } else if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.VINTAGE) {
             mixinSpec = UpdateableConstants.NEWEST_MIXINBOOTER;
             lwjgl3ifySpec = UpdateableConstants.NEWEST_LWJGL3IFY_1122;
         } else {
@@ -120,7 +120,7 @@ public abstract class ModernJavaModule implements GTNHModule {
                     .setTransitive(false);
         }
 
-        if (!gtnh.configuration.modId.equals("hodgepodge") && gtnh.configuration.minecraftVersion.equals("1.7.10")) {
+        if (!gtnh.configuration.modId.equals("hodgepodge") && gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC) {
             final ModuleDependency hodgepodge = (ModuleDependency) deps
                 .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
             if (gtnh.configuration.modId.equals("gtnhlib")) {

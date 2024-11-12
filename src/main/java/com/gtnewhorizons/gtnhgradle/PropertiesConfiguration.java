@@ -549,7 +549,10 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Adds CurseMaven, Modrinth, and some more well-known 1.7.10 repositories.
+            Adds the following well-known repositories:
+            CurseMaven
+            Modrinth
+            BlameJared(1.12.2 only)
             """)
     public boolean includeWellKnownRepositories = true;
 
@@ -564,6 +567,7 @@ public final class PropertiesConfiguration {
             list of strings, with the acceptable keys being(case does not matter):
             cursemaven
             modrinth
+            blamejared
             """)
     public @NotNull String excludeWellKnownRepositories = "";
 
