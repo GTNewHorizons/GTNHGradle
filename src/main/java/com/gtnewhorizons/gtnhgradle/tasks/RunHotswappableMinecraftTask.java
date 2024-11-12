@@ -115,7 +115,8 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
             } else if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.VINTAGE) {
                 mixinSpec = UpdateableConstants.NEWEST_MIXINBOOTER;
             } else {
-                throw new IllegalArgumentException("Unsupported Minecraft Version: " + gtnh.configuration.minecraftVersion);
+                throw new IllegalArgumentException(
+                    "Unsupported Minecraft Version: " + gtnh.configuration.minecraftVersion);
             }
             this.getExtraJvmArgs()
                 .addAll(project.provider(() -> {

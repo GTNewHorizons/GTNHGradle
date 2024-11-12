@@ -237,7 +237,8 @@ public abstract class ToolchainModule implements GTNHModule {
         final ModUtils modUtils = project.getExtensions()
             .getByType(ModUtils.class);
 
-        minecraft.getMcVersion().set(gtnh.configuration.minecraftVersion);
+        minecraft.getMcVersion()
+            .set(gtnh.configuration.minecraftVersion);
 
         // Tag injection
         if (!gtnh.configuration.replaceGradleTokenInFile.isEmpty()) {
@@ -366,10 +367,14 @@ public abstract class ToolchainModule implements GTNHModule {
                 .provider(
                     () -> Objects.requireNonNull(project.getVersion())
                         .toString());
-            props.put(gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "minecraftVersion" : "mcversion", minecraft.getMcVersion());
+            props.put(
+                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "minecraftVersion" : "mcversion",
+                minecraft.getMcVersion());
             props.put("modId", gtnh.configuration.modId);
             props.put("modName", gtnh.configuration.modName);
-            props.put(gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "modVersion" : "version", modVersion);
+            props.put(
+                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "modVersion" : "version",
+                modVersion);
         }
 
         tasks.named("processResources", ProcessResources.class)
@@ -400,11 +405,9 @@ public abstract class ToolchainModule implements GTNHModule {
                 manifest.attributes(ImmutableMap.of("FMLCorePlugin", props.modGroup + "." + props.coreModClass));
             }
             if (props.usesMixins) {
-                final Path output =  project.file(
-                        "src/" + modUtils.mixinSourceSet.get().getName()
-                            + "/resources/mixins."
-                            + gtnh.configuration.modId
-                            + ".json")
+                final Path output = project.file(
+                    "src/" + modUtils.mixinSourceSet.get()
+                        .getName() + "/resources/mixins." + gtnh.configuration.modId + ".json")
                     .toPath();
                 if (Files.exists(output)) {
                     manifest.attributes(

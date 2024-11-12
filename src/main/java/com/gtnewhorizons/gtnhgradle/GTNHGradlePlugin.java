@@ -199,7 +199,9 @@ public class GTNHGradlePlugin implements Plugin<Project> {
     }
 
     public enum MinecraftVersion {
-        ARCHAIC("1.7.10"), VINTAGE("1.12.2");
+
+        ARCHAIC("1.7.10"),
+        VINTAGE("1.12.2");
 
         private final String version;
 
@@ -213,7 +215,8 @@ public class GTNHGradlePlugin implements Plugin<Project> {
 
         public static MinecraftVersion getByVersionString(String version) {
             for (MinecraftVersion v : MinecraftVersion.values()) {
-                if (v.getVersion().equals(version)) {
+                if (v.getVersion()
+                    .equals(version)) {
                     return v;
                 }
             }

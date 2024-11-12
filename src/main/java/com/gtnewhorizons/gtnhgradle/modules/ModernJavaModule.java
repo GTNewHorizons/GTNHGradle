@@ -115,12 +115,12 @@ public abstract class ModernJavaModule implements GTNHModule {
 
         if (!gtnh.configuration.modId.equals("lwjgl3ify")) {
             deps.add(java17DependenciesCfg.getName(), lwjgl3ifySpec);
-            ((ModuleDependency) deps
-                .add(java17PatchDependenciesCfg.getName(), lwjgl3ifySpec + ":forgePatches"))
-                    .setTransitive(false);
+            ((ModuleDependency) deps.add(java17PatchDependenciesCfg.getName(), lwjgl3ifySpec + ":forgePatches"))
+                .setTransitive(false);
         }
 
-        if (!gtnh.configuration.modId.equals("hodgepodge") && gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC) {
+        if (!gtnh.configuration.modId.equals("hodgepodge")
+            && gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC) {
             final ModuleDependency hodgepodge = (ModuleDependency) deps
                 .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
             if (gtnh.configuration.modId.equals("gtnhlib")) {
@@ -131,7 +131,6 @@ public abstract class ModernJavaModule implements GTNHModule {
         deps.getConstraints()
             .add(java17DependenciesCfg.getName(), mixinSpec)
             .because("Use latest UniMixins or MixinBooter known to GTNHGradle.");
-
 
         final List<String> java17JvmArgs = new ArrayList<>(Arrays.asList(JAVA_17_ARGS));
         final List<String> hotswapJvmArgs = new ArrayList<>(Arrays.asList(HOTSWAP_JVM_ARGS));
