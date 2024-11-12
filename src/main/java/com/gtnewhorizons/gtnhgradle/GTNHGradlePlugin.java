@@ -198,10 +198,13 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public abstract @NotNull ExecOperations getExecOperations();
     }
 
+    /**
+     * The enum stored in the GTNHExtension object representing the selected MC version
+     */
     public enum MinecraftVersion {
 
-        ARCHAIC("1.7.10"),
-        VINTAGE("1.12.2");
+        V1_7_10("1.7.10"),
+        V1_12_2("1.12.2");
 
         private final String version;
 

@@ -110,9 +110,9 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
 
         if (gtnh.configuration.usesMixins) {
             String mixinSpec;
-            if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC) {
+            if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {
                 mixinSpec = UpdateableConstants.NEWEST_UNIMIXINS;
-            } else if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.VINTAGE) {
+            } else if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
                 mixinSpec = UpdateableConstants.NEWEST_MIXINBOOTER;
             } else {
                 throw new IllegalArgumentException(

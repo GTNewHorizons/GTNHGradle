@@ -100,7 +100,7 @@ public abstract class ToolchainModule implements GTNHModule {
             });
         });
 
-        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.VINTAGE) {
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
             repos.maven(mvn -> {
                 mvn.setName("Cleanroom Maven");
                 mvn.setUrl("https://maven.cleanroommc.com");
@@ -368,12 +368,12 @@ public abstract class ToolchainModule implements GTNHModule {
                     () -> Objects.requireNonNull(project.getVersion())
                         .toString());
             props.put(
-                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "minecraftVersion" : "mcversion",
+                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10 ? "minecraftVersion" : "mcversion",
                 minecraft.getMcVersion());
             props.put("modId", gtnh.configuration.modId);
             props.put("modName", gtnh.configuration.modName);
             props.put(
-                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.ARCHAIC ? "modVersion" : "version",
+                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10 ? "modVersion" : "version",
                 modVersion);
         }
 
