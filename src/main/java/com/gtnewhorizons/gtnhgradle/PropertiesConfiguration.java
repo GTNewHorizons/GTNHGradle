@@ -16,6 +16,8 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +39,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Github owner of the ExampleMod repo to use")
     public @NotNull String exampleModGithubOwner = "GTNewHorizons";
 
@@ -47,6 +50,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Github project name of the ExampleMod repo to use")
     public @NotNull String exampleModGithubProject = "ExampleMod1.7.10";
 
@@ -56,6 +60,7 @@ public final class PropertiesConfiguration {
         isSettings = true,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             ExampleMod tag to use as Blowdryer (Spotless, etc.) settings version, leave empty to disable.
             LOCAL to test local config updates.
@@ -69,6 +74,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = """
             Whether to enable a pluginManagement spotless version resolution rule to use a newer spotless build on new JVMs.
             """)
@@ -84,6 +90,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = """
             Whether to automatically set the version based on the VERSION environment variable or the current git status.
             If not used, make sure to set project.ext.modVersion to a String with a correct version number during project evaluation.
@@ -97,6 +104,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Sets up code style plugins like Spotless and Checkstyle.")
     public boolean moduleCodeStyle = true;
 
@@ -107,6 +115,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Sets up the Java/Kotlin toolchain for mod compilation.")
     public boolean moduleToolchain = true;
 
@@ -117,6 +126,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Sets up the Scala toolchain for mod compilation if src/main/scala is present.")
     public boolean moduleScala = true;
 
@@ -127,6 +137,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Sets up the Scala toolchain for mod compilation unconditionally if the Scala module is enabled.")
     public boolean forceEnableScala = false;
 
@@ -137,6 +148,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Checks the project structure for obvious mistakes.")
     public boolean moduleStructureCheck = true;
 
@@ -147,6 +159,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Loads and packages access transformers.")
     public boolean moduleAccessTransformers = true;
 
@@ -157,6 +170,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Easy UniMixins support.")
     public boolean moduleMixin = true;
 
@@ -167,6 +181,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Standard script loading, like addon.gradle.")
     public boolean moduleStandardScripts = true;
 
@@ -177,6 +192,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Emulates various old gradle version behaviours for backwards compatibility - HTTP protocol support, \"compile\" configuration, etc.")
     public boolean moduleOldGradleEmulation = true;
 
@@ -187,6 +203,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Modern Java run support via lwjgl3ify.")
     public boolean moduleModernJava = true;
 
@@ -197,6 +214,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "IDE Integration (IntelliJ, Eclipse)")
     public boolean moduleIdeIntegration = true;
 
@@ -207,6 +225,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Publishing targets (Maven, mod hosting platforms).")
     public boolean modulePublishing = true;
 
@@ -217,6 +236,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Utility tasks and functions.")
     public boolean moduleUtility = true;
 
@@ -227,15 +247,22 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = "Buildscript updater module.")
     public boolean moduleUpdater = true;
     // </editor-fold>
 
     // <editor-fold desc="Various settings">
     /** See annotation */
-    @Prop(name = "modName", isSettings = false, preferPopulated = true, required = true, docComment = """
-        Human-readable mod name, available for mcmod.info population.
-        """)
+    @Prop(
+        name = "modName",
+        isSettings = false,
+        preferPopulated = true,
+        required = true,
+        mcVersion = "",
+        docComment = """
+            Human-readable mod name, available for mcmod.info population.
+            """)
     public @NotNull String modName = "MyMod";
 
     /** See annotation */
@@ -244,6 +271,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = true,
+        mcVersion = "",
         docComment = """
             Case-sensitive identifier string, available for mcmod.info population and used for automatic mixin JSON generation.
             Conventionally lowercase.
@@ -251,10 +279,16 @@ public final class PropertiesConfiguration {
     public @NotNull String modId = "mymodid";
 
     /** See annotation */
-    @Prop(name = "modGroup", isSettings = false, preferPopulated = true, required = true, docComment = """
-        Root package of the mod, used to find various classes in other properties,
-        mcmod.info substitution, enabling assertions in run tasks, etc.
-        """)
+    @Prop(
+        name = "modGroup",
+        isSettings = false,
+        preferPopulated = true,
+        required = true,
+        mcVersion = "",
+        docComment = """
+            Root package of the mod, used to find various classes in other properties,
+            mcmod.info substitution, enabling assertions in run tasks, etc.
+            """)
     public @NotNull String modGroup = "com.myname.mymodid";
 
     /** See annotation */
@@ -263,6 +297,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Whether to use modGroup as the maven publishing group.
             Due to a history of using JitPack, the default is com.github.GTNewHorizons for all mods.
@@ -270,39 +305,75 @@ public final class PropertiesConfiguration {
     public boolean useModGroupForPublishing = false;
 
     /** See annotation */
-    @Prop(name = "autoUpdateBuildScript", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Updates your build.gradle and settings.gradle automatically whenever an update is available.
-        """)
+    @Prop(
+        name = "autoUpdateBuildScript",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Updates your build.gradle and settings.gradle automatically whenever an update is available.
+            """)
     public boolean autoUpdateBuildScript = false;
 
     /** See annotation */
-    @Prop(name = "minecraftVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Version of Minecraft to target
-        """)
+    @Prop(
+        name = "minecraftVersion",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Version of Minecraft to target
+            """)
     public @NotNull String minecraftVersion = "1.7.10";
 
     /** See annotation */
-    @Prop(name = "forgeVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Version of Minecraft Forge to target
-        """)
+    @Prop(
+        name = "forgeVersion",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Version of Minecraft Forge to target
+            """)
     public @NotNull String forgeVersion = "10.13.4.1614";
 
     /** See annotation */
-    @Prop(name = "channel", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify an MCP channel for dependency deobfuscation and the deobfParams task.
-        """)
+    @Prop(
+        name = "channel",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Specify an MCP channel for dependency deobfuscation and the deobfParams task.
+            """)
     public @NotNull String channel = "stable";
 
     /** See annotation */
-    @Prop(name = "mappingsVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify an MCP mappings version for dependency deobfuscation and the deobfParams task.
-        """)
+    @Prop(
+        name = "mappingsVersion",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Specify an MCP mappings version for dependency deobfuscation and the deobfParams task.
+            """)
     public @NotNull String mappingsVersion = "12";
 
     /** See annotation */
-    @Prop(name = "remoteMappings", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Defines other MCP mappings for dependency deobfuscation.
-        """)
+    @Prop(
+        name = "remoteMappings",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Defines other MCP mappings for dependency deobfuscation.
+            """)
     public @NotNull String remoteMappings = "https://raw.githubusercontent.com/MinecraftForge/FML/1.7.10/conf/";
 
     /** See annotation */
@@ -311,6 +382,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Select a default username for testing your mod. You can always override this per-run by running
             `./gradlew runClient --username=AnotherPlayer`, or configuring this command in your IDE.
@@ -323,6 +395,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Enables using modern Java syntax (up to version 17) via Jabel, while still targeting JVM 8.
             See https://github.com/bsideup/jabel for details on how this works.
@@ -335,6 +408,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Enables injecting missing generics into the decompiled source code for a better coding experience.
             Turns most publicly visible List, Map, etc. into proper List<E>, Map<K, V> types.
@@ -347,6 +421,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Generate a class with a String field for the mod version named as defined below.
             If generateGradleTokenClass is empty or not missing, no such class will be generated.
@@ -355,9 +430,15 @@ public final class PropertiesConfiguration {
     public @NotNull String generateGradleTokenClass = "";
 
     /** See annotation */
-    @Prop(name = "gradleTokenVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Name of the token containing the project's current version to generate/replace.
-        """)
+    @Prop(
+        name = "gradleTokenVersion",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Name of the token containing the project's current version to generate/replace.
+            """)
     public @NotNull String gradleTokenVersion = "VERSION";
 
     /** See annotation */
@@ -367,6 +448,7 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = """
             [DEPRECATED] Mod ID replacement token.
             """)
@@ -378,6 +460,7 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = """
             [DEPRECATED] Mod name replacement token.
             """)
@@ -389,6 +472,7 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         hidden = true,
+        mcVersion = "",
         docComment = """
             [DEPRECATED] Mod Group replacement token.
             """)
@@ -400,6 +484,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = false,
         required = false,
+        mcVersion = "",
         docComment = """
             [DEPRECATED]
             Multiple source files can be defined here by providing a comma-separated list: Class1.java,Class2.java,Class3.java
@@ -416,6 +501,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             In case your mod provides an API for other mods to implement you may declare its package here. Otherwise, you can
             leave this property empty.
@@ -429,6 +515,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Specify the configuration file for Forge's access transformers here. It must be placed into /src/main/resources/META-INF/
             There can be multiple files in a space-separated list.
@@ -437,9 +524,15 @@ public final class PropertiesConfiguration {
     public @NotNull String accessTransformersFile = "";
 
     /** See annotation */
-    @Prop(name = "usesMixins", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Provides setup for Mixins if enabled. If you don't know what mixins are: Keep it disabled!
-        """)
+    @Prop(
+        name = "usesMixins",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Provides setup for Mixins if enabled. If you don't know what mixins are: Keep it disabled!
+            """)
     public boolean usesMixins = false;
 
     /** See annotation */
@@ -448,6 +541,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Set to a non-empty string to configure mixins in a separate source set under src/VALUE, instead of src/main.
             This can speed up compile times thanks to not running the mixin annotation processor on all input sources.
@@ -456,15 +550,27 @@ public final class PropertiesConfiguration {
     public String separateMixinSourceSet = "";
 
     /** See annotation */
-    @Prop(name = "usesMixinDebug", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Adds some debug arguments like verbose output and class export.
-        """)
+    @Prop(
+        name = "usesMixinDebug",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Adds some debug arguments like verbose output and class export.
+            """)
     public boolean usesMixinDebug = false;
 
     /** See annotation */
-    @Prop(name = "mixinPlugin", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify the location of your implementation of IMixinConfigPlugin. Leave it empty otherwise.
-        """)
+    @Prop(
+        name = "mixinPlugin",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Specify the location of your implementation of IMixinConfigPlugin. Leave it empty otherwise.
+            """)
     public @NotNull String mixinPlugin = "";
 
     /** See annotation */
@@ -473,6 +579,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Specify the package that contains all of your Mixins. You may only place Mixins in this package or the build will fail!
             """)
@@ -484,6 +591,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Specify the core mod entry class if you use a core mod. This class must implement IFMLLoadingPlugin!
             This parameter is for legacy compatibility only
@@ -497,6 +605,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             If your project is only a consolidation of mixins or a core mod and does NOT contain a 'normal' mod ( = some class
             that is annotated with @Mod) you want this to be true. When in doubt: leave it on false!
@@ -504,9 +613,15 @@ public final class PropertiesConfiguration {
     public boolean containsMixinsAndOrCoreModOnly = false;
 
     /** See annotation */
-    @Prop(name = "forceEnableMixins", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Enables Mixins even if this mod doesn't use them, useful if one of the dependencies uses mixins.
-        """)
+    @Prop(
+        name = "forceEnableMixins",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Enables Mixins even if this mod doesn't use them, useful if one of the dependencies uses mixins.
+            """)
     public boolean forceEnableMixins = false;
 
     /** See annotation */
@@ -515,6 +630,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             If enabled, you may use 'shadowCompile' for dependencies. They will be integrated into your jar. It is your
             responsibility to check the license and request permission for distribution if required.
@@ -526,6 +642,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             If disabled, won't remove unused classes from shadowed dependencies. Some libraries use reflection to access
             their own classes, making the minimization unreliable.
@@ -537,6 +654,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             If disabled, won't rename the shadowed classes.
             """)
@@ -548,6 +666,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Adds the following well-known repositories:
             CurseMaven
@@ -562,6 +681,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             A list of repositories to exclude from the includeWellKnownRepositories setting. Should be a space separated
             list of strings, with the acceptable keys being(case does not matter):
@@ -578,6 +698,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
+        mcVersion = "1.7.10",
         docComment = """
             Adds a dependency override rule to use RFG-deobfuscated https://www.curseforge.com/minecraft/mc-mods/industrial-craft/files/2353971 instead of net.industrial-craft:industrialcraft-2:2.2.828-experimental:dev
             """)
@@ -589,6 +710,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Change these to your Maven coordinates if you want to publish to a custom Maven repository instead of the default GTNH Maven.
             Authenticate with the MAVEN_USER and MAVEN_PASSWORD environment variables.
@@ -597,9 +719,15 @@ public final class PropertiesConfiguration {
     public boolean usesMavenPublishing = true;
 
     /** See annotation */
-    @Prop(name = "mavenPublishUrl", isSettings = false, preferPopulated = false, required = false, docComment = """
-        Maven repository to publish the mod to.
-        """)
+    @Prop(
+        name = "mavenPublishUrl",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Maven repository to publish the mod to.
+            """)
     public @NotNull String mavenPublishUrl = GTNHConstants.GTNH_MAVEN_RELEASES_REPOSITORY;
 
     /** See annotation */
@@ -608,6 +736,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Publishing to Modrinth requires you to set the MODRINTH_TOKEN environment variable to your current Modrinth API token.
 
@@ -617,15 +746,21 @@ public final class PropertiesConfiguration {
     public @NotNull String modrinthProjectId = "";
 
     /** See annotation */
-    @Prop(name = "modrinthRelations", isSettings = false, preferPopulated = true, required = false, docComment = """
-        The project's relations on Modrinth. You can use this to refer to other projects on Modrinth.
-        Syntax: scope1-type1:name1;scope2-type2:name2;...
-        Where scope can be one of [required, optional, incompatible, embedded],
-              type can be one of [project, version],
-              and the name is the Modrinth project or version slug/id of the other mod.
-        Example: required-project:fplib;optional-project:gasstation;incompatible-project:gregtech
-        Note: GTNH Mixins is automatically set as a required dependency if usesMixins = true
-        """)
+    @Prop(
+        name = "modrinthRelations",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            The project's relations on Modrinth. You can use this to refer to other projects on Modrinth.
+            Syntax: scope1-type1:name1;scope2-type2:name2;...
+            Where scope can be one of [required, optional, incompatible, embedded],
+                  type can be one of [project, version],
+                  and the name is the Modrinth project or version slug/id of the other mod.
+            Example: required-project:fplib;optional-project:gasstation;incompatible-project:gregtech
+            Note: GTNH Mixins is automatically set as a required dependency if usesMixins = true
+            """)
     public @NotNull String modrinthRelations = "";
 
     /** See annotation */
@@ -634,6 +769,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = true,
         required = false,
+        mcVersion = "",
         docComment = """
             Publishing to CurseForge requires you to set the CURSEFORGE_TOKEN environment variable to one of your CurseForge API tokens.
 
@@ -643,14 +779,20 @@ public final class PropertiesConfiguration {
     public @NotNull String curseForgeProjectId = "";
 
     /** See annotation */
-    @Prop(name = "curseForgeRelations", isSettings = false, preferPopulated = true, required = false, docComment = """
-        The project's relations on CurseForge. You can use this to refer to other projects on CurseForge.
-        Syntax: type1:name1;type2:name2;...
-        Where type can be one of [requiredDependency, embeddedLibrary, optionalDependency, tool, incompatible],
-              and the name is the CurseForge project slug of the other mod.
-        Example: requiredDependency:railcraft;embeddedLibrary:cofhlib;incompatible:buildcraft
-        Note: UniMixins is automatically set as a required dependency if usesMixins = true.
-        """)
+    @Prop(
+        name = "curseForgeRelations",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            The project's relations on CurseForge. You can use this to refer to other projects on CurseForge.
+            Syntax: type1:name1;type2:name2;...
+            Where type can be one of [requiredDependency, embeddedLibrary, optionalDependency, tool, incompatible],
+                  and the name is the CurseForge project slug of the other mod.
+            Example: requiredDependency:railcraft;embeddedLibrary:cofhlib;incompatible:buildcraft
+            Note: UniMixins is automatically set as a required dependency if usesMixins = true.
+            """)
     public @NotNull String curseForgeRelations = "";
 
     /** See annotation */
@@ -659,6 +801,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = false,
         required = false,
+        mcVersion = "",
         docComment = """
             Optional parameter to customize the produced artifacts. Use this to preserve artifact naming when migrating older
             projects. New projects should not use this parameter.
@@ -666,12 +809,18 @@ public final class PropertiesConfiguration {
     public @NotNull String customArchiveBaseName = "";
 
     /** See annotation */
-    @Prop(name = "versionPattern", isSettings = false, preferPopulated = false, required = false, docComment = """
-        Optional parameter to have the build automatically fail if an illegal version is used.
-        This can be useful if you e.g. only want to allow versions in the form of '1.1.xxx'.
-        The check is ONLY performed if the version is a git tag.
-        Note: the specified string must be escaped, so e.g. 1\\\\.1\\\\.\\\\d+ instead of 1\\.1\\.\\d+
-        """)
+    @Prop(
+        name = "versionPattern",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        mcVersion = "",
+        docComment = """
+            Optional parameter to have the build automatically fail if an illegal version is used.
+            This can be useful if you e.g. only want to allow versions in the form of '1.1.xxx'.
+            The check is ONLY performed if the version is a git tag.
+            Note: the specified string must be escaped, so e.g. 1\\\\.1\\\\.\\\\d+ instead of 1\\.1\\.\\d+
+            """)
     public @NotNull String versionPattern = "";
 
     /** See annotation */
@@ -681,6 +830,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         defaultInComment = "true",
+        mcVersion = "",
         docComment = """
             Uncomment to prevent the source code from being published.
             """)
@@ -693,6 +843,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         defaultInComment = "true",
+        mcVersion = "",
         docComment = """
             Uncomment this to disable Spotless checks.
             This should only be uncommented to keep it easier to sync with upstream/other forks.
@@ -707,6 +858,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         defaultInComment = "true",
+        mcVersion = "",
         docComment = """
             Uncomment this to disable Checkstyle checks (currently wildcard import check).
             """)
@@ -719,6 +871,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         defaultInComment = "idea",
+        mcVersion = "",
         docComment = """
             Override the IDEA build type. Valid values are: "" (leave blank, do not override), "idea" (force use native IDEA build), "gradle"
             (force use delegated build).
@@ -735,6 +888,7 @@ public final class PropertiesConfiguration {
         isSettings = false,
         preferPopulated = false,
         required = false,
+        mcVersion = "",
         docComment = """
             Whether IDEA should run spotless checks when pressing the Build button.
             This is meant to be set in $HOME/.gradle/gradle.properties.
@@ -811,6 +965,12 @@ public final class PropertiesConfiguration {
             if (prop == null) {
                 continue;
             }
+            final String mcVersion = prop.mcVersion();
+            if (!mcVersion.isEmpty()) {
+                if (!GTNHGradlePlugin.MinecraftVersion.isAcceptableMinecraftVersion(mcVersion)) {
+                    continue;
+                }
+            }
             final String key = prop.name();
             final Object value = props.getOrDefault(key, null);
             try {
@@ -879,6 +1039,7 @@ public final class PropertiesConfiguration {
                     continue;
                 }
                 final String key = prop.name();
+                final String mcVersion = prop.mcVersion();
                 final Object defaultValue = field.get(this);
                 final String originalValue = originalValues.remove(key);
 
@@ -887,6 +1048,12 @@ public final class PropertiesConfiguration {
                 }
                 if (originalValue == null && prop.hidden()) {
                     continue;
+                }
+
+                if (!mcVersion.isEmpty()) {
+                    if (!GTNHGradlePlugin.MinecraftVersion.isAcceptableMinecraftVersion(mcVersion)) {
+                        continue;
+                    }
                 }
 
                 final String[] docComment = prop.docComment()
@@ -977,6 +1144,16 @@ public final class PropertiesConfiguration {
                     continue;
                 }
                 final String key = prop.name();
+                List<String> mcVersions = new ArrayList<>();
+                if (prop.mcVersion()
+                    .isEmpty()) {
+                    for (GTNHGradlePlugin.MinecraftVersion mcVersion : GTNHGradlePlugin.MinecraftVersion.values()) {
+                        mcVersions.add(mcVersion.getVersion());
+                    }
+
+                } else {
+                    mcVersions.add(prop.mcVersion());
+                }
                 Object defaultValue = field.get(defaultCfg);
                 if (defaultValue instanceof String) {
                     defaultValue = '"' + (String) defaultValue + '"';
@@ -997,6 +1174,9 @@ public final class PropertiesConfiguration {
                 // indent everything two spaces
                 docOut = docOut.replace("\n", "\n  ");
                 out.println(docOut);
+                out.println("Available for Minecraft versions: ");
+                String mcVersionsOut = String.join(", ", mcVersions);
+                out.println(mcVersionsOut);
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -1032,5 +1212,9 @@ public final class PropertiesConfiguration {
         /** @return User documentation for the property */
         @NotNull
         String docComment() default "";
+
+        /** @return The minecraft version this property is available in. Empty string for all versions */
+        @NotNull
+        String mcVersion() default "";
     }
 }

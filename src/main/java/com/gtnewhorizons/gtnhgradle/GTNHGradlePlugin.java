@@ -225,5 +225,14 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             }
             throw new IllegalArgumentException("Invalid Minecraft Version" + version);
         }
+
+        public static boolean isAcceptableMinecraftVersion(String version) {
+            for (MinecraftVersion mcVersion : MinecraftVersion.values()) {
+                if (mcVersion.version.equals(version)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
