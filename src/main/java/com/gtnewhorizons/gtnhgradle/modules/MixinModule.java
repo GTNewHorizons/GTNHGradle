@@ -47,7 +47,7 @@ public class MixinModule implements GTNHModule {
             }
         }
 
-        final String mixinProviderSpecNoClassifer = gtnh.minecraftVersion.getMixinProviderSpec();
+        final String mixinProviderSpecNoClassifer = gtnh.minecraftVersion.mixinProviderSpec;
         String mixinProviderSpec;
 
         if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {

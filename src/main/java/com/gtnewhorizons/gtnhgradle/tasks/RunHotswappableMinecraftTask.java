@@ -109,7 +109,7 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         systemProperty("gradlestart.bouncerServer", "com.gtnewhorizons.retrofuturabootstrap.Main");
 
         if (gtnh.configuration.usesMixins) {
-            final String mixinSpec = gtnh.minecraftVersion.getMixinProviderSpec();
+            final String mixinSpec = gtnh.minecraftVersion.mixinProviderSpec;
             this.getExtraJvmArgs()
                 .addAll(project.provider(() -> {
                     final Configuration mixinCfg = project.getConfigurations()

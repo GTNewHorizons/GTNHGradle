@@ -100,8 +100,8 @@ public abstract class ModernJavaModule implements GTNHModule {
         });
         ext.set("java17PatchDependenciesCfg", java17PatchDependenciesCfg);
 
-        final String mixinSpec = gtnh.minecraftVersion.getMixinProviderSpec();
-        final String lwjgl3ifySpec = gtnh.minecraftVersion.getLwjgl3ifySpec();
+        final String mixinSpec = gtnh.minecraftVersion.mixinProviderSpec;
+        final String lwjgl3ifySpec = gtnh.minecraftVersion.lwjgl3ifySpec;
 
         if (!gtnh.configuration.modId.equals("lwjgl3ify")) {
             deps.add(java17DependenciesCfg.getName(), lwjgl3ifySpec);
