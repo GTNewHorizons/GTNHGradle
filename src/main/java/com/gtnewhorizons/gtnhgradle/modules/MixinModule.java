@@ -135,6 +135,12 @@ public class MixinModule implements GTNHModule {
             deps.add("runtimeOnlyNonPublishable", mixinProviderSpec);
         }
 
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
+            if ((gtnh.configuration.usesMixins || gtnh.configuration.forceEnableMixins) && gtnh.configuration.stripForgeRequirements) {
+                deps.add("runtimeOnlyNonPublishable", UpdateableConstants.NEWEST_STRIP_FORGE_REQUIREMENTS);
+            }
+        }
+
         // Replace old mixin mods with unimixins
         // https://docs.gradle.org/8.0.2/userguide/resolution_rules.html#sec:substitution_with_classifier
         project.getConfigurations()

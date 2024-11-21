@@ -319,6 +319,22 @@ public final class PropertiesConfiguration {
 
     /** See annotation */
     @Prop(
+        name = "stripForgeRequirements",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            1.12.2 ONLY
+            Some mods require a specific forge version to launch in. When you need to use one of those mods as a dependency,
+            and cannot launch with the forge version required, enable this to strip the forge version requirements from that mod.
+            This will add 'strip-latest-forge-requirements' as 'runtimeOnlyNonPublishable'.
+            Requires useMixins or forceEnableMixins to be true, as the mod uses mixins to function.
+            """
+    )
+    public boolean stripForgeRequirements = false;
+
+    /** See annotation */
+    @Prop(
         name = "generateGradleTokenClass",
         isSettings = false,
         preferPopulated = true,

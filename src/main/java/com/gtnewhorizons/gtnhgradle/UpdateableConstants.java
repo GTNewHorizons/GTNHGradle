@@ -55,4 +55,7 @@ public class UpdateableConstants {
 
     /** Latest Industrial Craft 2 version */
     public static final @NotNull String NEWEST_IC2_SPEC = "curse.maven:ic2-242638:2353971";
+
+    /** Latest strip-latest-forge-requirements for 1.12.2 */
+    public static final @NotNull String NEWEST_STRIP_FORGE_REQUIREMENTS = "com.cleanroommc:strip-latest-forge-requirements:1.0";
 }
