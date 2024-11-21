@@ -3,7 +3,6 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
-import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.io.FileUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
@@ -92,7 +91,8 @@ public class UtilityModule implements GTNHModule {
                 download.run(ds -> {
                     try {
                         ds.src(
-                            "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_" + gtnh.minecraftVersion.mappingsChannel
+                            "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_"
+                                + gtnh.minecraftVersion.mappingsChannel
                                 + "/"
                                 + gtnh.minecraftVersion.mappingsVersion
                                 + "-"

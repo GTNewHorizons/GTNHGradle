@@ -136,7 +136,8 @@ public class MixinModule implements GTNHModule {
         }
 
         if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
-            if ((gtnh.configuration.usesMixins || gtnh.configuration.forceEnableMixins) && gtnh.configuration.stripForgeRequirements) {
+            if ((gtnh.configuration.usesMixins || gtnh.configuration.forceEnableMixins)
+                && gtnh.configuration.stripForgeRequirements) {
                 deps.add("runtimeOnlyNonPublishable", UpdateableConstants.NEWEST_STRIP_FORGE_REQUIREMENTS);
             }
         }

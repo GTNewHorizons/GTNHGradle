@@ -1,7 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.tasks;
 
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
-import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.minecraft.MinecraftTasks;

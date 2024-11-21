@@ -205,10 +205,12 @@ public class GTNHGradlePlugin implements Plugin<Project> {
     public enum MinecraftVersion {
 
         /** Minecraft 1.7.10 */
-        V1_7_10("1.7.10", "10.13.4.1614", "stable", "12", UpdateableConstants.NEWEST_UNIMIXINS, UpdateableConstants.NEWEST_LWJGL3IFY, "unimixins", "unimixins"),
+        V1_7_10("1.7.10", "10.13.4.1614", "stable", "12", UpdateableConstants.NEWEST_UNIMIXINS,
+            UpdateableConstants.NEWEST_LWJGL3IFY, "unimixins", "unimixins"),
 
         /** Minecraft 1.12.2 */
-        V1_12_2("1.12.2", "14.23.5.2847", "stable", "39", UpdateableConstants.NEWEST_MIXINBOOTER, UpdateableConstants.NEWEST_LWJGL3IFY_1122, "mixinbooter", "mixin-booter");
+        V1_12_2("1.12.2", "14.23.5.2847", "stable", "39", UpdateableConstants.NEWEST_MIXINBOOTER,
+            UpdateableConstants.NEWEST_LWJGL3IFY_1122, "mixinbooter", "mixin-booter");
 
         /**
          * Minecraft Version
@@ -246,11 +248,13 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public final String modrinthMixinSlug;
 
         /**
-         * The curseforge project slug for the version's mixin provider. Used to create relation on Curseforge publishing
+         * The curseforge project slug for the version's mixin provider. Used to create relation on Curseforge
+         * publishing
          */
         public final String curseMixinSlug;
 
-        MinecraftVersion(String version, String forgeVersion, String mappingsChannel, String mappingsVersion, String mixinProviderSpec, String lwjgl3ifySpec, String modrinthMixinSlug, String curseMixinSlug) {
+        MinecraftVersion(String version, String forgeVersion, String mappingsChannel, String mappingsVersion,
+            String mixinProviderSpec, String lwjgl3ifySpec, String modrinthMixinSlug, String curseMixinSlug) {
             this.version = version;
             this.forgeVersion = forgeVersion;
             this.mappingsChannel = mappingsChannel;

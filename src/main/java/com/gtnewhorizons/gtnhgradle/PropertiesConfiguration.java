@@ -329,8 +329,7 @@ public final class PropertiesConfiguration {
             and cannot launch with the forge version required, enable this to strip the forge version requirements from that mod.
             This will add 'strip-latest-forge-requirements' as 'runtimeOnlyNonPublishable'.
             Requires useMixins or forceEnableMixins to be true, as the mod uses mixins to function.
-            """
-    )
+            """)
     public boolean stripForgeRequirements = false;
 
     /** See annotation */
