@@ -40,7 +40,8 @@ public class AccessTransformerModule implements GTNHModule {
         final ConfigurableFileCollection atList = mcpTasks.getDeobfuscationATs();
 
         if (!gtnh.configuration.accessTransformersFile.isEmpty()) {
-            for (String atFile : gtnh.configuration.accessTransformersFile.split(" ")) {
+            String commaSeparated = gtnh.configuration.accessTransformersFile.replaceAll("\\s+(\\s*)", ",$1");
+            for (String atFile : commaSeparated.split(",")) {
                 final Path targetFile = metaInf.resolve(atFile.trim());
                 if (!Files.exists(metaInf.resolve(targetFile))) {
                     throw new GradleException(

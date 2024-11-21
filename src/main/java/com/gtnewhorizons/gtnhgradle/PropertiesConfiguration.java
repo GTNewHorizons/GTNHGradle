@@ -423,8 +423,9 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = """
             Specify the configuration file for Forge's access transformers here. It must be placed into /src/main/resources/META-INF/
-            There can be multiple files in a space-separated list.
+            There can be multiple files in a space-separated or comma-separated list.
             Example value: mymodid_at.cfg nei_at.cfg
+            Example value: mymodid_at.cfg,nei_at.cfg
             """)
     public @NotNull String accessTransformersFile = "";
 
