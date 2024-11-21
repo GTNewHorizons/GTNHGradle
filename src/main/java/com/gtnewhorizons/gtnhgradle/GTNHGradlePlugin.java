@@ -203,17 +203,47 @@ public class GTNHGradlePlugin implements Plugin<Project> {
      */
     public enum MinecraftVersion {
 
-        V1_7_10("1.7.10"),
-        V1_12_2("1.12.2");
+        V1_7_10("1.7.10", "10.13.4.1614", "stable", "12", UpdateableConstants.NEWEST_UNIMIXINS, UpdateableConstants.NEWEST_LWJGL3IFY),
+        V1_12_2("1.12.2", "14.23.5.2847", "stable", "39", UpdateableConstants.NEWEST_MIXINBOOTER, UpdateableConstants.NEWEST_LWJGL3IFY_1122);
 
         private final String version;
+        private final String forgeVersion;
+        private final String mappingsChannel;
+        private final String mappingsVersion;
+        private final String mixinProviderSpec;
+        private final String lwjgl3ifySpec;
 
-        MinecraftVersion(String version) {
+        MinecraftVersion(String version, String forgeVersion, String mappingsChannel, String mappingsVersion, String mixinProviderSpec, String lwjgl3ifySpec) {
             this.version = version;
+            this.forgeVersion = forgeVersion;
+            this.mappingsChannel = mappingsChannel;
+            this.mappingsVersion = mappingsVersion;
+            this.mixinProviderSpec = mixinProviderSpec;
+            this.lwjgl3ifySpec = lwjgl3ifySpec;
         }
 
         public String getVersion() {
             return version;
+        }
+
+        public String getForgeVersion() {
+            return forgeVersion;
+        }
+
+        public String getMappingsChannel() {
+            return mappingsChannel;
+        }
+
+        public String getMappingsVersion() {
+            return mappingsVersion;
+        }
+
+        public String getMixinProviderSpec() {
+            return mixinProviderSpec;
+        }
+
+        public String getLwjgl3ifySpec() {
+            return lwjgl3ifySpec;
         }
 
         public static MinecraftVersion getByVersionString(String version) {

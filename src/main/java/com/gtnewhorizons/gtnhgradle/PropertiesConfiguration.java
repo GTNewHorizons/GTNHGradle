@@ -282,30 +282,6 @@ public final class PropertiesConfiguration {
     public @NotNull String minecraftVersion = "1.7.10";
 
     /** See annotation */
-    @Prop(name = "forgeVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Version of Minecraft Forge to target
-        """)
-    public @NotNull String forgeVersion = "10.13.4.1614";
-
-    /** See annotation */
-    @Prop(name = "channel", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify an MCP channel for dependency deobfuscation and the deobfParams task.
-        """)
-    public @NotNull String channel = "stable";
-
-    /** See annotation */
-    @Prop(name = "mappingsVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify an MCP mappings version for dependency deobfuscation and the deobfParams task.
-        """)
-    public @NotNull String mappingsVersion = "12";
-
-    /** See annotation */
-    @Prop(name = "remoteMappings", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Defines other MCP mappings for dependency deobfuscation.
-        """)
-    public @NotNull String remoteMappings = "https://raw.githubusercontent.com/MinecraftForge/FML/1.7.10/conf/";
-
-    /** See annotation */
     @Prop(
         name = "developmentEnvironmentUserName",
         isSettings = false,

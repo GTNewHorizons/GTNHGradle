@@ -109,21 +109,13 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         systemProperty("gradlestart.bouncerServer", "com.gtnewhorizons.retrofuturabootstrap.Main");
 
         if (gtnh.configuration.usesMixins) {
-            String mixinSpec;
-            if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {
-                mixinSpec = UpdateableConstants.NEWEST_UNIMIXINS;
-            } else if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
-                mixinSpec = UpdateableConstants.NEWEST_MIXINBOOTER;
-            } else {
-                throw new IllegalArgumentException(
-                    "Unsupported Minecraft Version: " + gtnh.configuration.minecraftVersion);
-            }
+            final String mixinSpec = gtnh.minecraftVersion.getMixinProviderSpec();
             this.getExtraJvmArgs()
                 .addAll(project.provider(() -> {
                     final Configuration mixinCfg = project.getConfigurations()
                         .detachedConfiguration(
                             project.getDependencies()
-                                .create(UpdateableConstants.NEWEST_UNIMIXINS));
+                                .create(mixinSpec));
                     mixinCfg.setCanBeConsumed(false);
                     mixinCfg.setCanBeResolved(true);
                     mixinCfg.setTransitive(false);

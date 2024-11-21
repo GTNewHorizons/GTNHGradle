@@ -30,7 +30,7 @@ public class UpdateableConstants {
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
     public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.4";
-    /** Latest version of lwjgl3ify for modern Java support on 1.12 */
+    /** Latest version of lwjgl3ify for modern Java support on 1.12.2 */
     public static final @NotNull String NEWEST_LWJGL3IFY_1122 = "io.github.twilightflower:lwjgl3ify:1.0.1";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases

@@ -100,18 +100,8 @@ public abstract class ModernJavaModule implements GTNHModule {
         });
         ext.set("java17PatchDependenciesCfg", java17PatchDependenciesCfg);
 
-        String mixinSpec = "";
-        String lwjgl3ifySpec = "";
-
-        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {
-            mixinSpec = UpdateableConstants.NEWEST_UNIMIXINS;
-            lwjgl3ifySpec = UpdateableConstants.NEWEST_LWJGL3IFY;
-        } else if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
-            mixinSpec = UpdateableConstants.NEWEST_MIXINBOOTER;
-            lwjgl3ifySpec = UpdateableConstants.NEWEST_LWJGL3IFY_1122;
-        } else {
-            throw new IllegalArgumentException("Unsupported Minecraft Version: " + gtnh.configuration.minecraftVersion);
-        }
+        final String mixinSpec = gtnh.minecraftVersion.getMixinProviderSpec();
+        final String lwjgl3ifySpec = gtnh.minecraftVersion.getLwjgl3ifySpec();
 
         if (!gtnh.configuration.modId.equals("lwjgl3ify")) {
             deps.add(java17DependenciesCfg.getName(), lwjgl3ifySpec);

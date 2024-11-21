@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
+import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.io.FileUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
@@ -74,15 +75,15 @@ public class UtilityModule implements GTNHModule {
                 final PropertiesConfiguration props = gtnh.configuration;
                 final String mcpDir = project.getGradle()
                     .getGradleUserHomeDir() + "/caches/minecraft/de/oceanlabs/mcp/mcp_"
-                    + props.channel
+                    + gtnh.minecraftVersion.getMappingsChannel()
                     + "/"
-                    + props.mappingsVersion;
+                    + gtnh.minecraftVersion.getMappingsVersion();
                 final String mcpZIP = mcpDir + "/mcp_"
-                    + props.channel
+                    + gtnh.minecraftVersion.getMappingsChannel()
                     + "-"
-                    + props.mappingsVersion
+                    + gtnh.minecraftVersion.getMappingsVersion()
                     + "-"
-                    + props.minecraftVersion
+                    + gtnh.minecraftVersion.getVersion()
                     + ".zip";
                 final String paramsCSV = mcpDir + "/params.csv";
 
@@ -91,17 +92,17 @@ public class UtilityModule implements GTNHModule {
                 download.run(ds -> {
                     try {
                         ds.src(
-                            "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_" + props.channel
+                            "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_" + gtnh.minecraftVersion.getMappingsChannel()
                                 + "/"
-                                + props.mappingsVersion
+                                + gtnh.minecraftVersion.getMappingsVersion()
                                 + "-"
-                                + props.minecraftVersion
+                                + gtnh.minecraftVersion.getVersion()
                                 + "/mcp_"
-                                + props.channel
+                                + gtnh.minecraftVersion.getMappingsChannel()
                                 + "-"
-                                + props.mappingsVersion
+                                + gtnh.minecraftVersion.getMappingsVersion()
                                 + "-"
-                                + props.minecraftVersion
+                                + gtnh.minecraftVersion.getVersion()
                                 + ".zip");
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
