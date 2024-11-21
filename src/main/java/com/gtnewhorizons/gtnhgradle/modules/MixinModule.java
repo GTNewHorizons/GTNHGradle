@@ -60,7 +60,9 @@ public class MixinModule implements GTNHModule {
             .getExtraProperties()
             .set("mixinProviderSpec", mixinProviderSpec);
 
-        final String mixingConfigRefMap = "mixins." + gtnh.configuration.modId + ".refmap.json";
+        final String mixingConfigRefMap = gtnh.configuration.mixinConfigRefmap.isEmpty()
+            ? "mixins." + gtnh.configuration.modId + ".refmap.json"
+            : gtnh.configuration.mixinConfigRefmap;
         final String mixinSourceSetName = gtnh.configuration.separateMixinSourceSet.trim();
         final SourceSetContainer sourceSets = project.getExtensions()
             .getByType(JavaPluginExtension.class)

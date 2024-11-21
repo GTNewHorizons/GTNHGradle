@@ -472,6 +472,17 @@ public final class PropertiesConfiguration {
 
     /** See annotation */
     @Prop(
+        name = "mixinConfigRefmap",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            Location of the mixin config refmap. If left, blank, defaults to "mixins.${modId}.refmap.json". Target file must have the "json" extension.
+            """)
+    public @NotNull String mixinConfigRefmap = "";
+
+    /** See annotation */
+    @Prop(
         name = "coreModClass",
         isSettings = false,
         preferPopulated = true,
