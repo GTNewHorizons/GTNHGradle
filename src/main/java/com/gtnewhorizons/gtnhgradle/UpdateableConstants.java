@@ -20,7 +20,7 @@ public class UpdateableConstants {
     public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.18";
 
     /** Latest version of MixinBooter for 1.12.2 */
-    public static final String NEWEST_MIXINBOOTER = "zone.rong:mixinbooter:9.3";
+    public static final String NEWEST_MIXINBOOTER = "zone.rong:mixinbooter:10.2";
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
