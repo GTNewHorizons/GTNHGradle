@@ -45,8 +45,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -405,20 +403,15 @@ public abstract class ToolchainModule implements GTNHModule {
                 manifest.attributes(ImmutableMap.of("FMLCorePlugin", props.modGroup + "." + props.coreModClass));
             }
             if (props.usesMixins) {
-                final Path output = project.file(
-                    "src/" + modUtils.mixinSourceSet.get()
-                        .getName() + "/resources/mixins." + gtnh.configuration.modId + ".json")
-                    .toPath();
-                if (Files.exists(output)) {
+                if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {
                     manifest.attributes(
                         ImmutableMap.of(
                             "TweakClass",
                             "org.spongepowered.asm.launch.MixinTweaker",
                             "MixinConfigs",
-                            "mixins." + props.modId + ".json",
-                            "ForceLoadAsMod",
-                            !props.containsMixinsAndOrCoreModOnly));
+                            "mixins." + props.modId + ".json"));
                 }
+                manifest.attributes(ImmutableMap.of("ForceLoadAsMod", !props.containsMixinsAndOrCoreModOnly));
             }
         });
         project.getExtensions()
