@@ -743,6 +743,20 @@ public final class PropertiesConfiguration {
             This is meant to be set in $HOME/.gradle/gradle.properties.
             """)
     public boolean ideaCheckSpotlessOnBuild = true;
+
+    @Prop(
+        name = "releaseType",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        defaultInComment = "release",
+        docComment = """
+            This project's release type on CurseForge and/or Modrinth.
+            Alternatively this can be set with the 'RELEASE_TYPE' environment variable.
+            Allowed types: release, beta, alpha
+            Leave blank to use the old release type, with -pre designations
+            """)
+    public String releaseType = "release";
     // </editor-fold>
     // </editor-fold>
 
