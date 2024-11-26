@@ -94,6 +94,9 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** Logging service used by the plugin */
         public final @NotNull Logger logger;
 
+        /** The MinecraftVersion enum associated with this project */
+        public final @NotNull MinecraftVersion minecraftVersion;
+
         /** Parsed properties associated with this project */
         public @NotNull PropertiesConfiguration configuration;
 
@@ -142,6 +145,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public GTNHExtension(final Project project) {
             logger = Logging.getLogger(GTNHGradlePlugin.class);
             configuration = PropertiesConfiguration.GradleUtils.makePropertiesFrom(project);
+            minecraftVersion = MinecraftVersion.getByVersionString(configuration.minecraftVersion);
         }
 
         /**
@@ -193,5 +197,87 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** @return Gradle-provided injected service */
         @Inject
         public abstract @NotNull ExecOperations getExecOperations();
+    }
+
+    /**
+     * The enum stored in the GTNHExtension object representing the selected MC version
+     */
+    public enum MinecraftVersion {
+
+        /** Minecraft 1.7.10 */
+        V1_7_10("1.7.10", "10.13.4.1614", "stable", "12", UpdateableConstants.NEWEST_UNIMIXINS,
+            UpdateableConstants.NEWEST_LWJGL3IFY, "unimixins", "unimixins"),
+
+        /** Minecraft 1.12.2 */
+        V1_12_2("1.12.2", "14.23.5.2847", "stable", "39", UpdateableConstants.NEWEST_MIXINBOOTER,
+            UpdateableConstants.NEWEST_LWJGL3IFY_1122, "mixinbooter", "mixin-booter");
+
+        /**
+         * Minecraft Version
+         */
+        public final String version;
+
+        /**
+         * Forge Version
+         */
+        public final String forgeVersion;
+
+        /**
+         * Obfuscation Mappings Channel
+         */
+        public final String mappingsChannel;
+
+        /**
+         * Obfuscation Mappings Versions
+         */
+        public final String mappingsVersion;
+
+        /**
+         * The full dependency spec for the version's Mixin provider(e.g. unimixins or mixinbooter)
+         */
+        public final String mixinProviderSpec;
+
+        /**
+         * The full dependency spec for the version's lwjgl3ify
+         */
+        public final String lwjgl3ifySpec;
+
+        /**
+         * The modrinth project slug for the version's mixin provider. Used to create relation on Modrinth publishing
+         */
+        public final String modrinthMixinSlug;
+
+        /**
+         * The curseforge project slug for the version's mixin provider. Used to create relation on Curseforge
+         * publishing
+         */
+        public final String curseMixinSlug;
+
+        MinecraftVersion(String version, String forgeVersion, String mappingsChannel, String mappingsVersion,
+            String mixinProviderSpec, String lwjgl3ifySpec, String modrinthMixinSlug, String curseMixinSlug) {
+            this.version = version;
+            this.forgeVersion = forgeVersion;
+            this.mappingsChannel = mappingsChannel;
+            this.mappingsVersion = mappingsVersion;
+            this.mixinProviderSpec = mixinProviderSpec;
+            this.lwjgl3ifySpec = lwjgl3ifySpec;
+            this.modrinthMixinSlug = modrinthMixinSlug;
+            this.curseMixinSlug = curseMixinSlug;
+        }
+
+        /**
+         * Find a MinecraftVersion based on the MC version string, e.g. "1.7.10" or "1.12.2"
+         *
+         * @param version The minecraft version string
+         * @return The matching MinecraftVersion enum
+         */
+        public static MinecraftVersion getByVersionString(String version) {
+            for (MinecraftVersion v : MinecraftVersion.values()) {
+                if (v.version.equals(version)) {
+                    return v;
+                }
+            }
+            throw new IllegalArgumentException("Invalid Minecraft Version" + version);
+        }
     }
 }

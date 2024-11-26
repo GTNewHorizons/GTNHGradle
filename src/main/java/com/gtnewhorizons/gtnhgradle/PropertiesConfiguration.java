@@ -282,30 +282,6 @@ public final class PropertiesConfiguration {
     public @NotNull String minecraftVersion = "1.7.10";
 
     /** See annotation */
-    @Prop(name = "forgeVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Version of Minecraft Forge to target
-        """)
-    public @NotNull String forgeVersion = "10.13.4.1614";
-
-    /** See annotation */
-    @Prop(name = "channel", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify an MCP channel for dependency deobfuscation and the deobfParams task.
-        """)
-    public @NotNull String channel = "stable";
-
-    /** See annotation */
-    @Prop(name = "mappingsVersion", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify an MCP mappings version for dependency deobfuscation and the deobfParams task.
-        """)
-    public @NotNull String mappingsVersion = "12";
-
-    /** See annotation */
-    @Prop(name = "remoteMappings", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Defines other MCP mappings for dependency deobfuscation.
-        """)
-    public @NotNull String remoteMappings = "https://raw.githubusercontent.com/MinecraftForge/FML/1.7.10/conf/";
-
-    /** See annotation */
     @Prop(
         name = "developmentEnvironmentUserName",
         isSettings = false,
@@ -340,6 +316,21 @@ public final class PropertiesConfiguration {
             Turns most publicly visible List, Map, etc. into proper List<E>, Map<K, V> types.
             """)
     public boolean enableGenericInjection = false;
+
+    /** See annotation */
+    @Prop(
+        name = "stripForgeRequirements",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            1.12.2 ONLY
+            Some mods require a specific forge version to launch in. When you need to use one of those mods as a dependency,
+            and cannot launch with the forge version required, enable this to strip the forge version requirements from that mod.
+            This will add 'strip-latest-forge-requirements' as 'runtimeOnlyNonPublishable'.
+            Requires useMixins or forceEnableMixins to be true, as the mod uses mixins to function.
+            """)
+    public boolean stripForgeRequirements = false;
 
     /** See annotation */
     @Prop(
@@ -431,8 +422,9 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = """
             Specify the configuration file for Forge's access transformers here. It must be placed into /src/main/resources/META-INF/
-            There can be multiple files in a space-separated list.
+            There can be multiple files in a space-separated or comma-separated list.
             Example value: mymodid_at.cfg nei_at.cfg
+            Example value: mymodid_at.cfg,nei_at.cfg
             """)
     public @NotNull String accessTransformersFile = "";
 
@@ -477,6 +469,17 @@ public final class PropertiesConfiguration {
             Specify the package that contains all of your Mixins. You may only place Mixins in this package or the build will fail!
             """)
     public @NotNull String mixinsPackage = "";
+
+    /** See annotation */
+    @Prop(
+        name = "mixinConfigRefmap",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            Location of the mixin config refmap. If left, blank, defaults to "mixins.${modId}.refmap.json". Target file must have the "json" extension.
+            """)
+    public @NotNull String mixinConfigRefmap = "";
 
     /** See annotation */
     @Prop(
@@ -549,7 +552,10 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Adds CurseMaven, Modrinth, and some more well-known 1.7.10 repositories.
+            Adds the following well-known repositories:
+            CurseMaven
+            Modrinth
+            BlameJared(1.12.2 only)
             """)
     public boolean includeWellKnownRepositories = true;
 
@@ -564,6 +570,7 @@ public final class PropertiesConfiguration {
             list of strings, with the acceptable keys being(case does not matter):
             cursemaven
             modrinth
+            blamejared
             """)
     public @NotNull String excludeWellKnownRepositories = "";
 
@@ -736,6 +743,20 @@ public final class PropertiesConfiguration {
             This is meant to be set in $HOME/.gradle/gradle.properties.
             """)
     public boolean ideaCheckSpotlessOnBuild = true;
+
+    @Prop(
+        name = "releaseType",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        defaultInComment = "release",
+        docComment = """
+            This project's release type on CurseForge and/or Modrinth.
+            Alternatively this can be set with the 'RELEASE_TYPE' environment variable.
+            Allowed types: release, beta, alpha
+            Leave blank to use the old release type, with -pre designations
+            """)
+    public String releaseType = "release";
     // </editor-fold>
     // </editor-fold>
 

@@ -1,7 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.tasks;
 
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
-import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.minecraft.MinecraftTasks;
@@ -97,6 +96,7 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
             mcpTasks.getTaskPackagePatchedMc(),
             "jar");
         getMainClass().set((side == Distribution.CLIENT) ? "GradleStart" : "GradleStartServer");
+        getMcVersion().set(gtnh.configuration.minecraftVersion);
         getUsername().set(minecraft.getUsername());
         getUserUUID().set(minecraft.getUserUUID());
         if (side == Distribution.DEDICATED_SERVER) {
@@ -108,12 +108,13 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         systemProperty("gradlestart.bouncerServer", "com.gtnewhorizons.retrofuturabootstrap.Main");
 
         if (gtnh.configuration.usesMixins) {
+            final String mixinSpec = gtnh.minecraftVersion.mixinProviderSpec;
             this.getExtraJvmArgs()
                 .addAll(project.provider(() -> {
                     final Configuration mixinCfg = project.getConfigurations()
                         .detachedConfiguration(
                             project.getDependencies()
-                                .create(UpdateableConstants.NEWEST_UNIMIXINS));
+                                .create(mixinSpec));
                     mixinCfg.setCanBeConsumed(false);
                     mixinCfg.setCanBeResolved(true);
                     mixinCfg.setTransitive(false);

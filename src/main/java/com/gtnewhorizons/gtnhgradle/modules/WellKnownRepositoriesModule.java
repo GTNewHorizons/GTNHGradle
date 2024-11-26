@@ -48,5 +48,12 @@ public class WellKnownRepositoriesModule implements GTNHModule {
                 ec.filter(f -> { f.includeGroup("maven.modrinth"); });
             });
         }
+
+        if (!excludes.contains("BLAMEJARED") && gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
+            repos.maven(mvn -> {
+                mvn.setName("BlameJared Maven");
+                mvn.setUrl("https://maven.blamejared.com");
+            });
+        }
     }
 }

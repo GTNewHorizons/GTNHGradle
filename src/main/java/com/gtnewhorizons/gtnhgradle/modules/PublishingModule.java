@@ -102,8 +102,19 @@ public class PublishingModule implements GTNHModule {
                 .set(gtnh.configuration.modrinthProjectId);
             mr.getVersionNumber()
                 .set(modVersion);
-            mr.getVersionType()
-                .set(modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release"));
+            String versionType = System.getenv("RELEASE_TYPE");
+            if (versionType != null) {
+                mr.getVersionType()
+                    .set(versionType);
+            } else {
+                if (!gtnh.configuration.releaseType.isEmpty()) {
+                    mr.getVersionType()
+                        .set(gtnh.configuration.releaseType);
+                } else {
+                    mr.getVersionType()
+                        .set(modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release"));
+                }
+            }
             if (changelogFile.exists()) {
                 final String contents = new String(Files.readAllBytes(changelogFile.toPath()), StandardCharsets.UTF_8);
                 mr.getChangelog()
@@ -114,7 +125,7 @@ public class PublishingModule implements GTNHModule {
             mr.getAdditionalFiles()
                 .set(project.provider(() -> getSecondaryArtifacts(project, gtnh)));
             mr.getGameVersions()
-                .add(gtnh.configuration.minecraftVersion);
+                .add(gtnh.minecraftVersion.version);
             mr.getLoaders()
                 .add("forge");
             mr.getDebugMode()
@@ -133,7 +144,7 @@ public class PublishingModule implements GTNHModule {
                 }
             }
             if (gtnh.configuration.usesMixins) {
-                addModrinthDep(project, "required", "project", "unimixins");
+                addModrinthDep(project, "required", "project", gtnh.minecraftVersion.modrinthMixinSlug);
             }
             project.getTasks()
                 .named("modrinth")
@@ -168,8 +179,17 @@ public class PublishingModule implements GTNHModule {
                             artifact.changelogType = "markdown";
                             artifact.changelog = changelogFile;
                         }
-                        artifact.releaseType = modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release");
-                        artifact.addGameVersion(gtnh.configuration.minecraftVersion, "Forge");
+                        String versionType = System.getenv("RELEASE_TYPE");
+                        if (versionType != null) {
+                            artifact.releaseType = versionType;
+                        } else {
+                            if (!gtnh.configuration.releaseType.isEmpty()) {
+                                artifact.releaseType = gtnh.configuration.releaseType;
+                            } else {
+                                artifact.releaseType = modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release");
+                            }
+                        }
+                        artifact.addGameVersion(gtnh.minecraftVersion.version, "Forge");
                         artifact.addModLoader("Forge");
 
                         if (!gtnh.configuration.curseForgeRelations.isEmpty()) {
@@ -184,7 +204,7 @@ public class PublishingModule implements GTNHModule {
                             }
                         }
                         if (gtnh.configuration.usesMixins) {
-                            artifact.addRelation("unimixins", "requiredDependency");
+                            artifact.addRelation(gtnh.minecraftVersion.curseMixinSlug, "requiredDependency");
                         }
 
                         for (final Object secondary : getSecondaryArtifacts(project, gtnh)) {

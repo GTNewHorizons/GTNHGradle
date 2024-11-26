@@ -100,22 +100,27 @@ public abstract class ModernJavaModule implements GTNHModule {
         });
         ext.set("java17PatchDependenciesCfg", java17PatchDependenciesCfg);
 
+        final String mixinSpec = gtnh.minecraftVersion.mixinProviderSpec;
+        final String lwjgl3ifySpec = gtnh.minecraftVersion.lwjgl3ifySpec;
+
         if (!gtnh.configuration.modId.equals("lwjgl3ify")) {
-            deps.add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY);
-            ((ModuleDependency) deps
-                .add(java17PatchDependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY + ":forgePatches"))
-                    .setTransitive(false);
+            deps.add(java17DependenciesCfg.getName(), lwjgl3ifySpec);
+            ((ModuleDependency) deps.add(java17PatchDependenciesCfg.getName(), lwjgl3ifySpec + ":forgePatches"))
+                .setTransitive(false);
         }
-        if (!gtnh.configuration.modId.equals("hodgepodge")) {
+
+        if (!gtnh.configuration.modId.equals("hodgepodge")
+            && gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {
             final ModuleDependency hodgepodge = (ModuleDependency) deps
                 .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_HODGEPODGE);
             if (gtnh.configuration.modId.equals("gtnhlib")) {
                 hodgepodge.exclude(ImmutableMap.of("module", "GTNHLib"));
             }
         }
+
         deps.getConstraints()
-            .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_UNIMIXINS)
-            .because("Use latest UniMixins known to GTNHGradle.");
+            .add(java17DependenciesCfg.getName(), mixinSpec)
+            .because("Use latest UniMixins or MixinBooter known to GTNHGradle.");
 
         final List<String> java17JvmArgs = new ArrayList<>(Arrays.asList(JAVA_17_ARGS));
         final List<String> hotswapJvmArgs = new ArrayList<>(Arrays.asList(HOTSWAP_JVM_ARGS));

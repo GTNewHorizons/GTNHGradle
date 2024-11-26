@@ -47,13 +47,22 @@ public class MixinModule implements GTNHModule {
             }
         }
 
-        final String mixinProviderSpecNoClassifer = UpdateableConstants.NEWEST_UNIMIXINS;
-        final String mixinProviderSpec = mixinProviderSpecNoClassifer + ":dev";
+        final String mixinProviderSpecNoClassifer = gtnh.minecraftVersion.mixinProviderSpec;
+        String mixinProviderSpec;
+
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {
+            mixinProviderSpec = mixinProviderSpecNoClassifer + ":dev";
+        } else {
+            mixinProviderSpec = mixinProviderSpecNoClassifer;
+        }
+
         project.getExtensions()
             .getExtraProperties()
             .set("mixinProviderSpec", mixinProviderSpec);
 
-        final String mixingConfigRefMap = "mixins." + gtnh.configuration.modId + ".refmap.json";
+        final String mixingConfigRefMap = gtnh.configuration.mixinConfigRefmap.isEmpty()
+            ? "mixins." + gtnh.configuration.modId + ".refmap.json"
+            : gtnh.configuration.mixinConfigRefmap;
         final String mixinSourceSetName = gtnh.configuration.separateMixinSourceSet.trim();
         final SourceSetContainer sourceSets = project.getExtensions()
             .getByType(JavaPluginExtension.class)
@@ -126,6 +135,13 @@ public class MixinModule implements GTNHModule {
                 });
         } else if (gtnh.configuration.forceEnableMixins) {
             deps.add("runtimeOnlyNonPublishable", mixinProviderSpec);
+        }
+
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
+            if ((gtnh.configuration.usesMixins || gtnh.configuration.forceEnableMixins)
+                && gtnh.configuration.stripForgeRequirements) {
+                deps.add("runtimeOnlyNonPublishable", UpdateableConstants.NEWEST_STRIP_FORGE_REQUIREMENTS);
+            }
         }
 
         // Replace old mixin mods with unimixins

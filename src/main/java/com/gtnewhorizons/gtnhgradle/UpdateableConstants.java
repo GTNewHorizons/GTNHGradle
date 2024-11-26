@@ -16,8 +16,11 @@ public class UpdateableConstants {
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
     public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.2";
 
-    /** Latest version of UniMixins */
+    /** Latest version of UniMixins for 1.7.10 */
     public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.18";
+
+    /** Latest version of MixinBooter for 1.12.2 */
+    public static final String NEWEST_MIXINBOOTER = "zone.rong:mixinbooter:10.2";
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
@@ -27,6 +30,8 @@ public class UpdateableConstants {
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
     public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.4";
+    /** Latest version of lwjgl3ify for modern Java support on 1.12.2 */
+    public static final @NotNull String NEWEST_LWJGL3IFY_1122 = "io.github.twilightflower:lwjgl3ify:1.0.1";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.5.74";
@@ -50,4 +55,7 @@ public class UpdateableConstants {
 
     /** Latest Industrial Craft 2 version */
     public static final @NotNull String NEWEST_IC2_SPEC = "curse.maven:ic2-242638:2353971";
+
+    /** Latest strip-latest-forge-requirements for 1.12.2 */
+    public static final @NotNull String NEWEST_STRIP_FORGE_REQUIREMENTS = "com.cleanroommc:strip-latest-forge-requirements:1.0";
 }

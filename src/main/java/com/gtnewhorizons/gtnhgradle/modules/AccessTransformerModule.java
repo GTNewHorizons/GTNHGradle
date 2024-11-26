@@ -33,6 +33,9 @@ public class AccessTransformerModule implements GTNHModule {
             .resolve("main")
             .resolve("resources")
             .resolve("META-INF");
+        final Path resources = projectRoot.resolve("src")
+            .resolve("main")
+            .resolve("resources");
 
         final SourceSetContainer sourceSets = project.getExtensions()
             .getByType(JavaPluginExtension.class)
@@ -40,11 +43,18 @@ public class AccessTransformerModule implements GTNHModule {
         final ConfigurableFileCollection atList = mcpTasks.getDeobfuscationATs();
 
         if (!gtnh.configuration.accessTransformersFile.isEmpty()) {
-            for (String atFile : gtnh.configuration.accessTransformersFile.split(" ")) {
-                final Path targetFile = metaInf.resolve(atFile.trim());
-                if (!Files.exists(metaInf.resolve(targetFile))) {
-                    throw new GradleException(
-                        "Could not resolve \"accessTransformersFile\"! Could not find " + targetFile);
+            String commaSeparated = gtnh.configuration.accessTransformersFile.replaceAll("\\s+(\\s*)", ",$1");
+            for (String atFile : commaSeparated.split(",")) {
+                atFile = atFile.trim();
+                final Path targetFile;
+                final Path targetFileResources = resources.resolve(atFile);
+                final Path targetFileMetaInf = metaInf.resolve(atFile);
+                if (Files.exists(resources.resolve(targetFileResources))) {
+                    targetFile = targetFileResources;
+                } else if (Files.exists(metaInf.resolve(targetFileMetaInf))) {
+                    targetFile = targetFileMetaInf;
+                } else {
+                    throw new GradleException("Could not resolve \"accessTransformersFile\"! Could not find " + atFile);
                 }
                 atList.from(projectRoot.relativize(targetFile));
             }

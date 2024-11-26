@@ -98,6 +98,17 @@ public abstract class ToolchainModule implements GTNHModule {
             });
         });
 
+        if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_12_2) {
+            repos.maven(mvn -> {
+                mvn.setName("Cleanroom Maven");
+                mvn.setUrl("https://maven.cleanroommc.com");
+            });
+            repos.maven(mvn -> {
+                mvn.setName("GTCEu Maven");
+                mvn.setUrl("https://maven.gtceu.com");
+            });
+        }
+
         // Provide a runtimeOnlyNonPublishable configuration
         final ConfigurationContainer cfg = project.getConfigurations();
         final Configuration runtimeOnlyNonPublishable = cfg.create("runtimeOnlyNonPublishable", c -> {
@@ -223,6 +234,9 @@ public abstract class ToolchainModule implements GTNHModule {
             .getByType(MCPTasks.class);
         final ModUtils modUtils = project.getExtensions()
             .getByType(ModUtils.class);
+
+        minecraft.getMcVersion()
+            .set(gtnh.configuration.minecraftVersion);
 
         // Tag injection
         if (!gtnh.configuration.replaceGradleTokenInFile.isEmpty()) {
@@ -351,10 +365,14 @@ public abstract class ToolchainModule implements GTNHModule {
                 .provider(
                     () -> Objects.requireNonNull(project.getVersion())
                         .toString());
-            props.put("minecraftVersion", minecraft.getMcVersion());
+            props.put(
+                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10 ? "minecraftVersion" : "mcversion",
+                minecraft.getMcVersion());
             props.put("modId", gtnh.configuration.modId);
             props.put("modName", gtnh.configuration.modName);
-            props.put("modVersion", modVersion);
+            props.put(
+                gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10 ? "modVersion" : "version",
+                modVersion);
         }
 
         tasks.named("processResources", ProcessResources.class)
@@ -385,14 +403,15 @@ public abstract class ToolchainModule implements GTNHModule {
                 manifest.attributes(ImmutableMap.of("FMLCorePlugin", props.modGroup + "." + props.coreModClass));
             }
             if (props.usesMixins) {
-                manifest.attributes(
-                    ImmutableMap.of(
-                        "TweakClass",
-                        "org.spongepowered.asm.launch.MixinTweaker",
-                        "MixinConfigs",
-                        "mixins." + props.modId + ".json",
-                        "ForceLoadAsMod",
-                        !props.containsMixinsAndOrCoreModOnly));
+                if (gtnh.minecraftVersion == GTNHGradlePlugin.MinecraftVersion.V1_7_10) {
+                    manifest.attributes(
+                        ImmutableMap.of(
+                            "TweakClass",
+                            "org.spongepowered.asm.launch.MixinTweaker",
+                            "MixinConfigs",
+                            "mixins." + props.modId + ".json"));
+                }
+                manifest.attributes(ImmutableMap.of("ForceLoadAsMod", !props.containsMixinsAndOrCoreModOnly));
             }
         });
         project.getExtensions()
