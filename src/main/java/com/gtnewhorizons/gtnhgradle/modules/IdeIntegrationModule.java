@@ -177,9 +177,12 @@ public class IdeIntegrationModule implements GTNHModule {
             final RunMinecraftTask runClient = tasks.named("runClient", RunMinecraftTask.class)
                 .get();
             final var run = ijClientRun.get();
-            run.setWorkingDirectory(
-                runClient.getWorkingDir()
-                    .getAbsolutePath());
+            String runDir = gtnh.configuration.separateRunDirs ? runClient.getWorkingDir()
+                .getAbsolutePath() + File.separatorChar
+                + "client"
+                : runClient.getWorkingDir()
+                    .getAbsolutePath();
+            run.setWorkingDirectory(runDir);
             run.setProgramParameters(quotedJoin(runClient.calculateArgs()));
             run.setJvmArgs(
                 quotedJoin(runClient.calculateJvmArgs()) + ' ' + quotedPropJoin(runClient.getSystemProperties()));
@@ -192,9 +195,12 @@ public class IdeIntegrationModule implements GTNHModule {
             final RunMinecraftTask runServer = tasks.named("runServer", RunMinecraftTask.class)
                 .get();
             final var run = ijServerRun.get();
-            run.setWorkingDirectory(
-                runServer.getWorkingDir()
-                    .getAbsolutePath());
+            String runDir = gtnh.configuration.separateRunDirs ? runServer.getWorkingDir()
+                .getAbsolutePath() + File.separatorChar
+                + "server"
+                : runServer.getWorkingDir()
+                    .getAbsolutePath();
+            run.setWorkingDirectory(runDir);
             run.setProgramParameters(quotedJoin(runServer.calculateArgs()));
             run.setJvmArgs(
                 quotedJoin(runServer.calculateJvmArgs()) + ' ' + quotedPropJoin(runServer.getSystemProperties()));
