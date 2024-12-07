@@ -10,26 +10,26 @@ public class UpdateableConstants {
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
     @SuppressWarnings("unused") // Used via reflection
-    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.9";
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.11.1";
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
     public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.2";
 
     /** Latest version of UniMixins */
-    public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.18";
+    public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.19";
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
-    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.5.18";
+    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.5.21";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.4";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.5";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.5.74";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.5.82";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.3.3";
