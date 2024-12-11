@@ -177,12 +177,8 @@ public class IdeIntegrationModule implements GTNHModule {
             final RunMinecraftTask runClient = tasks.named("runClient", RunMinecraftTask.class)
                 .get();
             final var run = ijClientRun.get();
-            String runDir = gtnh.configuration.separateRunDirs ? runClient.getWorkingDir()
-                .getAbsolutePath() + File.separatorChar
-                + "client"
-                : runClient.getWorkingDir()
-                    .getAbsolutePath();
-            run.setWorkingDirectory(runDir);
+            File clientFile = new File(runClient.getWorkingDir(), gtnh.configuration.separateRunDirs ? "client" : "");
+            run.setWorkingDirectory(clientFile.getAbsolutePath());
             run.setProgramParameters(quotedJoin(runClient.calculateArgs()));
             run.setJvmArgs(
                 quotedJoin(runClient.calculateJvmArgs()) + ' ' + quotedPropJoin(runClient.getSystemProperties()));
@@ -195,12 +191,8 @@ public class IdeIntegrationModule implements GTNHModule {
             final RunMinecraftTask runServer = tasks.named("runServer", RunMinecraftTask.class)
                 .get();
             final var run = ijServerRun.get();
-            String runDir = gtnh.configuration.separateRunDirs ? runServer.getWorkingDir()
-                .getAbsolutePath() + File.separatorChar
-                + "server"
-                : runServer.getWorkingDir()
-                    .getAbsolutePath();
-            run.setWorkingDirectory(runDir);
+            File serverFile = new File(runServer.getWorkingDir(), gtnh.configuration.separateRunDirs ? "server" : "");
+            run.setWorkingDirectory(serverFile.getAbsolutePath());
             run.setProgramParameters(quotedJoin(runServer.calculateArgs()));
             run.setJvmArgs(
                 quotedJoin(runServer.calculateJvmArgs()) + ' ' + quotedPropJoin(runServer.getSystemProperties()));
