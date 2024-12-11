@@ -177,9 +177,8 @@ public class IdeIntegrationModule implements GTNHModule {
             final RunMinecraftTask runClient = tasks.named("runClient", RunMinecraftTask.class)
                 .get();
             final var run = ijClientRun.get();
-            run.setWorkingDirectory(
-                runClient.getWorkingDir()
-                    .getAbsolutePath());
+            File clientFile = new File(runClient.getWorkingDir(), gtnh.configuration.separateRunDirs ? "client" : "");
+            run.setWorkingDirectory(clientFile.getAbsolutePath());
             run.setProgramParameters(quotedJoin(runClient.calculateArgs()));
             run.setJvmArgs(
                 quotedJoin(runClient.calculateJvmArgs()) + ' ' + quotedPropJoin(runClient.getSystemProperties()));
@@ -192,9 +191,8 @@ public class IdeIntegrationModule implements GTNHModule {
             final RunMinecraftTask runServer = tasks.named("runServer", RunMinecraftTask.class)
                 .get();
             final var run = ijServerRun.get();
-            run.setWorkingDirectory(
-                runServer.getWorkingDir()
-                    .getAbsolutePath());
+            File serverFile = new File(runServer.getWorkingDir(), gtnh.configuration.separateRunDirs ? "server" : "");
+            run.setWorkingDirectory(serverFile.getAbsolutePath());
             run.setProgramParameters(quotedJoin(runServer.calculateArgs()));
             run.setJvmArgs(
                 quotedJoin(runServer.calculateJvmArgs()) + ' ' + quotedPropJoin(runServer.getSystemProperties()));
