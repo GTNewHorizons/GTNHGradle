@@ -421,7 +421,8 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Specify the configuration file for Forge's access transformers here. It must be placed into /src/main/resources/META-INF/
+            Specify the configuration file for Forge's access transformers here.
+            It can be placed into /src/main/resources/META-INF/ or /src/main/resources
             There can be multiple files in a space-separated or comma-separated list.
             Example value: mymodid_at.cfg nei_at.cfg
             Example value: mymodid_at.cfg,nei_at.cfg
@@ -582,6 +583,7 @@ public final class PropertiesConfiguration {
         required = false,
         hidden = true,
         docComment = """
+            [1.7.10 only]
             Adds a dependency override rule to use RFG-deobfuscated https://www.curseforge.com/minecraft/mc-mods/industrial-craft/files/2353971 instead of net.industrial-craft:industrialcraft-2:2.2.828-experimental:dev
             """)
     public boolean useIC2FromCurseforge = true;
@@ -627,7 +629,8 @@ public final class PropertiesConfiguration {
               type can be one of [project, version],
               and the name is the Modrinth project or version slug/id of the other mod.
         Example: required-project:fplib;optional-project:gasstation;incompatible-project:gregtech
-        Note: GTNH Mixins is automatically set as a required dependency if usesMixins = true
+        Note: on 1.7.10, UniMixins is automatically set as a required dependency if usesMixins = true
+        On 1.12.2, MixinBooter is automatically set as a required dependency
         """)
     public @NotNull String modrinthRelations = "";
 
@@ -652,7 +655,8 @@ public final class PropertiesConfiguration {
         Where type can be one of [requiredDependency, embeddedLibrary, optionalDependency, tool, incompatible],
               and the name is the CurseForge project slug of the other mod.
         Example: requiredDependency:railcraft;embeddedLibrary:cofhlib;incompatible:buildcraft
-        Note: UniMixins is automatically set as a required dependency if usesMixins = true.
+        Note: On 1.7.10, UniMixins is automatically set as a required dependency if usesMixins = true.
+        On 1.12.2, MixinBooter is automatically set as a required dependency
         """)
     public @NotNull String curseForgeRelations = "";
 
