@@ -761,6 +761,18 @@ public final class PropertiesConfiguration {
             Leave blank to use the old release type, with -pre designations
             """)
     public String releaseType = "release";
+
+    @Prop(
+        name = "separateRunDirs",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        defaultInComment = "false",
+        docComment = """
+            Separate run directories into "run/client" for runClient task, and "run/server" for runServer task.
+            Useful for debugging a server and client simultaneously. If not enabled, it will be in the standard location "run/"
+            """)
+    public boolean separateRunDirs = false;
     // </editor-fold>
     // </editor-fold>
 
