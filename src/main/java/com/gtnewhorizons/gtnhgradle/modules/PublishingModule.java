@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.gtnewhorizons.gtnhgradle.BuildConfig;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
@@ -8,9 +9,13 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.ObjectUtils;
 import com.modrinth.minotaur.Minotaur;
 import com.modrinth.minotaur.ModrinthExtension;
+import com.modrinth.minotaur.TaskModrinthUpload;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.ModDependency;
 import com.modrinth.minotaur.dependencies.VersionDependency;
+import masecla.modrinth4j.client.agent.UserAgent;
+import masecla.modrinth4j.main.ModrinthAPI;
+import masecla.modrinth4j.model.version.ProjectVersion;
 import net.darkhax.curseforgegradle.CurseForgeGradlePlugin;
 import net.darkhax.curseforgegradle.TaskPublishCurseForge;
 import org.gradle.api.Project;
@@ -135,9 +140,27 @@ public class PublishingModule implements GTNHModule {
             if (gtnh.configuration.usesMixins) {
                 addModrinthDep(project, "required", "project", "unimixins");
             }
+            final PropertiesConfiguration props = gtnh.configuration;
             project.getTasks()
-                .named("modrinth")
-                .configure(t -> t.dependsOn("build"));
+                .named("modrinth", TaskModrinthUpload.class)
+                .configure(t -> {
+                    t.dependsOn("build");
+                    t.onlyIf("Version was already published", _t -> {
+                        final String actualVersion = modVersion.get();
+                        final ModrinthAPI api = ModrinthAPI.rateLimited(
+                            UserAgent.builder()
+                                .authorUsername("eigenraven")
+                                .projectName("GTNHGradle")
+                                .projectVersion(BuildConfig.VERSION)
+                                .contact("GTNewHorizons/GTNHGradle")
+                                .build(),
+                            mrToken);
+                        final ProjectVersion existingVersion = api.versions()
+                            .getVersionByNumber(props.modrinthProjectId, actualVersion)
+                            .join();
+                        return existingVersion == null;
+                    });
+                });
             project.getTasks()
                 .named("publish")
                 .configure(t -> t.dependsOn("modrinth"));
