@@ -10,13 +10,14 @@ public class UpdateableConstants {
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
     @SuppressWarnings("unused") // Used via reflection
-    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.12.1";
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.13";
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
     public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.2";
 
     /** Latest version of UniMixins */
+    // https://github.com/LegacyModdingMC/UniMixins/releases
     public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.19";
 
     /** Latest version of Jabel for modern Java support */
@@ -26,7 +27,7 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.6.11";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.8";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.9";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.6.26";
