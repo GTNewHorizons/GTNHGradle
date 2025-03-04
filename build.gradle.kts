@@ -120,7 +120,7 @@ buildConfig {
 // Enable Jabel for java 8 bytecode from java 17 sources
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.AZUL)
     }
     withSourcesJar()
