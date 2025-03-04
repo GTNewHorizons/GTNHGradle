@@ -31,11 +31,7 @@ public class GitVersionModule implements GTNHModule {
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) {
         String versionOverride = System.getenv("VERSION");
-        if (versionOverride == null){
-            if (project.hasProperty("VERSION") &&  project.property("VERSION") instanceof String projectDefinedVersionString){
-                versionOverride = projectDefinedVersionString;
-            }
-        }
+
         // Pulls version first from the VERSION env and then git tag
         String identifiedVersion;
         boolean checkVersion = false;
