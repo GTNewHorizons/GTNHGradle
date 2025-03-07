@@ -207,13 +207,14 @@ public abstract class ToolchainModule implements GTNHModule {
         // Set up basic project settings
         project.setGroup(
             gtnh.configuration.useModGroupForPublishing ? gtnh.configuration.modGroup : "com.github.GTNewHorizons");
-        if (project.getVersion() == Project.DEFAULT_VERSION){ //Any other way to determine if GitVersionModuleIsEnabled?
+        if (project.getVersion() == Project.DEFAULT_VERSION) { // Any other way to determine if
+                                                               // GitVersionModuleIsEnabled?
             var ext = project.getExtensions()
                 .getExtraProperties();
             var modVersion = project.provider(
-                () -> Objects.requireNonNull(ext.get(GTNHConstants.MOD_VERSION_PROPERTY)).toString()
-            );
-            if (ext.has(GTNHConstants.MOD_VERSION_PROPERTY) ) {
+                () -> Objects.requireNonNull(ext.get(GTNHConstants.MOD_VERSION_PROPERTY))
+                    .toString());
+            if (ext.has(GTNHConstants.MOD_VERSION_PROPERTY)) {
                 project.setVersion(modVersion.get());
             }
         }
