@@ -180,6 +180,7 @@ tasks.test {
 }
 
 
+
 publishing {
     publications {
         create<MavenPublication>("gtnhGradle") {
@@ -213,12 +214,14 @@ publishing {
 
     repositories {
         maven {
-            url = uri("https://nexus.gtnewhorizons.com/repository/releases/")
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Apeiria01/GTNHGradle")
             credentials {
-                username = System.getenv("MAVEN_USER") ?: "NONE"
-                password = System.getenv("MAVEN_PASSWORD") ?: "NONE"
+                username = System.getenv("GITHUB_USERNAME")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
+
 }
 

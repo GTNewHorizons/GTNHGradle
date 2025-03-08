@@ -45,29 +45,3 @@ jobs:
 
       - name: Generate Javadoc
         run: ./gradlew --no-daemon javadoc
-
-      - name: Deploy 🚀
-        id: deploy
-        shell: bash
-        run: |
-          mv build/docs $RUNNER_TEMP/docs_output
-          git clean -f -d -x
-          git checkout gh-pages
-          mkdir -p $TARGET_FOLDER
-          rm -rf $TARGET_FOLDER
-          mv $RUNNER_TEMP/docs_output $TARGET_FOLDER -v
-          git add $TARGET_FOLDER
-          if git diff --cached --exit-code > /dev/null ; then
-            echo Nothing to deploy
-            exit 0
-          fi
-          find . -name javadoc -type d -print | sed 's#^\./\(.*\)/javadoc$#\1#' | sort --version-sort --reverse > index.txt
-          git add index.txt
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git commit -m "Deploy javadoc from ref $TARGET_FOLDER"
-          git push
-        env:
-          TARGET_FOLDER: ${{ github.ref_name }}
-          COMMIT_AUTHOR: ${{ github.event.push.pusher.name }}
-          COMMIT_EMAIL: ${{ github.event.push.pusher.email }}
