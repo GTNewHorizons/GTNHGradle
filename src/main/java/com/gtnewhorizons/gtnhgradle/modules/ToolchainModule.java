@@ -13,6 +13,7 @@ import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
+import com.gtnewhorizons.retrofuturagradle.util.ProviderToStringWrapper;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -207,6 +208,19 @@ public abstract class ToolchainModule implements GTNHModule {
         // Set up basic project settings
         project.setGroup(
             gtnh.configuration.useModGroupForPublishing ? gtnh.configuration.modGroup : "com.github.GTNewHorizons");
+        // Default project.version to modVersion if no version has been set manually
+        if (project.getVersion() == Project.DEFAULT_VERSION) {
+            var ext = project.getExtensions()
+                .getExtraProperties();
+            project
+                .setVersion(
+                    new ProviderToStringWrapper(
+                        project.provider(
+                            () -> ext.has(GTNHConstants.MOD_VERSION_PROPERTY)
+                                ? ext.get(GTNHConstants.MOD_VERSION_PROPERTY)
+                                    .toString()
+                                : Project.DEFAULT_VERSION)));
+        }
         final BasePluginExtension base = project.getExtensions()
             .getByType(BasePluginExtension.class);
         if (!gtnh.configuration.customArchiveBaseName.isEmpty()) {
