@@ -36,7 +36,7 @@ dependencies {
     annotationProcessor("net.java.dev.jna:jna-platform:5.13.0")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.3"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.5"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
@@ -128,30 +128,34 @@ java {
 }
 tasks.javadoc {
     javadocTool.set(javaToolchains.javadocToolFor {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.AZUL)
     })
     with(options as StandardJavadocDocletOptions) {
         links(
             "https://docs.gradle.org/${gradle.gradleVersion}/javadoc/",
-            "https://docs.oracle.com/en/java/javase/17/docs/api/"
+            "https://docs.oracle.com/en/java/javase/21/docs/api/"
         )
     }
 }
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "17" // for the IDE support
+    sourceCompatibility = "21" // for the IDE support
     options.release.set(8)
     options.encoding = "UTF-8"
 
     javaCompiler.set(javaToolchains.compilerFor {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.AZUL)
     })
 }
 
 tasks.wrapper.configure {
-    gradleVersion = "8.5"
+    gradleVersion = "8.13"
     distributionType = Wrapper.DistributionType.ALL
+}
+
+tasks.updateDaemonJvm.configure {
+    languageVersion = JavaLanguageVersion.of(21)
 }
 
 configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
