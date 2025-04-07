@@ -265,9 +265,9 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = """
             Whether to use modGroup as the maven publishing group.
-            Due to a history of using JitPack, the default is com.github.GTNewHorizons for all mods.
+            When false, com.github.GTNewHorizons is used.
             """)
-    public boolean useModGroupForPublishing = false;
+    public boolean useModGroupForPublishing = true;
 
     /** See annotation */
     @Prop(name = "autoUpdateBuildScript", isSettings = false, preferPopulated = true, required = false, docComment = """
