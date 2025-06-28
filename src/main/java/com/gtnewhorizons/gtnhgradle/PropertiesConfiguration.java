@@ -498,8 +498,8 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            If your project is only a consolidation of mixins or a core mod and does NOT contain a 'normal' mod ( = some class
-            that is annotated with @Mod) you want this to be true. When in doubt: leave it on false!
+            If your project is only a consolidation of early mixins or a core mod and does NOT contain a 'normal' mod ( = some
+            class that is annotated with @Mod) you want this to be true. When in doubt: leave it on false!
             """)
     public boolean containsMixinsAndOrCoreModOnly = false;
 
