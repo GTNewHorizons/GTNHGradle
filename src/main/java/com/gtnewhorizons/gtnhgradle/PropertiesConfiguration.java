@@ -620,7 +620,7 @@ public final class PropertiesConfiguration {
               type can be one of [project, version],
               and the name is the Modrinth project or version slug/id of the other mod.
         Example: required-project:fplib;optional-project:gasstation;incompatible-project:gregtech
-        Note: GTNH Mixins is automatically set as a required dependency if usesMixins = true
+        Note: UniMixins is automatically set as a required dependency if usesMixins = true.
         """)
     public @NotNull String modrinthRelations = "";
 
