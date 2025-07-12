@@ -18,7 +18,7 @@ public class UpdateableConstants {
 
     /** Latest version of UniMixins */
     // https://github.com/LegacyModdingMC/UniMixins/releases
-    public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.20";
+    public static final String NEWEST_UNIMIXINS = "io.github.legacymoddingmc:unimixins:0.1.21";
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
