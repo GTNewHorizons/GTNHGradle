@@ -76,7 +76,8 @@ public class PublishingModule implements GTNHModule {
                                 .toString()));
                     mvn.setArtifactId(ObjectUtils.firstNonNull(System.getenv("ARTIFACT_ID"), project.getName()));
                     project.afterEvaluate(
-                        _p -> mvn.setVersion(ObjectUtils.firstNonNull(System.getenv("RELEASE_VERSION"), modVersion.get())));
+                        _p -> mvn
+                            .setVersion(ObjectUtils.firstNonNull(System.getenv("RELEASE_VERSION"), modVersion.get())));
                 });
             if (mavenUser != null) {
                 publishing.getRepositories()
