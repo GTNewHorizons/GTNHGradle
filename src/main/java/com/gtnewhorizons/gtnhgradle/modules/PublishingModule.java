@@ -56,9 +56,9 @@ public class PublishingModule implements GTNHModule {
                 .toString());
 
         // Maven
-        final String mavenUser = System.getenv("MAVEN_USER");
-        final String mavenPass = System.getenv("MAVEN_PASSWORD");
         if (gtnh.configuration.usesMavenPublishing) {
+            final String mavenUser = System.getenv("MAVEN_USER");
+            final String mavenPass = System.getenv("MAVEN_PASSWORD");
             publishing.getPublications()
                 .register("maven", MavenPublication.class, mvn -> {
                     mvn.from(
