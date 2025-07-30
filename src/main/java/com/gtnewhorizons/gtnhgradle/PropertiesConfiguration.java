@@ -468,14 +468,9 @@ public final class PropertiesConfiguration {
     public @NotNull String mixinPlugin = "";
 
     /** See annotation */
-    @Prop(
-        name = "mixinsPackage",
-        isSettings = false,
-        preferPopulated = true,
-        required = false,
-        docComment = """
-            Specify the package that contains all of your Mixins. You may only place Mixins in this package or the build will fail!
-            """)
+    @Prop(name = "mixinsPackage", isSettings = false, preferPopulated = true, required = false, docComment = """
+        Specify the package that contains all of your Mixins.
+        """)
     public @NotNull String mixinsPackage = "";
 
     /** See annotation */
