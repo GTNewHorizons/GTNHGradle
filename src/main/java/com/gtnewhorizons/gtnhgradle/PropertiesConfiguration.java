@@ -474,7 +474,7 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Specify the package that contains all of your Mixins. You may only place Mixins in this package or the build will fail!
+            Specify the package that contains all of your Mixins.
             """)
     public @NotNull String mixinsPackage = "";
 
