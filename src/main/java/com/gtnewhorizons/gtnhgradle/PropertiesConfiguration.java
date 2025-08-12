@@ -469,7 +469,9 @@ public final class PropertiesConfiguration {
 
     /** See annotation */
     @Prop(name = "mixinsPackage", isSettings = false, preferPopulated = true, required = false, docComment = """
-        Specify the package that contains all of your Mixins.
+        Specify the package that contains all of your Mixins. The package must exist or
+        the build will fail. If you have a package property defined in your mixins.<modid>.json,
+        it must match with this or the build will fail.
         """)
     public @NotNull String mixinsPackage = "";
 
