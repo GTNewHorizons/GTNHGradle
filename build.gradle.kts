@@ -29,6 +29,9 @@ fun pluginDep(name: String, version: String): String {
 }
 
 dependencies {
+    // JDOM2 for XML processing
+    implementation("org.jdom:jdom2:2.0.6.1")
+
     annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
     testAnnotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
     compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") { isTransitive = false }

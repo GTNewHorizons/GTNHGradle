@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.gtnewhorizons.gtnhgradle.modules.ideintegration.IdeaMiscXmlUpdater;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
@@ -25,20 +26,8 @@ import org.jetbrains.gradle.ext.IdeaCompilerConfiguration;
 import org.jetbrains.gradle.ext.IdeaExtPlugin;
 import org.jetbrains.gradle.ext.ProjectSettings;
 import org.jetbrains.gradle.ext.RunConfigurationContainer;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -46,16 +35,6 @@ import java.util.stream.Collectors;
 
 /** Provides better integration for IntelliJ and Eclipse */
 public class IdeIntegrationModule implements GTNHModule {
-
-    /** The default misc.xml for IntelliJ */
-    private final @NotNull String MISC_XML_DEFAULT = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <project version="4">
-          <component name="ProjectRootManager" version="2">
-            <output url="file://$PROJECT_DIR$/out" />
-          </component>
-        </project>
-        """;
 
     @Override
     public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
@@ -209,83 +188,7 @@ public class IdeIntegrationModule implements GTNHModule {
                     ideaDir = new File(ideaDir, ".idea");
                 }
                 if (ideaDir.isDirectory()) {
-                    final File miscFile = new File(ideaDir, "misc.xml");
-                    if (miscFile.isFile()) {
-                        boolean dirty = false;
-                        final DocumentBuilder builder = DocumentBuilderFactory.newInstance()
-                            .newDocumentBuilder();
-                        final Document doc = builder.parse(miscFile);
-                        Element docRoot = doc.getDocumentElement();
-                        if (docRoot == null) {
-                            docRoot = doc.createElement("project");
-                            docRoot.setAttribute("version", "4");
-                            docRoot.appendChild(docRoot);
-                        }
-                        final NodeList components = docRoot.getElementsByTagName("component");
-                        Element foundComponent = null;
-                        if (components != null) {
-                            for (int i = 0; i < components.getLength(); i++) {
-                                final Node node = components.item(i);
-                                if (!(node instanceof Element)) {
-                                    continue;
-                                }
-                                if (!node.hasAttributes()) {
-                                    continue;
-                                }
-                                final Node name = node.getAttributes()
-                                    .getNamedItem("name");
-                                if ("ProjectRootManager".equals(name.getNodeValue())) {
-                                    foundComponent = (Element) node;
-                                    break;
-                                }
-                            }
-                        }
-                        if (foundComponent == null) {
-                            dirty = true;
-                            Element e = doc.createElement("component");
-                            e.setAttribute("name", "ProjectRootManager");
-                            e.setAttribute("version", "2");
-                            docRoot.appendChild(e);
-                            foundComponent = e;
-                        }
-                        final NodeList outputs = foundComponent.getElementsByTagName("output");
-                        Element foundOutput = null;
-                        for (int i = 0; i < outputs.getLength(); i++) {
-                            final Node node = outputs.item(i);
-                            if (!(node instanceof Element)) {
-                                continue;
-                            }
-                            if (!node.hasAttributes()) {
-                                continue;
-                            }
-                            foundOutput = (Element) node;
-                            break;
-                        }
-                        if (foundOutput == null) {
-                            dirty = true;
-                            Element e = doc.createElement("output");
-                            foundComponent.appendChild(e);
-                            foundOutput = e;
-                        }
-                        if (foundOutput.getAttribute("url")
-                            .isEmpty()) {
-                            // Only modify the output url if it doesn't yet have one, or if the existing one is blank
-                            // somehow.
-                            // This is a sensible default for most setups
-                            dirty = true;
-                            foundOutput.setAttribute("url", "file://$PROJECT_DIR$/build/ideaBuild");
-                        }
-
-                        if (dirty) {
-                            final DOMSource domSrc = new DOMSource(doc);
-                            final Transformer xform = TransformerFactory.newInstance()
-                                .newTransformer();
-                            final StreamResult result = new StreamResult(miscFile);
-                            xform.transform(domSrc, result);
-                        }
-                    } else {
-                        Files.write(miscFile.toPath(), MISC_XML_DEFAULT.getBytes(StandardCharsets.UTF_8));
-                    }
+                    IdeaMiscXmlUpdater.mergeOrCreate(ideaDir.toPath().resolve("misc.xml"));
                 }
             } catch (Throwable e) {
                 if (e instanceof RuntimeException ex) {
