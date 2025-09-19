@@ -188,7 +188,9 @@ public class IdeIntegrationModule implements GTNHModule {
                     ideaDir = new File(ideaDir, ".idea");
                 }
                 if (ideaDir.isDirectory()) {
-                    IdeaMiscXmlUpdater.mergeOrCreate(ideaDir.toPath().resolve("misc.xml"));
+                    IdeaMiscXmlUpdater.mergeOrCreate(
+                        ideaDir.toPath()
+                            .resolve("misc.xml"));
                 }
             } catch (Throwable e) {
                 if (e instanceof RuntimeException ex) {

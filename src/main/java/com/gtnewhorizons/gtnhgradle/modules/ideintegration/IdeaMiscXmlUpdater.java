@@ -67,7 +67,8 @@ public class IdeaMiscXmlUpdater {
                     mergeList(refComp.getChild("list"), tgtComp.getChild("list"));
                 }
             } else {
-                tgtRoot.getChildren().removeIf(c -> name.equals(c.getAttributeValue("name")));
+                tgtRoot.getChildren()
+                    .removeIf(c -> name.equals(c.getAttributeValue("name")));
                 tgtRoot.addContent(refComp.clone());
             }
         }
@@ -98,12 +99,19 @@ public class IdeaMiscXmlUpdater {
         for (Element it : targetList.getChildren("item")) {
             it.setAttribute("index", String.valueOf(idx++));
         }
-        targetList.setAttribute("size", String.valueOf(targetList.getChildren("item").size()));
+        targetList.setAttribute(
+            "size",
+            String.valueOf(
+                targetList.getChildren("item")
+                    .size()));
     }
 
     private static void writeDocument(Document doc, Path target) throws Exception {
         try (BufferedWriter writer = Files.newBufferedWriter(target)) {
-            XMLOutputter out = new XMLOutputter(Format.getPrettyFormat().setIndent("  ").setLineSeparator("\n"));
+            XMLOutputter out = new XMLOutputter(
+                Format.getPrettyFormat()
+                    .setIndent("  ")
+                    .setLineSeparator("\n"));
             out.output(doc, writer);
         }
     }
