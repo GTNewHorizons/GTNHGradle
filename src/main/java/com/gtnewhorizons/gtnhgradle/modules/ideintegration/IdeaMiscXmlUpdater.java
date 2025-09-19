@@ -82,10 +82,10 @@ public class IdeaMiscXmlUpdater {
         }
 
         for (Element modelItem : modelList.getChildren("item")) {
-            String cls = modelItem.getAttributeValue("class");
+            String itemValue = modelItem.getAttributeValue("itemvalue");
             boolean exists = false;
             for (Element tgtItem : targetList.getChildren("item")) {
-                if (cls.equals(tgtItem.getAttributeValue("class"))) {
+                if (itemValue.equals(tgtItem.getAttributeValue("itemvalue"))) {
                     exists = true;
                     break;
                 }
