@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules.ideintegration;
 
+import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -11,10 +12,11 @@ import java.io.BufferedWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
-public class IdeaMiscXmlUpdater {
+public final class IdeaMiscXmlUpdater {
 
-    /** The default misc.xml for IntelliJ */
+    /** The default {@code .idea/misc.xml} for IntelliJ */
     private static final @NotNull String MISC_XML_DEFAULT = """
         <?xml version="1.0" encoding="UTF-8"?>
         <project version="4">
@@ -27,16 +29,19 @@ public class IdeaMiscXmlUpdater {
             </list>
           </component>
           <component name="ExternalStorageConfigurationManager" enabled="true" />
-          <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="11" project-jdk-type="JavaSDK">
+          <component name="ProjectRootManager" version="2">
             <output url="file://$PROJECT_DIR$/build/ideaBuild" />
           </component>
         </project>
         """;
 
+    private static final String TAG_COMPONENT = "component";
+    private static final String ATT_NAME = "name";
+
     public static void mergeOrCreate(Path target) throws Exception {
-        SAXBuilder builder = new SAXBuilder();
-        Document refDoc = builder.build(new StringReader(MISC_XML_DEFAULT));
-        Document targetDoc;
+        final SAXBuilder builder = new SAXBuilder();
+        final Document refDoc = builder.build(new StringReader(MISC_XML_DEFAULT));
+        final Document targetDoc;
 
         if (Files.exists(target)) {
             targetDoc = builder.build(Files.newInputStream(target));
@@ -49,70 +54,105 @@ public class IdeaMiscXmlUpdater {
         Element refRoot = refDoc.getRootElement();
         Element tgtRoot = targetDoc.getRootElement();
 
-        for (Element refComp : refRoot.getChildren("component")) {
-            String name = refComp.getAttributeValue("name");
+        for (Element refComp : refRoot.getChildren(TAG_COMPONENT)) {
+            String refCompName = refComp.getAttributeValue(ATT_NAME);
+            Element tgtComp = getTargetComponent(tgtRoot, refCompName);
 
-            if ("EntryPointsManager".equals(name)) {
-                Element tgtComp = null;
-                for (Element c : tgtRoot.getChildren("component")) {
-                    if ("EntryPointsManager".equals(c.getAttributeValue("name"))) {
-                        tgtComp = c;
-                        break;
-                    }
-                }
-
-                if (tgtComp == null) {
-                    tgtRoot.addContent(refComp.clone());
-                } else {
-                    mergeList(refComp.getChild("list"), tgtComp.getChild("list"));
-                }
-            } else {
-                tgtRoot.getChildren()
-                    .removeIf(c -> name.equals(c.getAttributeValue("name")));
+            if (tgtComp == null) {
                 tgtRoot.addContent(refComp.clone());
+            } else {
+                switch (refCompName) {
+                    case "EntryPointsManager" -> updateEntryPointsManager(refComp, tgtComp);
+                    case "ProjectRootManager" -> updateProjectRootManager(refComp, tgtComp);
+                }
             }
         }
 
         writeDocument(targetDoc, target);
     }
 
-    private static void mergeList(Element modelList, Element targetList) {
-        if (targetList == null) {
-            targetList = new Element("list");
-        }
-
-        for (Element modelItem : modelList.getChildren("item")) {
-            String itemValue = modelItem.getAttributeValue("itemvalue");
-            boolean exists = false;
-            for (Element tgtItem : targetList.getChildren("item")) {
-                if (itemValue.equals(tgtItem.getAttributeValue("itemvalue"))) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                targetList.addContent(modelItem.clone());
+    private static Element getTargetComponent(Element tgtRoot, String refCompName) {
+        for (Element c : tgtRoot.getChildren(TAG_COMPONENT)) {
+            if (c.getAttributeValue(ATT_NAME)
+                .equals(refCompName)) {
+                return c;
             }
         }
-
-        int idx = 0;
-        for (Element it : targetList.getChildren("item")) {
-            it.setAttribute("index", String.valueOf(idx++));
-        }
-        targetList.setAttribute(
-            "size",
-            String.valueOf(
-                targetList.getChildren("item")
-                    .size()));
+        return null;
     }
+
+    private static final String TAG_OUTPUT = "output";
+    private static final String ATT_URL = "url";
+
+    private static void updateProjectRootManager(Element refComp, Element tgtComp) {
+        final Element refOutput = refComp.getChild(TAG_OUTPUT);
+        if (refOutput == null) return;
+        final Attribute refUrl = refOutput.getAttribute(ATT_URL);
+        if (refUrl == null) return;
+
+        final Element tgtOutput = tgtComp.getChild(TAG_OUTPUT);
+        if (tgtOutput == null) {
+            tgtComp.addContent(refOutput.clone());
+            return;
+        }
+
+        // Only modify the output url if it doesn't yet have one,
+        // or if the existing one is blank somehow.
+        // This is a sensible default for most setups
+        final Attribute tgtUrl = tgtOutput.getAttribute(ATT_URL);
+        if (tgtUrl == null || tgtUrl.getValue()
+            .isEmpty()) {
+            tgtOutput.setAttribute(refUrl);
+        }
+    }
+
+    private static final String TAG_LIST = "list";
+    private static final String TAG_ITEM = "item";
+    private static final String ATT_ITEMVALUE = "itemvalue";
+
+    private static void updateEntryPointsManager(Element refComp, Element tgeComp) {
+
+        final Element modelList = refComp.getChild(TAG_LIST);
+        if (modelList == null) return;
+
+        final Element targetList = tgeComp.getChild(TAG_LIST);
+        if (targetList == null) {
+            tgeComp.addContent(modelList.clone());
+            return;
+        }
+
+        for (Element modelItem : modelList.getChildren(TAG_ITEM)) {
+            addItemIfAbsent(targetList, modelItem);
+        }
+
+        final List<Element> targetItems = targetList.getChildren(TAG_ITEM);
+        final int targetItemsSize = targetItems.size();
+        for (int i = 0; i < targetItemsSize; i++) {
+            targetItems.get(i)
+                .setAttribute("index", java.lang.String.valueOf(i));
+        }
+        targetList.setAttribute("size", java.lang.String.valueOf(targetItemsSize));
+    }
+
+    private static void addItemIfAbsent(Element targetList, Element modelItem) {
+
+        for (Element item : targetList.getChildren(TAG_ITEM)) {
+            if (modelItem.getAttributeValue(ATT_ITEMVALUE)
+                .equals(item.getAttributeValue(ATT_ITEMVALUE))) {
+                return;
+            }
+        }
+        targetList.addContent(modelItem.clone());
+    }
+
+    private static final XMLOutputter PRETTY_XML_OUTPUTTER = new XMLOutputter(
+        Format.getPrettyFormat()
+            .setIndent("  ")
+            .setLineSeparator("\n"));
 
     private static void writeDocument(Document doc, Path target) throws Exception {
         try (BufferedWriter writer = Files.newBufferedWriter(target)) {
-            XMLOutputter out = new XMLOutputter(
-                Format.getPrettyFormat()
-                    .setIndent("  ")
-                    .setLineSeparator("\n"));
-            out.output(doc, writer);
+            PRETTY_XML_OUTPUTTER.output(doc, writer);
         }
     }
 }
