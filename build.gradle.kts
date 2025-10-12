@@ -1,9 +1,9 @@
 plugins {
     `java-gradle-plugin`
-    id("com.palantir.git-version") version "3.0.0"
+    id("com.palantir.git-version") version "3.4.0"
     `maven-publish`
-    id("com.diffplug.spotless") version "6.25.0"
-    id("com.github.gmazzo.buildconfig") version "5.3.5"
+    id("com.diffplug.spotless") version "8.0.0"
+    id("com.github.gmazzo.buildconfig") version "5.6.8"
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -36,29 +36,29 @@ dependencies {
     testAnnotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
     compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") { isTransitive = false }
     // workaround for https://github.com/bsideup/jabel/issues/174
-    annotationProcessor("net.java.dev.jna:jna-platform:5.13.0")
+    annotationProcessor("net.java.dev.jna:jna-platform:5.18.1")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.5"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.6"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
     api(pluginDep("org.gradle.toolchains.foojay-resolver-convention", "0.9.0"))
 
     // Project plugins
-    api(pluginDep("com.gradleup.shadow", "8.3.5"))
-    api(pluginDep("com.palantir.git-version", "3.1.0"))
+    api(pluginDep("com.gradleup.shadow", "8.3.9"))
+    api(pluginDep("com.palantir.git-version", "3.4.0"))
     api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.10"))
-    api(pluginDep("org.jetbrains.kotlin.jvm", "2.1.0"))
-    api(pluginDep("org.jetbrains.kotlin.kapt", "2.1.0"))
-    api(pluginDep("com.google.devtools.ksp", "2.1.0-1.0.29"))
+    api(pluginDep("org.jetbrains.kotlin.jvm", "2.1.10"))
+    api(pluginDep("org.jetbrains.kotlin.kapt", "2.1.10"))
+    api(pluginDep("com.google.devtools.ksp", "2.1.10-1.0.29")) // 1.0.29 is the last jvm8 supporting version
     api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
     api(pluginDep("de.undercouch.download", "5.6.0"))
-    api(pluginDep("com.github.gmazzo.buildconfig", "3.1.0")) // Unused, available for addon.gradle
-    api(pluginDep("com.modrinth.minotaur", "2.8.7"))
+    api(pluginDep("com.github.gmazzo.buildconfig", "5.5.4")) // 5.5.4 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(pluginDep("com.modrinth.minotaur", "2.8.8"))
     api(pluginDep("net.darkhax.curseforgegradle", "1.1.26"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.14.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -101,7 +101,7 @@ spotless {
         target(".gitignore")
 
         trimTrailingWhitespace()
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         endWithNewline()
     }
     java {
@@ -109,6 +109,7 @@ spotless {
 
         toggleOffOn()
         removeUnusedImports()
+        forbidWildcardImports()
         trimTrailingWhitespace()
         eclipse("4.19").configFile("spotless.eclipseformat.xml")
     }
@@ -159,6 +160,7 @@ tasks.wrapper.configure {
 
 tasks.updateDaemonJvm.configure {
     languageVersion = JavaLanguageVersion.of(21)
+    vendor.set(JvmVendorSpec.AZUL)
 }
 
 configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
