@@ -149,7 +149,7 @@ public abstract class ToolchainModule implements GTNHModule {
             ((ModuleDependency) deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL))
                 .setTransitive(false);
             // Workaround for https://github.com/bsideup/jabel/issues/174
-            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.13.0");
+            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.18.1");
             // Allow using jdk.unsupported classes like sun.misc.Unsafe in the compiled code, working around
             // JDK-8206937.
             deps.add(
