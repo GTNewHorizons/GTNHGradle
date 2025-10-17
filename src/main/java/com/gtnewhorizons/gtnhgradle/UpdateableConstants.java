@@ -24,13 +24,13 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
-    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.6.37";
+    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.7.0";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.14";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.16";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.6.91";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.2";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.3.3";
@@ -39,11 +39,11 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_SPOTLESS_JAVA8 = "6.13.0";
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-    public static final @NotNull String NEWEST_SPOTLESS = "6.25.0";
+    public static final @NotNull String NEWEST_SPOTLESS = "8.0.0";
 
     /** Latest HotSwapAgent release jar URL */
     // https://github.com/HotswapProjects/HotswapAgent/releases
-    public static final @NotNull String NEWEST_HOTSWAPAGENT = "https://github.com/HotswapProjects/HotswapAgent/releases/download/1.4.2-SNAPSHOT/hotswap-agent-1.4.2-SNAPSHOT.jar";
+    public static final @NotNull String NEWEST_HOTSWAPAGENT = "https://github.com/HotswapProjects/HotswapAgent/releases/download/RELEASE-2.0.1/hotswap-agent-2.0.1.jar";
 
     /** Specifier for the latest GTNHGradle version to update to */
     // Only update once a new major change is made, ensure a backport to the previous major's updater is released first.

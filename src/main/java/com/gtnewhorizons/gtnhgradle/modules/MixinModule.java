@@ -104,9 +104,9 @@ public class MixinModule implements GTNHModule {
         final DependencyHandler deps = project.getDependencies();
         if (gtnh.configuration.usesMixins) {
             final String apConfiguration = mixinSourceSet.getAnnotationProcessorConfigurationName();
-            deps.add(apConfiguration, "org.ow2.asm:asm-debug-all:5.0.3");
+            deps.add(apConfiguration, "org.ow2.asm:asm-debug-all:5.0.4");
             deps.add(apConfiguration, "com.google.guava:guava:24.1.1-jre");
-            deps.add(apConfiguration, "com.google.code.gson:gson:2.8.6");
+            deps.add(apConfiguration, "com.google.code.gson:gson:2.13.2");
             deps.add(apConfiguration, mixinProviderSpec);
             if (gtnh.configuration.usesMixinDebug) {
                 deps.add("runtimeOnlyNonPublishable", "org.jetbrains:intellij-fernflower:1.2.1.16");
