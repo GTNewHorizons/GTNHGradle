@@ -39,7 +39,7 @@ dependencies {
     annotationProcessor("net.java.dev.jna:jna-platform:5.18.1")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.6"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.8"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
