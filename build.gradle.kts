@@ -22,6 +22,7 @@ repositories {
     }
     mavenCentral()
     gradlePluginPortal()
+    mavenLocal()
 }
 
 fun pluginDep(name: String, version: String): String {
