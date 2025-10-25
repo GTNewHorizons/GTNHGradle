@@ -4,6 +4,7 @@
 package com.gtnewhorizons.gtnhgradle;
 
 import com.diffplug.blowdryer.Blowdryer;
+import com.gtnewhorizons.gtnhgradle.modules.RunTaskWorkDirModule;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
@@ -115,6 +116,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             MixinModule.class,
             StandardScriptsModules.DependenciesScriptModule.class,
             ModernJavaModule.class,
+            RunTaskWorkDirModule.class,
             IdeIntegrationModule.class,
             PublishingModule.class,
             UpdaterModule.class,
