@@ -163,6 +163,7 @@ public class IdeIntegrationModule implements GTNHModule {
             run.setJvmArgs(
                 quotedJoin(runClient.calculateJvmArgs()) + ' ' + quotedPropJoin(runClient.getSystemProperties()));
         });
+
         final var ijServerRun = runs.register("Run Server (IJ Native)", Application.class, run -> {
             run.setMainClass("GradleStartServer");
             run.setModuleName(project.getName() + ".ideVirtualMain");
