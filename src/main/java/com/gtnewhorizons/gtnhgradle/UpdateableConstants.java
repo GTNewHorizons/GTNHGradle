@@ -27,7 +27,7 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.7.0";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.16";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.17";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.2";
