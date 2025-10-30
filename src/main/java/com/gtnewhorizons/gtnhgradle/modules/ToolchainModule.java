@@ -43,7 +43,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension;
+import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
@@ -183,7 +183,7 @@ public abstract class ToolchainModule implements GTNHModule {
         // Set up Kotlin if enabled
         project.getPlugins()
             .withId("org.jetbrains.kotlin.jvm", plugin -> {
-                final KotlinTopLevelExtension kotlin = (KotlinTopLevelExtension) project.getExtensions()
+                final KotlinBaseExtension kotlin = (KotlinBaseExtension) project.getExtensions()
                     .getByName("kotlin");
                 kotlin.jvmToolchain(8);
                 final Set<String> disabledKotlinTasks = ImmutableSet.of(

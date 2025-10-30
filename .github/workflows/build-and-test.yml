@@ -20,9 +20,9 @@ jobs:
       uses: actions/setup-java@v5
       with:
         java-version: |
+          21
           8
           17
-          21
         distribution: 'zulu'
         cache: gradle
 
