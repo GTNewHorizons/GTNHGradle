@@ -659,6 +659,28 @@ public final class PropertiesConfiguration {
     public @NotNull String customArchiveBaseName = "";
 
     /** See annotation */
+    @Prop(
+        name = "runClientWorkingDirectory",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Optional parameter to customize the default working directory used by the runClient* tasks. Relative to the project directory.
+            """)
+    public @NotNull String runClientDirectory = "run/client";
+
+    /** See annotation */
+    @Prop(
+        name = "runServerWorkingDirectory",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Optional parameter to customize the default working directory used by the runServer* tasks. Relative to the project directory.
+            """)
+    public @NotNull String runServerDirectory = "run/server";
+
+    /** See annotation */
     @Prop(name = "versionPattern", isSettings = false, preferPopulated = false, required = false, docComment = """
         Optional parameter to have the build automatically fail if an illegal version is used.
         This can be useful if you e.g. only want to allow versions in the form of '1.1.xxx'.
@@ -1006,7 +1028,7 @@ public final class PropertiesConfiguration {
         @NotNull
         String name();
 
-        /** @return Is the property is used globally across many projects from a settings.gradle context? */
+        /** @return Is the property used globally across many projects from a settings.gradle context? */
         boolean isSettings() default false;
 
         /** @return Should the property's value be frozen in the properties file on plugin update? */

@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
@@ -442,6 +443,16 @@ public abstract class ToolchainModule implements GTNHModule {
         if (!gtnh.configuration.apiPackage.isEmpty()) {
             project.getArtifacts()
                 .add("archives", tasks.named("apiJar"));
+        }
+
+        // run dir config for RFG run tasks
+        for (String clientTaskName : ImmutableSet.of("runClient", "runVanillaClient", "runObfClient")) {
+            tasks.named(clientTaskName, RunMinecraftTask.class)
+                .configure(t -> t.setWorkingDir(gtnh.configuration.runClientDirectory));
+        }
+        for (String serverTaskName : ImmutableSet.of("runServer", "runVanillaServer", "runObfServer")) {
+            tasks.named(serverTaskName, RunMinecraftTask.class)
+                .configure(t -> t.setWorkingDir(gtnh.configuration.runServerDirectory));
         }
     }
 }

@@ -140,6 +140,7 @@ public abstract class ModernJavaModule implements GTNHModule {
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java17Toolchain));
+            t.setWorkingDir(gtnh.configuration.runClientDirectory);
         });
         final TaskProvider<RunHotswappableMinecraftTask> runServer17Task = tasks
             .register("runServer17", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
@@ -148,6 +149,7 @@ public abstract class ModernJavaModule implements GTNHModule {
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java17Toolchain));
+            t.setWorkingDir(gtnh.configuration.runServerDirectory);
         });
 
         final TaskProvider<RunHotswappableMinecraftTask> runClient21Task = tasks
@@ -157,6 +159,7 @@ public abstract class ModernJavaModule implements GTNHModule {
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java21Toolchain));
+            t.setWorkingDir(gtnh.configuration.runClientDirectory);
         });
         final TaskProvider<RunHotswappableMinecraftTask> runServer21Task = tasks
             .register("runServer21", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
@@ -165,6 +168,7 @@ public abstract class ModernJavaModule implements GTNHModule {
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java21Toolchain));
+            t.setWorkingDir(gtnh.configuration.runServerDirectory);
         });
     }
 }
