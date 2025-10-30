@@ -212,16 +212,6 @@ public final class PropertiesConfiguration {
 
     /** See annotation */
     @Prop(
-        name = "gtnh.modules.runTaskWorkDir",
-        isSettings = false,
-        preferPopulated = false,
-        required = false,
-        hidden = true,
-        docComment = "Set working directory for run tasks")
-    public boolean moduleRunTaskWorkDir = true;
-
-    /** See annotation */
-    @Prop(
         name = "gtnh.modules.utility",
         isSettings = false,
         preferPopulated = false,
