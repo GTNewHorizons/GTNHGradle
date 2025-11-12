@@ -45,6 +45,11 @@ public class GitVersionModule implements GTNHModule {
                 final GitVersionCacheService gitService = GitVersionCacheService
                     .getSharedGitVersionCacheService(project)
                     .get();
+                project.getTasks()
+                    .named("printVersion")
+                    .configure(task -> {
+                        task.notCompatibleWithConfigurationCache("Upstream issue");
+                    });
                 final VersionDetails gitDetails = gitService.getVersionDetails(project.getProjectDir(), null);
                 final String gitVersion = gitService.getGitVersion(project.getProjectDir(), null);
                 var isDirty = gitVersion.endsWith(".dirty"); // No public API for this, isCleanTag has a different

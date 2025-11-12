@@ -173,6 +173,9 @@ tasks.test {
     environment("VERSION", "1.0.0")
 }
 
+tasks.printVersion.configure {
+    notCompatibleWithConfigurationCache("upstream issue")
+}
 
 publishing {
     publications {
@@ -185,6 +188,8 @@ publishing {
             create<MavenPublication>(declaration.name + "PluginMarkerMaven") {
                 artifactId = declaration.id + ".gradle.plugin"
                 groupId = declaration.id
+                val publishingGroup = project.group.toString()
+                val publishingVersion = project.version.toString()
                 pom {
                     name.set(declaration.displayName)
                     description.set(declaration.description)
@@ -194,11 +199,11 @@ publishing {
                         val dependencies = root.appendChild(document.createElement("dependencies"))
                         val dependency = dependencies.appendChild(document.createElement("dependency"))
                         val groupId = dependency.appendChild(document.createElement("groupId"))
-                        groupId.textContent = project.group.toString()
+                        groupId.textContent = publishingGroup
                         val artifactId = dependency.appendChild(document.createElement("artifactId"))
                         artifactId.textContent = "gtnhgradle"
                         val version = dependency.appendChild(document.createElement("version"))
-                        version.textContent = project.version.toString()
+                        version.textContent = publishingVersion
                     }
                 }
             }
