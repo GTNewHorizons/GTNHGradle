@@ -44,7 +44,7 @@ public class UpdateableConstants {
 
     /** Specifier for the latest GTNHGradle version to update to */
     // Only update once a new major change is made, ensure a backport to the previous major's updater is released first.
-    public static final @NotNull String NEWEST_GTNHGRADLE_SPEC = "com.gtnewhorizons:gtnhgradle:1.+";
+    public static final @NotNull String NEWEST_GTNHGRADLE_SPEC = "com.gtnewhorizons:gtnhgradle:2.+";
 
     /** Latest Industrial Craft 2 version */
     public static final @NotNull String NEWEST_IC2_SPEC = "curse.maven:ic2-242638:2353971";
