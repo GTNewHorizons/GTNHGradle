@@ -24,6 +24,7 @@ jobs:
             21
             8
             17
+            25
           distribution: 'zulu'
           cache: gradle
 
