@@ -5,7 +5,7 @@ import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.io.FileUtils;
-import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.Strings;
 import de.undercouch.gradle.tasks.download.DownloadExtension;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
@@ -15,8 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -179,13 +179,13 @@ public class UtilityModule implements GTNHModule {
         }
         logger.info("Visiting {} ...", file);
         try {
-            String content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
             int hash = content.hashCode();
             for (final Map.Entry<String, String> entry : params.entrySet()) {
                 content = content.replaceAll(entry.getKey(), entry.getValue());
             }
             if (hash != content.hashCode()) {
-                Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+                Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
                 return 1;
             }
         } catch (Exception e) {
@@ -203,7 +203,8 @@ public class UtilityModule implements GTNHModule {
      */
     public static Object deobf(Project project, String sourceURL) {
         try {
-            URL url = new URL(sourceURL);
+            URL url = URI.create(sourceURL)
+                .toURL();
             String fileName = url.getFile();
 
             // get rid of directories:
@@ -212,8 +213,8 @@ public class UtilityModule implements GTNHModule {
                 fileName = fileName.substring(lastSlash + 1);
             }
             // get rid of extension:
-            fileName = StringUtils.removeEnd(fileName, ".jar");
-            fileName = StringUtils.removeEnd(fileName, ".litemod");
+            fileName = Strings.CI.removeEnd(fileName, ".jar");
+            fileName = Strings.CI.removeEnd(fileName, ".litemod");
 
             String hostName = url.getHost();
             if (hostName.startsWith("www.")) {
@@ -224,7 +225,7 @@ public class UtilityModule implements GTNHModule {
             hostName = String.join(".", parts);
 
             return deobf(project, sourceURL, hostName + '/' + fileName);
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             return deobf(project, sourceURL, "deobf/" + sourceURL.hashCode());
         }
     }
@@ -240,11 +241,7 @@ public class UtilityModule implements GTNHModule {
     public static Object deobf(Project project, String sourceURL, String rawFileName) {
         final String bon2Version = "2.5.1";
         final String fileName;
-        try {
-            fileName = URLDecoder.decode(rawFileName, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        fileName = URLDecoder.decode(rawFileName, StandardCharsets.UTF_8);
         final File cacheDir = new File(
             project.getGradle()
                 .getGradleUserHomeDir(),

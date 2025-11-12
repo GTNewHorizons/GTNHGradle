@@ -4,7 +4,6 @@
 package com.gtnewhorizons.gtnhgradle;
 
 import com.diffplug.blowdryer.Blowdryer;
-import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
@@ -96,8 +95,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public @NotNull PropertiesConfiguration configuration;
 
         /** A list of all available modules to activate */
-        @SuppressWarnings("unchecked") // too long, varargs can't handle generics
-        public static final List<Class<? extends GTNHModule>> ALL_MODULES = ImmutableList.of( //
+        public static final List<Class<? extends GTNHModule>> ALL_MODULES = List.of( //
             GitVersionModule.class,
             CodeStyleModule.class,
             ToolchainModule.class,

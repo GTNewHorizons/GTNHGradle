@@ -125,7 +125,7 @@ public abstract class UpdateBuildscriptTask extends DefaultTask {
 
         final String newProps = (String) generateUpdatedPropertiesMethod
             .invoke(propsObject, settingsPath, originalProps);
-        Files.write(propertiesPath, newProps.getBytes(StandardCharsets.UTF_8));
+        Files.writeString(propertiesPath, newProps, StandardCharsets.UTF_8);
     }
 
     private void updateSettings(URLClassLoader newJarLoader) throws Exception {

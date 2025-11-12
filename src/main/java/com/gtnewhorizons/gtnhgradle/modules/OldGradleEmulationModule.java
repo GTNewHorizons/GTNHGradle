@@ -30,8 +30,8 @@ public class OldGradleEmulationModule implements GTNHModule {
                             .getScheme())
                         && !urlRepo.isAllowInsecureProtocol()) {
                         gtnh.logger.warn(
-                            "Deprecated: Allowing insecure connections for repo '" + repo.getName()
-                                + "' - add 'allowInsecureProtocol = true' to silence");
+                            "Deprecated: Allowing insecure connections for repo '{}' - add 'allowInsecureProtocol = true' to silence",
+                            repo.getName());
                         urlRepo.setAllowInsecureProtocol(true);
                     }
                 }
@@ -41,13 +41,11 @@ public class OldGradleEmulationModule implements GTNHModule {
             c.setDescription("Deprecated: use api or implementation instead, gets put in api");
             c.setCanBeConsumed(false);
             c.setCanBeResolved(false);
-            c.setVisible(false);
         });
         final Configuration oldTestCompile = cfg.create("testCompile", c -> {
             c.setDescription("Deprecated: use testImplementation instead");
             c.setCanBeConsumed(false);
             c.setCanBeResolved(false);
-            c.setVisible(false);
         });
         cfg.getByName("api")
             .extendsFrom(oldCompile);

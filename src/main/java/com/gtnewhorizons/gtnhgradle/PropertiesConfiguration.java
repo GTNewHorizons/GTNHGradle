@@ -872,7 +872,7 @@ public final class PropertiesConfiguration {
      * @throws Throwable for convenience
      */
     public String generateUpdatedProperties(Path settingsPath, Map<String, String> originalValues) throws Throwable {
-        final String settingsContents = new String(Files.readAllBytes(settingsPath), StandardCharsets.UTF_8);
+        final String settingsContents = Files.readString(settingsPath, StandardCharsets.UTF_8);
 
         // Migrate from pre-GTNHGradle buildscript
         final Matcher blowdryerMatch = BLOWDRYER_SETTINGS_PATTERN.matcher(settingsContents);
