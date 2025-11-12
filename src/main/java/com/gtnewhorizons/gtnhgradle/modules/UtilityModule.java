@@ -70,6 +70,7 @@ public class UtilityModule implements GTNHModule {
         tasks.register("deobfParams", t -> {
             t.setGroup("GTNH Buildscript");
             t.setDescription("Rename all obfuscated parameter names inherited from Minecraft classes");
+            t.notCompatibleWithConfigurationCache("Currently needs getProject in the body");
             t.doLast(inner -> {
                 final PropertiesConfiguration props = gtnh.configuration;
                 final String mcpDir = project.getGradle()

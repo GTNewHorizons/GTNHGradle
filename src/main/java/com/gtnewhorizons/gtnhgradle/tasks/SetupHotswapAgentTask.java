@@ -34,6 +34,8 @@ public abstract class SetupHotswapAgentTask extends DefaultTask {
     @Inject
     public abstract JavaToolchainService getToolchainService();
 
+    private final DownloadExtension downloadExtension;
+
     /**
      * Helper for setting {@link SetupHotswapAgentTask#getTargetFile()} using a toolchain spec.
      *
@@ -60,6 +62,9 @@ public abstract class SetupHotswapAgentTask extends DefaultTask {
                 .getAsFile()
                 .get()
                 .exists());
+        downloadExtension = Objects.requireNonNull(
+            getProject().getExtensions()
+                .findByType(DownloadExtension.class));
     }
 
     /**
@@ -74,10 +79,7 @@ public abstract class SetupHotswapAgentTask extends DefaultTask {
             .get();
         final File parent = target.getParentFile();
         FileUtils.forceMkdir(parent);
-        final DownloadExtension download = getProject().getExtensions()
-            .findByType(DownloadExtension.class);
-        Objects.requireNonNull(download);
-        download.run(ds -> {
+        downloadExtension.run(ds -> {
             try {
                 ds.src(url);
             } catch (MalformedURLException e) {
