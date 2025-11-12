@@ -27,11 +27,7 @@ public abstract class GTNHSettingsConventionPlugin implements Plugin<Settings> {
         if (config.dynamicSpotlessVersion) {
             // Add the correct version of spotless to classpath
             final String spotlessVersion;
-            if (currentJava.isCompatibleWith(JavaVersion.VERSION_17)) {
-                spotlessVersion = UpdateableConstants.NEWEST_SPOTLESS;
-            } else {
-                spotlessVersion = UpdateableConstants.NEWEST_SPOTLESS_JAVA8;
-            }
+            spotlessVersion = UpdateableConstants.NEWEST_SPOTLESS;
             logger.info("Adding Spotless {} to classpath due to Java {}", spotlessVersion, currentJava);
             target.getGradle()
                 .beforeProject(prj -> {
