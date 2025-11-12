@@ -24,7 +24,6 @@ import com.gtnewhorizons.gtnhgradle.modules.UtilityModule;
 import com.gtnewhorizons.gtnhgradle.modules.WellKnownRepositoriesModule;
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
-import org.ajoberstar.grgit.gradle.GrgitPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.Plugin;
 import org.gradle.api.file.ArchiveOperations;
@@ -69,7 +68,6 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         // Apply shared plugins used by all mods
         plugins.apply(JavaLibraryPlugin.class);
         plugins.apply(MavenPublishPlugin.class);
-        plugins.apply(GrgitPlugin.class);
         plugins.apply(DownloadTaskPlugin.class);
         plugins.apply(UserDevPlugin.class); // RFG
 

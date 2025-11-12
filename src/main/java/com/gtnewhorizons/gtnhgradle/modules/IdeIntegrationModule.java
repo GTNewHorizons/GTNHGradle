@@ -115,14 +115,12 @@ public class IdeIntegrationModule implements GTNHModule {
                 final char mySuffix = suffix;
                 final char myHsSuffix = (char) (suffix + 1);
                 suffix += 2;
-                runs.register(
-                    "1" + mySuffix + ". Run Client (Java " + javaVer + ")",
-                    Gradle.class,
-                    run -> { run.setTaskNames(ImmutableList.of("runClient" + javaVer)); });
-                runs.register(
-                    "2" + mySuffix + ". Run Server (Java " + javaVer + ")",
-                    Gradle.class,
-                    run -> { run.setTaskNames(ImmutableList.of("runServer" + javaVer)); });
+                runs.register("1" + mySuffix + ". Run Client (Java " + javaVer + ")", Gradle.class, run -> {
+                    run.setTaskNames(ImmutableList.of("runClient" + javaVer));
+                });
+                runs.register("2" + mySuffix + ". Run Server (Java " + javaVer + ")", Gradle.class, run -> {
+                    run.setTaskNames(ImmutableList.of("runServer" + javaVer));
+                });
                 runs.register("1" + myHsSuffix + ". Run Client (Java " + javaVer + ", Hotswap)", Gradle.class, run -> {
                     run.setTaskNames(ImmutableList.of("runClient" + javaVer));
                     run.setEnvs(ImmutableMap.of("HOTSWAP", "true"));

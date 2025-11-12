@@ -102,7 +102,8 @@ public class UpdaterModule implements GTNHModule {
         final File settingsGradle = ((File) Objects.requireNonNull(
             project.getExtensions()
                 .getExtraProperties()
-                .get(GTNHConstants.SETTINGS_GRADLE_FILE_PROPERTY))).getAbsoluteFile();
+                .get(GTNHConstants.SETTINGS_GRADLE_FILE_PROPERTY)))
+            .getAbsoluteFile();
         final File rootDir = settingsGradle.getParentFile();
         final File propertiesGradle = new File(rootDir, "gradle.properties");
 

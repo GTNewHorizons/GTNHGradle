@@ -104,7 +104,7 @@ public abstract class ModernJavaModule implements GTNHModule {
             deps.add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY);
             ((ModuleDependency) deps
                 .add(java17PatchDependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY + ":forgePatches"))
-                    .setTransitive(false);
+                .setTransitive(false);
         }
         if (!gtnh.configuration.modId.equals("hodgepodge")) {
             final ModuleDependency hodgepodge = (ModuleDependency) deps
@@ -122,16 +122,16 @@ public abstract class ModernJavaModule implements GTNHModule {
         ext.set("java17JvmArgs", java17JvmArgs);
         ext.set("hotswapJvmArgs", hotswapJvmArgs);
 
-        final TaskProvider<SetupHotswapAgentTask> setupHotswapAgent17 = tasks.register(
-            "setupHotswapAgent17",
-            SetupHotswapAgentTask.class,
-            t -> { t.setTargetForToolchain(java17Toolchain); });
+        final TaskProvider<SetupHotswapAgentTask> setupHotswapAgent17 = tasks
+            .register("setupHotswapAgent17", SetupHotswapAgentTask.class, t -> {
+                t.setTargetForToolchain(java17Toolchain);
+            });
         ext.set("setupHotswapAgentTask", setupHotswapAgent17);
 
-        final TaskProvider<SetupHotswapAgentTask> setupHotswapAgent21 = tasks.register(
-            "setupHotswapAgent21",
-            SetupHotswapAgentTask.class,
-            t -> { t.setTargetForToolchain(java21Toolchain); });
+        final TaskProvider<SetupHotswapAgentTask> setupHotswapAgent21 = tasks
+            .register("setupHotswapAgent21", SetupHotswapAgentTask.class, t -> {
+                t.setTargetForToolchain(java21Toolchain);
+            });
 
         final TaskProvider<RunHotswappableMinecraftTask> runClient17Task = tasks
             .register("runClient17", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
