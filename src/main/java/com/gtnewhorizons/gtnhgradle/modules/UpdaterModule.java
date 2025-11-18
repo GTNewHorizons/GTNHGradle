@@ -94,6 +94,7 @@ public class UpdaterModule implements GTNHModule {
         final TaskContainer tasks = project.getTasks();
         tasks.named("wrapper", Wrapper.class)
             .configure(t -> {
+                t.notCompatibleWithConfigurationCache("Scanning a resolved plugin Configuration");
                 t.doFirst(inner -> {
                     final Wrapper tInner = (Wrapper) inner;
                     final String version = getGradleVersionFromPlugin(latestPluginArtifact.get());
@@ -119,6 +120,7 @@ public class UpdaterModule implements GTNHModule {
         }
 
         tasks.register("updateBuildScript", UpdateBuildscriptTask.class, t -> {
+            t.notCompatibleWithConfigurationCache("Scanning a resolved plugin Configuration");
             t.getSettingsGradle()
                 .set(
                     project.getLayout()
