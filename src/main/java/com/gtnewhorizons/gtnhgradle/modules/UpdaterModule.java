@@ -10,6 +10,7 @@ import com.gtnewhorizons.gtnhgradle.tasks.UpdateBuildscriptTask;
 import com.gtnewhorizons.gtnhgradle.tasks.UpdateDependenciesTask;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ResolveException;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedConfiguration;
 import org.gradle.api.provider.Provider;
@@ -75,13 +76,17 @@ public class UpdaterModule implements GTNHModule {
         project.afterEvaluate(_p -> {
             if (!isOffline && !disableCheck) {
                 // Check for updates automatically
-                final ResolvedConfiguration rc = latestResolver.get();
-                final String latestUpdate = latestPluginVersion.get();
-                if (!latestUpdate.equals(BuildConfig.VERSION)) {
-                    gtnh.logger.warn(
-                        "Build script update from {} to {} available! Run ./gradlew updateBuildScript",
-                        BuildConfig.VERSION,
-                        latestUpdate);
+                try {
+                    final ResolvedConfiguration rc = latestResolver.get();
+                    final String latestUpdate = latestPluginVersion.get();
+                    if (!latestUpdate.equals(BuildConfig.VERSION)) {
+                        gtnh.logger.warn(
+                            "Build script update from {} to {} available! Run ./gradlew updateBuildScript",
+                            BuildConfig.VERSION,
+                            latestUpdate);
+                    }
+                } catch (ResolveException e) {
+                    gtnh.logger.warn("Could not check for buildscript updates: {}", e.getMessage());
                 }
             }
         });

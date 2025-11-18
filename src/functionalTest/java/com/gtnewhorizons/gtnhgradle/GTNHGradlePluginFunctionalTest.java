@@ -26,7 +26,7 @@ class GTNHGradlePluginFunctionalTest {
     File projectDir;
 
     private File getBuildFile() {
-        return new File(projectDir, "build.gradle");
+        return new File(projectDir, "build.gradle.kts");
     }
 
     private File getPropertiesFile() {
@@ -34,7 +34,7 @@ class GTNHGradlePluginFunctionalTest {
     }
 
     private File getSettingsFile() {
-        return new File(projectDir, "settings.gradle");
+        return new File(projectDir, "settings.gradle.kts");
     }
 
     private static final String SIMPLE_SETTINGS_FILE = """
@@ -42,8 +42,8 @@ class GTNHGradlePluginFunctionalTest {
             repositories {
                 maven {
                     // RetroFuturaGradle
-                    name "GTNH Maven"
-                    url "https://nexus.gtnewhorizons.com/repository/public/"
+                    name = "GTNH Maven"
+                    url = uri("https://nexus.gtnewhorizons.com/repository/public/")
                     mavenContent {
                         includeGroup("com.gtnewhorizons")
                         includeGroupByRegex("com\\\\.gtnewhorizons\\\\..+")
@@ -55,13 +55,13 @@ class GTNHGradlePluginFunctionalTest {
             }
         }
         plugins {
-            id('com.gtnewhorizons.gtnhsettingsconvention')
+            id("com.gtnewhorizons.gtnhsettingsconvention")
         }
         """;
 
     private static final String SIMPLE_BUILD_FILE = """
         plugins {
-            id('com.gtnewhorizons.gtnhconvention')
+            id("com.gtnewhorizons.gtnhconvention")
         }
         repositories {
             mavenLocal()
@@ -88,10 +88,15 @@ class GTNHGradlePluginFunctionalTest {
         // Run the build
         GradleRunner runner = GradleRunner.create()
             .withEnvironment(ImmutableMap.of("VERSION", "1.0.0"))
-            .withArguments("--stacktrace");
+            .withArguments(
+                "--stacktrace",
+                "--build-cache",
+                "--configuration-cache",
+                "--warning-mode",
+                "all",
+                "downloadVanillaJars");
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("downloadVanillaJars");
         runner.withProjectDir(projectDir);
         BuildResult result = runner.build();
 
