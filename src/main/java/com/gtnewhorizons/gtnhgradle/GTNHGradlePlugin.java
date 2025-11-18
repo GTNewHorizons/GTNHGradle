@@ -4,7 +4,6 @@
 package com.gtnewhorizons.gtnhgradle;
 
 import com.diffplug.blowdryer.Blowdryer;
-import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
@@ -24,7 +23,6 @@ import com.gtnewhorizons.gtnhgradle.modules.UtilityModule;
 import com.gtnewhorizons.gtnhgradle.modules.WellKnownRepositoriesModule;
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
-import org.ajoberstar.grgit.gradle.GrgitPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.Plugin;
 import org.gradle.api.file.ArchiveOperations;
@@ -69,7 +67,6 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         // Apply shared plugins used by all mods
         plugins.apply(JavaLibraryPlugin.class);
         plugins.apply(MavenPublishPlugin.class);
-        plugins.apply(GrgitPlugin.class);
         plugins.apply(DownloadTaskPlugin.class);
         plugins.apply(UserDevPlugin.class); // RFG
 
@@ -98,8 +95,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public @NotNull PropertiesConfiguration configuration;
 
         /** A list of all available modules to activate */
-        @SuppressWarnings("unchecked") // too long, varargs can't handle generics
-        public static final List<Class<? extends GTNHModule>> ALL_MODULES = ImmutableList.of( //
+        public static final List<Class<? extends GTNHModule>> ALL_MODULES = List.of( //
             GitVersionModule.class,
             CodeStyleModule.class,
             ToolchainModule.class,

@@ -54,12 +54,15 @@ public class ShadowModule implements GTNHModule {
             if (gtnh.configuration.minimizeShadowedDependencies) {
                 sj.minimize();
             }
-            sj.setConfigurations(ImmutableList.of(shadowImplementation, shadeCompile, shadowCompile));
+            sj.getConfigurations()
+                .set(ImmutableList.of(shadowImplementation, shadeCompile, shadowCompile));
             sj.getArchiveClassifier()
                 .set("dev");
             if (gtnh.configuration.relocateShadowedDependencies) {
-                sj.setRelocationPrefix(gtnh.configuration.modGroup + ".shadow");
-                sj.setEnableRelocation(true);
+                sj.getRelocationPrefix()
+                    .set(gtnh.configuration.modGroup + ".shadow");
+                sj.getEnableAutoRelocation()
+                    .set(true);
             }
         });
         for (final String outgoingConfig : ImmutableList.of("runtimeElements", "apiElements")) {
@@ -77,11 +80,10 @@ public class ShadowModule implements GTNHModule {
                         .set("dev-preshadow");
                 });
         tasks.named("reobfJar", ReobfuscatedJar.class)
-            .configure(
-                j -> {
-                    j.getInputJar()
-                        .set(shadowJar.flatMap(AbstractArchiveTask::getArchiveFile));
-                });
+            .configure(j -> {
+                j.getInputJar()
+                    .set(shadowJar.flatMap(AbstractArchiveTask::getArchiveFile));
+            });
 
         final AdhocComponentWithVariants javaComponent = (AdhocComponentWithVariants) project.getComponents()
             .named("java")

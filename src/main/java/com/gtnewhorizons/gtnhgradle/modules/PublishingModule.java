@@ -113,7 +113,7 @@ public class PublishingModule implements GTNHModule {
             mr.getVersionType()
                 .set(modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release"));
             if (changelogFile.exists()) {
-                final String contents = new String(Files.readAllBytes(changelogFile.toPath()), StandardCharsets.UTF_8);
+                final String contents = Files.readString(changelogFile.toPath(), StandardCharsets.UTF_8);
                 mr.getChangelog()
                     .set(contents);
             }

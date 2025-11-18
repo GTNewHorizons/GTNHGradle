@@ -2,7 +2,7 @@ package com.gtnewhorizons.gtnhgradle.tasks;
 
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.io.FileUtils;
-import de.undercouch.gradle.tasks.download.DownloadExtension;
+import de.undercouch.gradle.tasks.download.DownloadAction;
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFileProperty;
@@ -16,8 +16,7 @@ import org.gradle.jvm.toolchain.JavaToolchainSpec;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 /** Installs HotSwapAgent into a JVM runtime directory */
 public abstract class SetupHotswapAgentTask extends DefaultTask {
@@ -33,6 +32,8 @@ public abstract class SetupHotswapAgentTask extends DefaultTask {
     /** @return Gradle-provided */
     @Inject
     public abstract JavaToolchainService getToolchainService();
+
+    private final DownloadAction downloadAction;
 
     /**
      * Helper for setting {@link SetupHotswapAgentTask#getTargetFile()} using a toolchain spec.
@@ -60,6 +61,7 @@ public abstract class SetupHotswapAgentTask extends DefaultTask {
                 .getAsFile()
                 .get()
                 .exists());
+        downloadAction = new DownloadAction(getProject(), this);
     }
 
     /**
@@ -68,24 +70,18 @@ public abstract class SetupHotswapAgentTask extends DefaultTask {
      * @throws IOException Filesystem error
      */
     @TaskAction
-    public void installHSA() throws IOException {
+    public void installHSA() throws IOException, ExecutionException, InterruptedException {
         final String url = getAgentUrl().get();
         final File target = getTargetFile().getAsFile()
             .get();
         final File parent = target.getParentFile();
         FileUtils.forceMkdir(parent);
-        final DownloadExtension download = getProject().getExtensions()
-            .findByType(DownloadExtension.class);
-        Objects.requireNonNull(download);
-        download.run(ds -> {
-            try {
-                ds.src(url);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-            ds.dest(target);
-            ds.overwrite(false);
-            ds.tempAndMove(true);
-        });
+
+        downloadAction.src(url);
+        downloadAction.dest(target);
+        downloadAction.overwrite(false);
+        downloadAction.tempAndMove(true);
+        downloadAction.execute(true)
+            .get();
     }
 }

@@ -121,8 +121,7 @@ public class StructureCheckModule implements GTNHModule {
         }
 
         if (!gtnh.configuration.coreModClass.isEmpty()) {
-            final String coreModPath = gtnh.configuration.coreModClass.toString()
-                .replaceAll("\\.", "/");
+            final String coreModPath = gtnh.configuration.coreModClass.replaceAll("\\.", "/");
             String targetFileJava = GTNHConstants.JAVA_SOURCES_DIR + modGroupPath + "/" + coreModPath + ".java";
             String targetFileScala = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath + "/" + coreModPath + ".scala";
             String targetFileScalaJava = GTNHConstants.SCALA_SOURCES_DIR + modGroupPath + "/" + coreModPath + ".java";

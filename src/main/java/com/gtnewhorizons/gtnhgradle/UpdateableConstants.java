@@ -10,7 +10,7 @@ public class UpdateableConstants {
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
     @SuppressWarnings("unused") // Used via reflection
-    public static final @NotNull String NEWEST_GRADLE_VERSION = "8.14.3";
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "9.2.0";
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
@@ -24,19 +24,16 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_JABEL = "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
-    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.7.3";
+    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.8.6";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
     public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.17";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.9";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.11";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.3.3";
-    /** Latest version of Spotless compatible with Java 8 */
-    // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-    public static final @NotNull String NEWEST_SPOTLESS_JAVA8 = "6.13.0";
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
     public static final @NotNull String NEWEST_SPOTLESS = "8.0.0";
@@ -47,7 +44,7 @@ public class UpdateableConstants {
 
     /** Specifier for the latest GTNHGradle version to update to */
     // Only update once a new major change is made, ensure a backport to the previous major's updater is released first.
-    public static final @NotNull String NEWEST_GTNHGRADLE_SPEC = "com.gtnewhorizons:gtnhgradle:1.+";
+    public static final @NotNull String NEWEST_GTNHGRADLE_SPEC = "com.gtnewhorizons:gtnhgradle:2.+";
 
     /** Latest Industrial Craft 2 version */
     public static final @NotNull String NEWEST_IC2_SPEC = "curse.maven:ic2-242638:2353971";

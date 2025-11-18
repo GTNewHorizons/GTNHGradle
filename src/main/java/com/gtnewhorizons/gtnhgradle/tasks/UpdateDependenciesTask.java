@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -131,7 +132,8 @@ public abstract class UpdateDependenciesTask extends DefaultTask {
             "https://nexus.gtnewhorizons.com/repository/public/com/github/GTNewHorizons/%s/maven-metadata.xml",
             modName);
         try {
-            url = new URL(urlString);
+            url = URI.create(urlString)
+                .toURL();
         } catch (MalformedURLException e) {
             getLogger().error("Error generating URL: {}", urlString, e);
             return null;

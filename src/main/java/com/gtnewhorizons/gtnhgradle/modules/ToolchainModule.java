@@ -437,12 +437,12 @@ public abstract class ToolchainModule implements GTNHModule {
 
         // Artifacts
         if (!gtnh.configuration.noPublishedSources) {
-            project.getArtifacts()
-                .add("archives", tasks.named("sourcesJar"));
+            tasks.named("assemble")
+                .configure(t -> t.dependsOn(tasks.named("sourcesJar")));
         }
         if (!gtnh.configuration.apiPackage.isEmpty()) {
-            project.getArtifacts()
-                .add("archives", tasks.named("apiJar"));
+            tasks.named("assemble")
+                .configure(t -> t.dependsOn(tasks.named("apiJar")));
         }
 
         // run dir config for RFG run tasks

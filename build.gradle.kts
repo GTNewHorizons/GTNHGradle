@@ -1,9 +1,9 @@
 plugins {
     `java-gradle-plugin`
-    id("com.palantir.git-version") version "3.4.0"
+    id("com.palantir.git-version") version "4.2.0"
     `maven-publish`
     id("com.diffplug.spotless") version "8.0.0"
-    id("com.github.gmazzo.buildconfig") version "5.6.8"
+    id("com.github.gmazzo.buildconfig") version "5.7.1"
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -33,33 +33,26 @@ dependencies {
     // JDOM2 for XML processing
     implementation("org.jdom:jdom2:2.0.6.1")
 
-    annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
-    testAnnotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
-    compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") { isTransitive = false }
-    // workaround for https://github.com/bsideup/jabel/issues/174
-    annotationProcessor("net.java.dev.jna:jna-platform:5.18.1")
-
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.9"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.0"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
-    api(pluginDep("org.gradle.toolchains.foojay-resolver-convention", "0.9.0"))
+    api(pluginDep("org.gradle.toolchains.foojay-resolver-convention", "1.0.0"))
 
     // Project plugins
-    api(pluginDep("com.gradleup.shadow", "8.3.9"))
-    api(pluginDep("com.palantir.git-version", "3.4.0"))
-    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.10"))
-    api(pluginDep("org.jetbrains.kotlin.jvm", "2.1.10"))
-    api(pluginDep("org.jetbrains.kotlin.kapt", "2.1.10"))
-    api(pluginDep("com.google.devtools.ksp", "2.1.10-1.0.29")) // 1.0.29 is the last jvm8 supporting version
-    api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(pluginDep("com.gradleup.shadow", "9.2.2"))
+    api(pluginDep("com.palantir.git-version", "4.2.0"))
+    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.3"))
+    api(pluginDep("org.jetbrains.kotlin.jvm", "2.2.21"))
+    api(pluginDep("org.jetbrains.kotlin.kapt", "2.2.21"))
+    api(pluginDep("com.google.devtools.ksp", "2.2.21-2.0.4"))
     api(pluginDep("de.undercouch.download", "5.6.0"))
-    api(pluginDep("com.github.gmazzo.buildconfig", "5.5.4")) // 5.5.4 is the last jvm8 supporting version, unused, available for addon.gradle
-    api(pluginDep("com.modrinth.minotaur", "2.8.8"))
-    api(pluginDep("net.darkhax.curseforgegradle", "1.1.26"))
+    api(pluginDep("com.github.gmazzo.buildconfig", "5.7.1")) // 5.5.4 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(pluginDep("com.modrinth.minotaur", "2.8.10"))
+    api(pluginDep("net.darkhax.curseforgegradle", "1.1.28"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.14.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -112,7 +105,7 @@ spotless {
         removeUnusedImports()
         forbidWildcardImports()
         trimTrailingWhitespace()
-        eclipse("4.19").configFile("spotless.eclipseformat.xml")
+        eclipse("4.37.0").configFile("spotless.eclipseformat.xml")
     }
 }
 
@@ -122,46 +115,37 @@ buildConfig {
     buildConfigField("VERSION", detectedVersion)
 }
 
-// Enable Jabel for java 8 bytecode from java 17 sources
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-        vendor.set(JvmVendorSpec.AZUL)
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
     withSourcesJar()
     withJavadocJar()
 }
 tasks.javadoc {
     javadocTool.set(javaToolchains.javadocToolFor {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.AZUL)
+        languageVersion.set(JavaLanguageVersion.of(25))
     })
     with(options as StandardJavadocDocletOptions) {
         links(
             "https://docs.gradle.org/${gradle.gradleVersion}/javadoc/",
-            "https://docs.oracle.com/en/java/javase/21/docs/api/"
+            "https://docs.oracle.com/en/java/javase/25/docs/api/",
+            "https://www.gtnewhorizons.com/RetroFuturaGradle/2.0.0/javadoc/"
         )
     }
 }
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "21" // for the IDE support
-    options.release.set(8)
     options.encoding = "UTF-8"
-
-    javaCompiler.set(javaToolchains.compilerFor {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.AZUL)
-    })
 }
 
 tasks.wrapper.configure {
-    gradleVersion = "8.14.3"
+    gradleVersion = "9.2.0"
     distributionType = Wrapper.DistributionType.ALL
 }
 
 tasks.updateDaemonJvm.configure {
-    languageVersion = JavaLanguageVersion.of(21)
-    vendor.set(JvmVendorSpec.AZUL)
+    languageVersion = JavaLanguageVersion.of(25)
+    vendor.set(JvmVendorSpec.ADOPTIUM)
 }
 
 configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
@@ -189,6 +173,9 @@ tasks.test {
     environment("VERSION", "1.0.0")
 }
 
+tasks.printVersion.configure {
+    notCompatibleWithConfigurationCache("upstream issue")
+}
 
 publishing {
     publications {
@@ -201,6 +188,8 @@ publishing {
             create<MavenPublication>(declaration.name + "PluginMarkerMaven") {
                 artifactId = declaration.id + ".gradle.plugin"
                 groupId = declaration.id
+                val publishingGroup = project.group.toString()
+                val publishingVersion = project.version.toString()
                 pom {
                     name.set(declaration.displayName)
                     description.set(declaration.description)
@@ -210,11 +199,11 @@ publishing {
                         val dependencies = root.appendChild(document.createElement("dependencies"))
                         val dependency = dependencies.appendChild(document.createElement("dependency"))
                         val groupId = dependency.appendChild(document.createElement("groupId"))
-                        groupId.textContent = project.group.toString()
+                        groupId.textContent = publishingGroup
                         val artifactId = dependency.appendChild(document.createElement("artifactId"))
                         artifactId.textContent = "gtnhgradle"
                         val version = dependency.appendChild(document.createElement("version"))
-                        version.textContent = project.version.toString()
+                        version.textContent = publishingVersion
                     }
                 }
             }
