@@ -11,8 +11,6 @@ import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
-import org.gradle.api.component.AdhocComponentWithVariants;
-import org.gradle.api.component.ConfigurationVariantDetails;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
@@ -92,11 +90,6 @@ public class ShadowModule implements GTNHModule {
                 j.getInputJar()
                     .set(shadowJar.flatMap(AbstractArchiveTask::getArchiveFile));
             });
-
-        final AdhocComponentWithVariants javaComponent = (AdhocComponentWithVariants) project.getComponents()
-            .named("java")
-            .get();
-        javaComponent.withVariantsFromConfiguration(shadowRuntimeElements, ConfigurationVariantDetails::skip);
 
         project.getExtensions()
             .getExtraProperties()
