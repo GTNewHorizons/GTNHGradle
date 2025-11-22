@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.github.jengelman.gradle.plugins.shadow.ShadowExtension;
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
@@ -30,6 +31,13 @@ public class ShadowModule implements GTNHModule {
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
         project.getPlugins()
             .apply(ShadowPlugin.class);
+
+        final ShadowExtension shadowExt = project.getExtensions()
+            .getByType(ShadowExtension.class);
+        shadowExt.getAddShadowVariantIntoJavaComponent()
+            .set(false);
+        shadowExt.getAddTargetJvmVersionAttribute()
+            .set(false);
 
         final ConfigurationContainer cfgs = project.getConfigurations();
         final TaskContainer tasks = project.getTasks();
