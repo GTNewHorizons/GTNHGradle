@@ -47,15 +47,15 @@ public abstract class ModernJavaModule implements GTNHModule {
         "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED", };
     /** Default Java 25 JVM arguments */
     public final String[] JAVA_25_ARGS = new String[] { "-Dfile.encoding=UTF-8",
-        "-Djava.system.class.loader=com.gtnewhorizons.retrofuturabootstrap.RfbSystemClassLoader",
-        "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens",
-        "java.base/java.net=ALL-UNNAMED", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "--add-opens",
-        "java.base/java.io=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens",
-        "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens", "java.base/java.text=ALL-UNNAMED", "--add-opens",
-        "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens",
-        "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming",
-        "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED", "--add-opens", "java.desktop/sun.awt.image=ALL-UNNAMED",
-        "--add-opens", "java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED", "--add-opens",
+        "-Djava.system.class.loader=com.gtnewhorizons.retrofuturabootstrap.RfbSystemClassLoader", "--add-opens",
+        "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens", "java.base/java.net=ALL-UNNAMED", "--add-opens",
+        "java.base/java.nio=ALL-UNNAMED", "--add-opens", "java.base/java.io=ALL-UNNAMED", "--add-opens",
+        "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens",
+        "java.base/java.text=ALL-UNNAMED", "--add-opens", "java.base/java.util=ALL-UNNAMED", "--add-opens",
+        "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens",
+        "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming", "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
+        "--add-opens", "java.desktop/sun.awt.image=ALL-UNNAMED", "--add-opens",
+        "java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED", "--add-opens",
         "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED", "--add-opens",
         "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED", };
     /** Default Java HotSwapAgent JVM arguments */
@@ -184,7 +184,6 @@ public abstract class ModernJavaModule implements GTNHModule {
             t.setWorkingDir(gtnh.configuration.runServerDirectory);
         });
 
-
         final int forcedToolchain = gtnh.configuration.forceToolchainVersion;
         if (forcedToolchain != -1) {
             final List<String> modernJvmArgs = forcedToolchain >= 25 ? new ArrayList<>(Arrays.asList(JAVA_25_ARGS))
@@ -192,15 +191,17 @@ public abstract class ModernJavaModule implements GTNHModule {
             ext.set("modernJvmArgs", modernJvmArgs);
 
             final Action<JavaToolchainSpec> javaXToolchain = (spec) -> {
-                spec.getLanguageVersion().set(JavaLanguageVersion.of(forcedToolchain));
-                spec.getVendor().set(JvmVendorSpec.JETBRAINS); // for enhanced HotSwap
+                spec.getLanguageVersion()
+                    .set(JavaLanguageVersion.of(forcedToolchain));
+                spec.getVendor()
+                    .set(JvmVendorSpec.JETBRAINS); // for enhanced HotSwap
             };
             ext.set("javaXToolchain", javaXToolchain);
 
-
-            final TaskProvider<SetupHotswapAgentTask> setupHotswapAgentX = tasks
-                .register("setupHotswapAgentX", SetupHotswapAgentTask.class,
-                    t -> t.setTargetForToolchain(javaXToolchain));
+            final TaskProvider<SetupHotswapAgentTask> setupHotswapAgentX = tasks.register(
+                "setupHotswapAgentX",
+                SetupHotswapAgentTask.class,
+                t -> t.setTargetForToolchain(javaXToolchain));
 
             final TaskProvider<RunHotswappableMinecraftTask> runClientXTask = tasks
                 .register("runClientX", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");

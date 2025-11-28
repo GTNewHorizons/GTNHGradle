@@ -164,26 +164,35 @@ public abstract class ToolchainModule implements GTNHModule {
             });
             tasks.withType(JavaCompile.class)
                 .configureEach(jc -> {
-                    if (doNotUpgrade.contains(jc.getName())) { return; }
+                    if (doNotUpgrade.contains(jc.getName())) {
+                        return;
+                    }
 
                     jc.setSourceCompatibility(String.valueOf(javaVersion));
-                    jc.getOptions().getRelease().set(8);
-                    jc.getJavaCompiler().set(compiler);
+                    jc.getOptions()
+                        .getRelease()
+                        .set(8);
+                    jc.getJavaCompiler()
+                        .set(compiler);
                 });
 
             if (useJabel) {
                 deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL);
-                ((ModuleDependency) deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL))
+                ((ModuleDependency) deps
+                    .add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL))
                     .setTransitive(false);
                 // Workaround for https://github.com/bsideup/jabel/issues/174
                 deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.18.1");
 
-
                 tasks.withType(JavaCompile.class)
                     .configureEach(jc -> {
-                        if (doNotUpgrade.contains(jc.getName())) { return; }
+                        if (doNotUpgrade.contains(jc.getName())) {
+                            return;
+                        }
 
-                        jc.getOptions().getRelease().set(8);
+                        jc.getOptions()
+                            .getRelease()
+                            .set(8);
                     });
             }
         }
