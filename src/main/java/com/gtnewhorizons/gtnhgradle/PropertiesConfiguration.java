@@ -331,6 +331,18 @@ public final class PropertiesConfiguration {
 
     /** See annotation */
     @Prop(
+        name = "forceToolchainVersion",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            If set, ignores the above setting and compiles with the given toolchain. This may cause unexpected issues,
+            and should *not* be used in most situations. -1 disables this.
+            """)
+    public int forceToolchainVersion = -1;
+
+    /** See annotation */
+    @Prop(
         name = "enableGenericInjection",
         isSettings = false,
         preferPopulated = true,

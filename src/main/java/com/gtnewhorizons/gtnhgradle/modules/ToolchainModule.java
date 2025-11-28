@@ -122,7 +122,9 @@ public abstract class ToolchainModule implements GTNHModule {
             .extendsFrom(runtimeOnlyNonPublishable);
 
         // Set up Java
-        final int javaVersion = gtnh.configuration.enableModernJavaSyntax ? 17 : 8;
+        final boolean forcedToolchain = gtnh.configuration.forceToolchainVersion != -1;
+        final boolean useJabel = gtnh.configuration.enableModernJavaSyntax && !forcedToolchain;
+        final int javaVersion = useJabel ? 17 : forcedToolchain ? gtnh.configuration.forceToolchainVersion : 8;
         java.getToolchain()
             .getVendor()
             .set(JvmVendorSpec.AZUL);
@@ -134,16 +136,14 @@ public abstract class ToolchainModule implements GTNHModule {
         }
         tasks.withType(JavaCompile.class)
             .configureEach(
-                jc -> {
-                    jc.getOptions()
-                        .setEncoding(StandardCharsets.UTF_8.name());
-                });
-        if (gtnh.configuration.enableModernJavaSyntax) {
+                jc -> jc.getOptions()
+                    .setEncoding(StandardCharsets.UTF_8.name()));
+        if (useJabel || gtnh.configuration.forceToolchainVersion > 8) {
             repos.exclusiveContent(ecr -> {
                 ecr.forRepositories(
                     project.getRepositories()
-                        .mavenCentral(mar -> { mar.setName("mavenCentral_java8Unsupported"); }));
-                ecr.filter(f -> { f.includeGroup("me.eigenraven.java8unsupported"); });
+                        .mavenCentral(mar -> mar.setName("mavenCentral_java8Unsupported")));
+                ecr.filter(f -> f.includeGroup("me.eigenraven.java8unsupported"));
             });
             final DependencyHandler deps = project.getDependencies();
             deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL);
