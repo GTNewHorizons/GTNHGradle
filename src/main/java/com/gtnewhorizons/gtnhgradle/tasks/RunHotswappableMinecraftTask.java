@@ -73,7 +73,7 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
             .getByType(MinecraftTasks.class);
 
         this.getExtraJvmArgs()
-            .addAll((List<String>) Objects.requireNonNull(project.property("java17JvmArgs")));
+            .addAll((List<String>) Objects.requireNonNull(project.property("modernJvmArgs")));
         this.getExtraJvmArgs()
             .addAll(
                 getEnableHotswap().map(
