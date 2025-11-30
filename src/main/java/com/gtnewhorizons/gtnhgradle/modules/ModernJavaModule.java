@@ -35,29 +35,28 @@ public abstract class ModernJavaModule implements GTNHModule {
     /** Default Java 17 JVM arguments */
     public final String[] JAVA_17_ARGS = new String[] { "-Dfile.encoding=UTF-8",
         "-Djava.system.class.loader=com.gtnewhorizons.retrofuturabootstrap.RfbSystemClassLoader",
-        "-Djava.security.manager=allow", "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens",
-        "java.base/java.net=ALL-UNNAMED", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "--add-opens",
-        "java.base/java.io=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens",
-        "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens", "java.base/java.text=ALL-UNNAMED", "--add-opens",
-        "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens",
-        "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming",
-        "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED", "--add-opens", "java.desktop/sun.awt.image=ALL-UNNAMED",
+        "--enable-native-access", "ALL-UNNAMED", "--add-opens", "java.base/java.io=ALL-UNNAMED", "--add-opens",
+        "java.base/java.lang.invoke=ALL-UNNAMED", "--add-opens", "java.base/java.lang.ref=ALL-UNNAMED", "--add-opens",
+        "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens",
+        "java.base/java.net.spi=ALL-UNNAMED", "--add-opens", "java.base/java.net=ALL-UNNAMED", "--add-opens",
+        "java.base/java.nio.channels=ALL-UNNAMED", "--add-opens", "java.base/java.nio.charset=ALL-UNNAMED",
+        "--add-opens", "java.base/java.nio.file=ALL-UNNAMED", "--add-opens", "java.base/java.nio=ALL-UNNAMED",
+        "--add-opens", "java.base/java.text=ALL-UNNAMED", "--add-opens", "java.base/java.time.chrono=ALL-UNNAMED",
+        "--add-opens", "java.base/java.time.format=ALL-UNNAMED", "--add-opens",
+        "java.base/java.time.temporal=ALL-UNNAMED", "--add-opens", "java.base/java.time.zone=ALL-UNNAMED",
+        "--add-opens", "java.base/java.time=ALL-UNNAMED", "--add-opens",
+        "java.base/java.util.concurrent.atomic=ALL-UNNAMED", "--add-opens",
+        "java.base/java.util.concurrent.locks=ALL-UNNAMED", "--add-opens", "java.base/java.util.jar=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util.zip=ALL-UNNAMED", "--add-opens", "java.base/java.util=ALL-UNNAMED",
+        "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens",
+        "java.base/jdk.internal.misc=ALL-UNNAMED", "--add-opens", "java.base/jdk.internal.ref=ALL-UNNAMED",
+        "--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED",
         "--add-opens", "java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED", "--add-opens",
+        "java.desktop/sun.awt.image=ALL-UNNAMED", "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED", "--add-opens",
+        "java.desktop/sun.lwawt.macosx=ALL-UNNAMED", "--add-opens",
+        "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED", "--add-opens",
         "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED", "--add-opens",
-        "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED", };
-    /** Default Java 25 JVM arguments */
-    public final String[] JAVA_25_ARGS = new String[] { "-Dfile.encoding=UTF-8",
-        "-Djava.system.class.loader=com.gtnewhorizons.retrofuturabootstrap.RfbSystemClassLoader", "--add-opens",
-        "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens", "java.base/java.net=ALL-UNNAMED", "--add-opens",
-        "java.base/java.nio=ALL-UNNAMED", "--add-opens", "java.base/java.io=ALL-UNNAMED", "--add-opens",
-        "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens",
-        "java.base/java.text=ALL-UNNAMED", "--add-opens", "java.base/java.util=ALL-UNNAMED", "--add-opens",
-        "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens",
-        "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming", "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
-        "--add-opens", "java.desktop/sun.awt.image=ALL-UNNAMED", "--add-opens",
-        "java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED", "--add-opens",
-        "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED", "--add-opens",
-        "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED", };
+        "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming", };
     /** Default Java HotSwapAgent JVM arguments */
     public final String[] HOTSWAP_JVM_ARGS = new String[] {
         // DCEVM advanced hot reload
@@ -80,6 +79,7 @@ public abstract class ModernJavaModule implements GTNHModule {
         final TaskContainer tasks = project.getTasks();
         final ExtraPropertiesExtension ext = project.getExtensions()
             .getExtraProperties();
+
         for (final String configuration : ImmutableList
             .of("implementation", "runtimeOnly", "devOnlyNonPublishable", "runtimeOnlyNonPublishable")) {
             deps.getConstraints()
@@ -101,6 +101,13 @@ public abstract class ModernJavaModule implements GTNHModule {
                 .set(JvmVendorSpec.JETBRAINS); // for enhanced HotSwap
         };
         ext.set("java21Toolchain", java21Toolchain);
+        final Action<JavaToolchainSpec> java25Toolchain = (spec) -> {
+            spec.getLanguageVersion()
+                .set(JavaLanguageVersion.of(25));
+            spec.getVendor()
+                .set(JvmVendorSpec.JETBRAINS); // for enhanced HotSwap
+        };
+        ext.set("java25Toolchain", java25Toolchain);
         final Configuration java17DependenciesCfg = cfgs.create("java17Dependencies", c -> {
             c.extendsFrom(cfgs.getByName("runtimeClasspath"));
             c.setCanBeResolved(true);
@@ -146,6 +153,11 @@ public abstract class ModernJavaModule implements GTNHModule {
                 t.setTargetForToolchain(java21Toolchain);
             });
 
+        final TaskProvider<SetupHotswapAgentTask> setupHotswapAgent25 = tasks
+            .register("setupHotswapAgent25", SetupHotswapAgentTask.class, t -> {
+                t.setTargetForToolchain(java25Toolchain);
+            });
+
         final TaskProvider<RunHotswappableMinecraftTask> runClient17Task = tasks
             .register("runClient17", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
         runClient17Task.configure(t -> {
@@ -184,10 +196,28 @@ public abstract class ModernJavaModule implements GTNHModule {
             t.setWorkingDir(gtnh.configuration.runServerDirectory);
         });
 
+        final TaskProvider<RunHotswappableMinecraftTask> runClient25Task = tasks
+            .register("runClient25", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
+        runClient25Task.configure(t -> {
+            t.dependsOn(setupHotswapAgent25);
+            t.setup(project, gtnh);
+            t.getJavaLauncher()
+                .set(getToolchainService().launcherFor(java25Toolchain));
+            t.setWorkingDir(gtnh.configuration.runClientDirectory);
+        });
+        final TaskProvider<RunHotswappableMinecraftTask> runServer25Task = tasks
+            .register("runServer25", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
+        runServer25Task.configure(t -> {
+            t.dependsOn(setupHotswapAgent25);
+            t.setup(project, gtnh);
+            t.getJavaLauncher()
+                .set(getToolchainService().launcherFor(java25Toolchain));
+            t.setWorkingDir(gtnh.configuration.runServerDirectory);
+        });
+
         final int forcedToolchain = gtnh.configuration.forceToolchainVersion;
         if (forcedToolchain != -1) {
-            final List<String> modernJvmArgs = forcedToolchain >= 25 ? new ArrayList<>(Arrays.asList(JAVA_25_ARGS))
-                : java17JvmArgs;
+            final List<String> modernJvmArgs = java17JvmArgs;
             ext.set("modernJvmArgs", modernJvmArgs);
 
             final Action<JavaToolchainSpec> javaXToolchain = (spec) -> {
