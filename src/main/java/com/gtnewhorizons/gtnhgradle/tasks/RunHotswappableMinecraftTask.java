@@ -6,6 +6,7 @@ import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.minecraft.MinecraftTasks;
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.SystemUtils;
 import com.gtnewhorizons.retrofuturagradle.util.Distribution;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -78,6 +79,10 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
             .addAll(
                 getEnableHotswap().map(
                     enable -> enable ? (List<String>) project.property("hotswapJvmArgs") : Collections.emptyList()));
+        if (side == Distribution.CLIENT && SystemUtils.IS_OS_MAC) {
+            this.getExtraJvmArgs()
+                .add("-XstartOnFirstThread");
+        }
 
         this.classpath(project.property("java17PatchDependenciesCfg"));
         this.classpath(mcpTasks.getTaskPackageMcLauncher());
@@ -104,7 +109,7 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         }
 
         // Use RFB alternate main class
-        systemProperty("gradlestart.bouncerClient", "com.gtnewhorizons.retrofuturabootstrap.Main");
+        systemProperty("gradlestart.bouncerClient", "com.gtnewhorizons.retrofuturabootstrap.MainStartOnFirstThread");
         systemProperty("gradlestart.bouncerServer", "com.gtnewhorizons.retrofuturabootstrap.Main");
 
         if (gtnh.configuration.usesMixins) {

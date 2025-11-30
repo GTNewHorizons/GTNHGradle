@@ -34,7 +34,7 @@ dependencies {
     implementation("org.jdom:jdom2:2.0.6.1")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.0"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.2"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
@@ -48,7 +48,7 @@ dependencies {
     api(pluginDep("org.jetbrains.kotlin.kapt", "2.2.21"))
     api(pluginDep("com.google.devtools.ksp", "2.2.21-2.0.4"))
     api(pluginDep("de.undercouch.download", "5.6.0"))
-    api(pluginDep("com.github.gmazzo.buildconfig", "5.7.1")) // 5.5.4 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(pluginDep("com.github.gmazzo.buildconfig", "5.7.1"))
     api(pluginDep("com.modrinth.minotaur", "2.8.10"))
     api(pluginDep("net.darkhax.curseforgegradle", "1.1.28"))
 
@@ -139,7 +139,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.wrapper.configure {
-    gradleVersion = "9.2.0"
+    gradleVersion = "9.2.1"
     distributionType = Wrapper.DistributionType.ALL
 }
 

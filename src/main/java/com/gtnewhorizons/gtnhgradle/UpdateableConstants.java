@@ -10,7 +10,7 @@ public class UpdateableConstants {
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
     @SuppressWarnings("unused") // Used via reflection
-    public static final @NotNull String NEWEST_GRADLE_VERSION = "9.2.0";
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "9.2.1";
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
@@ -27,13 +27,13 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.8.6";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:2.1.17";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.0-beta.6";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.11";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
-    public static final @NotNull String NEWEST_LWJGL3 = "3.3.3";
+    public static final @NotNull String NEWEST_LWJGL3 = "3.4.0-20251111.002045-6";
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
     public static final @NotNull String NEWEST_SPOTLESS = "8.0.0";

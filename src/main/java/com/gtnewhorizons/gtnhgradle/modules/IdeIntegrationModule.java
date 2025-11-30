@@ -113,7 +113,7 @@ public class IdeIntegrationModule implements GTNHModule {
         runs.register("2. Run Server", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("runServer")); });
         if (gtnh.configuration.moduleModernJava) {
             char suffix = 'a';
-            for (final int javaVer : ImmutableList.of(17, 21)) {
+            for (final int javaVer : ImmutableList.of(17, 21, 25)) {
                 final char mySuffix = suffix;
                 final char myHsSuffix = (char) (suffix + 1);
                 suffix += 2;

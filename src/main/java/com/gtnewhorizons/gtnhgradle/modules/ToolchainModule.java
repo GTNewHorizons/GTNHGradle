@@ -47,6 +47,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -92,12 +93,9 @@ public abstract class ToolchainModule implements GTNHModule {
             mvn.setUrl("https://gregtech.overminddl1.com/");
         });
         repos.maven(mvn -> {
-            mvn.setName("LWJGL Snapshots");
-            mvn.setUrl("https://oss.sonatype.org/content/repositories/snapshots/");
-            mvn.mavenContent(c -> {
-                c.snapshotsOnly();
-                c.includeGroup("org.lwjgl");
-            });
+            mvn.setName("GTNH LWJGL Snapshots");
+            mvn.setUrl("https://nexus.gtnewhorizons.com/repository/central-sonatype-snapshots/");
+            mvn.mavenContent(c -> { c.includeGroup("org.lwjgl"); });
         });
 
         // Provide a runtimeOnlyNonPublishable configuration
@@ -319,6 +317,11 @@ public abstract class ToolchainModule implements GTNHModule {
             .set(UpdateableConstants.NEWEST_LWJGL3);
         minecraft.getExtraRunJvmArguments()
             .add("-ea:" + gtnh.configuration.modGroup);
+        minecraft.getLwjgl3BindingsWithoutNatives()
+            .set(List.of("harfbuzz"));
+        minecraft.getLwjgl3Bindings()
+            .set(
+                List.of("freetype", "jemalloc", "nuklear", "openal", "opengl", "sdl", "spng", "stb", "tinyfd", "zstd"));
 
         // Blowdryer is present in some old mod builds, do not propagate it further as a dependency
         // IC2 has no reobf jars in its Maven
