@@ -59,7 +59,9 @@ public class IdeIntegrationModule implements GTNHModule {
         final EclipseJdt ejdt = eclipse.getJdt();
         ejdt.setTargetCompatibility(JavaVersion.VERSION_1_8);
         ejdt.setJavaRuntimeName("JavaSE-1.8");
-        if (gtnh.configuration.enableModernJavaSyntax) {
+        if (gtnh.configuration.forceToolchainVersion > 8) {
+            ejdt.setSourceCompatibility(JavaVersion.toVersion(gtnh.configuration.forceToolchainVersion));
+        } else if (gtnh.configuration.enableModernJavaSyntax) {
             ejdt.setSourceCompatibility(JavaVersion.VERSION_17);
         } else {
             ejdt.setSourceCompatibility(JavaVersion.VERSION_1_8);
