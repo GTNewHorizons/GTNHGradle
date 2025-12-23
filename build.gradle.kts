@@ -13,7 +13,7 @@ val detectedVersion: String = System.getenv("VERSION") ?: gitVersion()
 version = detectedVersion
 
 // Add a source set for the functional test suite
-val functionalTestSourceSet = sourceSets.create("functionalTest") {}
+val functionalTestSourceSet: SourceSet = sourceSets.create("functionalTest", Action {})
 
 repositories {
     maven {
@@ -61,27 +61,27 @@ gradlePlugin {
         website.set("https://github.com/GTNewHorizons/GTNHGradle")
         vcsUrl.set("https://github.com/GTNewHorizons/GTNHGradle.git")
         isAutomatedPublishing = false
-        create("gtnhGradle") {
+        create("gtnhGradle", Action {
             id = "com.gtnewhorizons.gtnhgradle"
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin"
             displayName = "GTNHGradle"
             description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods"
             tags.set(listOf("minecraft", "modding"))
-        }
-        create("gtnhConvention") {
+        })
+        create("gtnhConvention", Action {
             id = "com.gtnewhorizons.gtnhconvention"
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHConventionPlugin"
             displayName = "GTNHConvention"
             description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods - automatically applies all features"
             tags.set(listOf("minecraft", "modding"))
-        }
-        create("gtnhSettingsConvention") {
+        })
+        create("gtnhSettingsConvention", Action {
             id = "com.gtnewhorizons.gtnhsettingsconvention"
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHSettingsConventionPlugin"
             displayName = "GTNHConvention"
             description = "Shared Settings logic for all GTNH mods and some other 1.7.10 mods"
             tags.set(listOf("minecraft", "modding"))
-        }
+        })
     }
 }
 
@@ -126,7 +126,9 @@ tasks.javadoc {
     javadocTool.set(javaToolchains.javadocToolFor {
         languageVersion.set(JavaLanguageVersion.of(25))
     })
+    source = fileTree("src/main/java") // Process only main tree
     with(options as StandardJavadocDocletOptions) {
+        addBooleanOption("Xdoclint:-missing", true) // Ignores missing tags
         links(
             "https://docs.gradle.org/${gradle.gradleVersion}/javadoc/",
             "https://docs.oracle.com/en/java/javase/25/docs/api/",
