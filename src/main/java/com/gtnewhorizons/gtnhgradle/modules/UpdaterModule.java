@@ -8,13 +8,17 @@ import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.UpdateBuildscriptTask;
 import com.gtnewhorizons.gtnhgradle.tasks.UpdateDependenciesTask;
+import com.gtnewhorizons.gtnhgradle.tasks.V2UpgradeTask;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedConfiguration;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.wrapper.Wrapper;
+import org.gradle.buildconfiguration.tasks.UpdateDaemonJvm;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -86,6 +90,12 @@ public class UpdaterModule implements GTNHModule {
             }
         });
 
+        if (!isOffline) {
+            gtnh.logger.warn(
+                "Build script major version upgrade from {} to 2.x available! Run ./gradlew upgradeBuildScriptMajor",
+                BuildConfig.VERSION);
+        }
+
         final TaskContainer tasks = project.getTasks();
         tasks.named("wrapper", Wrapper.class)
             .configure(t -> {
@@ -138,6 +148,50 @@ public class UpdaterModule implements GTNHModule {
                 .set(
                     project.getLayout()
                         .file(project.provider(() -> dependenciesGradle))));
+
+        final TaskProvider<Wrapper> v2WrapperTask = tasks.register("buildScriptV2Wrapper", Wrapper.class, t -> {
+            t.setGroup("GTNH Buildscript Internal");
+            t.setGradleVersion("9.2.1");
+            t.getValidateDistributionUrl()
+                .set(true);
+            t.getNetworkTimeout()
+                .set(30_000);
+        });
+
+        @SuppressWarnings("UnstableApiUsage")
+        final TaskProvider<UpdateDaemonJvm> v2DaemonJvmTask = tasks
+            .register("buildScriptV2DaemonJvm", UpdateDaemonJvm.class, t -> {
+                @SuppressWarnings("UnstableApiUsage")
+                final UpdateDaemonJvm mainDaemonJvmTask = tasks.named("updateDaemonJvm", UpdateDaemonJvm.class)
+                    .get();
+                t.setGroup("GTNH Buildscript Internal");
+                t.getPropertiesFile()
+                    .set(
+                        project.getLayout()
+                            .getProjectDirectory()
+                            .file("gradle/gradle-daemon-jvm.properties"));
+                t.getLanguageVersion()
+                    .set(JavaLanguageVersion.of(25));
+                t.getNativeImageCapable()
+                    .set(false);
+                t.getToolchainPlatforms()
+                    .set(mainDaemonJvmTask.getToolchainPlatforms());
+                t.getToolchainDownloadUrls()
+                    .set(mainDaemonJvmTask.getToolchainDownloadUrls());
+            });
+
+        tasks.register("upgradeBuildScriptMajor", V2UpgradeTask.class, t -> {
+            t.setGroup("GTNH Buildscript");
+            t.finalizedBy(v2WrapperTask, v2DaemonJvmTask);
+            t.getSettingsGradle()
+                .set(
+                    project.getLayout()
+                        .file(project.provider(() -> settingsGradle)));
+            t.getPropertiesGradle()
+                .set(
+                    project.getLayout()
+                        .file(project.provider(() -> propertiesGradle)));
+        });
     }
 
     private static String getGradleVersionFromPlugin(final ResolvedArtifact artifact) {
