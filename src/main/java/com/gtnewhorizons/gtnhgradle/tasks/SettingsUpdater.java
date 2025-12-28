@@ -23,6 +23,10 @@ public class SettingsUpdater {
      */
     @SuppressWarnings("unused") // used by reflection
     public void update(Path settingsPath) throws Throwable {
+        update(settingsPath, BuildConfig.VERSION);
+    }
+
+    public void update(Path settingsPath, String newVersion) throws Throwable {
         final String oldSettings = new String(Files.readAllBytes(settingsPath), StandardCharsets.UTF_8);
         String newSettings = oldSettings;
 
@@ -37,7 +41,6 @@ public class SettingsUpdater {
             final String preVersion = versionMatcher.group(1);
             final String oldVersion = versionMatcher.group(2);
             final String postVersion = versionMatcher.group(3);
-            final String newVersion = BuildConfig.VERSION;
             if (oldVersion.equals(newVersion)) {
                 System.out.println("Settings.gradle plugin already at the newest version of " + newVersion);
             } else {
