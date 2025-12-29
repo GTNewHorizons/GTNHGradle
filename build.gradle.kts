@@ -15,14 +15,49 @@ version = detectedVersion
 // Add a source set for the functional test suite
 val functionalTestSourceSet: SourceSet = sourceSets.create("functionalTest", Action {})
 
+// Add a source set for the Jabel stub (provides @Desugar when using JVMDG instead of Jabel)
+val jabelStubSourceSet: SourceSet = sourceSets.create("jabelStub") {
+    java.srcDir("src/jabelStub/java")
+}
+
+// Compile Jabel stub with Java 8 target for maximum compatibility
+tasks.named<JavaCompile>("compileJabelStubJava") {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+    options.release.set(8)
+}
+
+// Create a jar task for the Jabel stub
+val jabelStubJar by tasks.registering(Jar::class) {
+    from(jabelStubSourceSet.output)
+    archiveClassifier.set("jabel-stub")
+}
+
+// Include the Jabel stub jar as a resource
+tasks.processResources {
+    from(jabelStubJar) {
+        into("jabel-stub")
+        rename { "jabel-stub.jar" }
+    }
+}
+
 repositories {
     maven {
         name = "gtnh"
         url = uri("https://nexus.gtnewhorizons.com/repository/public/")
     }
+    maven {
+        name = "WagYourTail Maven"
+        url = uri("https://maven.wagyourtail.xyz/releases")
+        mavenContent {
+            releasesOnly()
+        }
+        content {
+            includeGroup("xyz.wagyourtail.jvmdowngrader")
+        }
+    }
     mavenCentral()
     gradlePluginPortal()
-    mavenLocal()
 }
 
 fun pluginDep(name: String, version: String): String {
@@ -32,6 +67,8 @@ fun pluginDep(name: String, version: String): String {
 dependencies {
     // JDOM2 for XML processing
     implementation("org.jdom:jdom2:2.0.6.1")
+    // Maven artifact for version comparison
+    implementation("org.apache.maven:maven-artifact:3.9.9")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
     api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.2"))
@@ -51,6 +88,8 @@ dependencies {
     api(pluginDep("com.github.gmazzo.buildconfig", "5.7.1"))
     api(pluginDep("com.modrinth.minotaur", "2.8.10"))
     api(pluginDep("net.darkhax.curseforgegradle", "1.1.28"))
+
+    api(pluginDep("xyz.wagyourtail.jvmdowngrader", "1.3.4"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

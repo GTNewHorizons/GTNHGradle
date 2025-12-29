@@ -40,8 +40,8 @@ import java.util.Set;
 public class PublishingModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
-        return configuration.modulePublishing;
+    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
+        return gtnh.configuration.modulePublishing;
     }
 
     @Override

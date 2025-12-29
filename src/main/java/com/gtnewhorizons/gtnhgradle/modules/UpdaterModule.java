@@ -4,7 +4,6 @@ import com.gtnewhorizons.gtnhgradle.BuildConfig;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
-import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.UpdateBuildscriptTask;
 import com.gtnewhorizons.gtnhgradle.tasks.UpdateDependenciesTask;
@@ -31,8 +30,8 @@ import java.util.concurrent.TimeUnit;
 public class UpdaterModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
-        return configuration.moduleUpdater;
+    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
+        return gtnh.configuration.moduleUpdater;
     }
 
     @Override

@@ -34,6 +34,38 @@ public class UpdateableConstants {
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.4.0-20251111.002045-6";
+
+    /** Minimum GTNHLib version required for JVM Downgrader stub support */
+    // When jvmDowngraderStubsProvider=gtnhlib, GTNHLib must provide the stubs at runtime
+    public static final @NotNull String MIN_GTNHLIB_FOR_JVMDG_STUBS = "com.github.GTNewHorizons:GTNHLib:0.9.0";
+
+    /** JVM Downgrader API/stubs version for shading - can be snapshot */
+    // https://maven.wagyourtail.xyz/#/snapshots/xyz/wagyourtail/jvmdowngrader
+    public static final @NotNull String JVMDG_VERSION = "1.3.5-SNAPSHOT";
+
+    /** JVM Downgrader group ID */
+    public static final @NotNull String JVMDG_GROUP = "xyz.wagyourtail.jvmdowngrader";
+
+    /** JVM Downgrader Java API artifact coordinates (without version/classifier) */
+    public static final @NotNull String JVMDG_API_ARTIFACT = JVMDG_GROUP + ":jvmdowngrader-java-api";
+
+    /** JVM Downgrader snapshot repository URL */
+    public static final @NotNull String JVMDG_SNAPSHOT_REPO = "https://maven.wagyourtail.xyz/snapshots";
+
+    /**
+     * Returns the full dependency notation for the downgraded JVMDG API jar.
+     *
+     * @param targetVersion The Java version to downgrade to (e.g., 8)
+     * @return Dependency notation like "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:1.3.5:downgraded-8"
+     */
+    public static @NotNull String jvmdgApiDependency(int targetVersion) {
+        return JVMDG_API_ARTIFACT + ":" + JVMDG_VERSION + ":downgraded-" + targetVersion;
+    }
+
+    /** Minimum Lombok version required for Java 25+ bytecode support */
+    // https://github.com/projectlombok/lombok/releases
+    public static final @NotNull String MIN_LOMBOK_FOR_JAVA_25 = "1.18.40";
+
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
     public static final @NotNull String NEWEST_SPOTLESS = "8.0.0";

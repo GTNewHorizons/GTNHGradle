@@ -324,10 +324,14 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Enables using modern Java syntax (up to version 17) via Jabel, while still targeting JVM 8.
-            See https://github.com/bsideup/jabel for details on how this works.
+            Enables modern Java syntax support. Valid values:
+            - false: No modern syntax, Java 8 only
+            - true: (DEPRECATED, use 'jabel') Jabel syntax-only support
+            - jabel: Jabel syntax-only support, compiles to J8 bytecode
+            - jvmDowngrader: Full modern Java via JVM Downgrader (syntax + stdlib APIs)
+            - modern: Native modern Java bytecode, no downgrading
             """)
-    public boolean enableModernJavaSyntax = false;
+    public @NotNull String enableModernJavaSyntax = "false";
 
     /** See annotation */
     @Prop(
@@ -340,6 +344,47 @@ public final class PropertiesConfiguration {
             and should *not* be used in most situations. -1 disables this.
             """)
     public int forceToolchainVersion = -1;
+
+    /** See annotation */
+    @Prop(
+        name = "downgradeTargetVersion",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Target JVM version for JVM Downgrader bytecode downgrading.
+            Valid values: 8, 11, 17. Only used when enableModernJavaSyntax = jvmDowngrader
+            """)
+    public int downgradeTargetVersion = 8;
+
+    /** See annotation */
+    @Prop(
+        name = "jvmDowngraderMultiReleaseVersions",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Comma-separated list of Java versions for multi-release jar support (JVM Downgrader only).
+            Classes will be available in META-INF/versions/N/ for each version N in this list.
+            Default: "21,25" (J25+ gets native classes, J21-24 gets partial downgrade, J8-20 gets full downgrade).
+            """)
+    public @NotNull String jvmDowngraderMultiReleaseVersions = "21,25";
+
+    /** See annotation */
+    @Prop(
+        name = "jvmDowngraderStubsProvider",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Specifies how JVM Downgrader API stubs are provided. Options:
+            - shade: Shade minimized stubs into the jar
+            - gtnhlib: GTNHLib provides stubs at runtime (adds version constraint)
+            - external: Another dependency provides stubs (no constraint, no warning)
+            - (empty): Warning reminding you to configure stubs
+            Note: 'shade' option requires LGPL2-compatible license for your mod.
+            """)
+    public @NotNull String jvmDowngraderStubsProvider = "";
 
     /** See annotation */
     @Prop(

@@ -5,7 +5,6 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
-import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.quality.CheckstyleExtension;
 import org.gradle.api.plugins.quality.CheckstylePlugin;
@@ -18,8 +17,8 @@ import org.jetbrains.annotations.NotNull;
 public class CodeStyleModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
-        return configuration.moduleCodeStyle;
+    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
+        return gtnh.configuration.moduleCodeStyle;
     }
 
     @Override

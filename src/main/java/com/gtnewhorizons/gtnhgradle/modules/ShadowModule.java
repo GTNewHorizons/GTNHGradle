@@ -6,7 +6,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
-import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -21,8 +20,8 @@ import org.jetbrains.annotations.NotNull;
 public class ShadowModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
-        return configuration.usesShadowedDependencies;
+    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
+        return gtnh.configuration.usesShadowedDependencies;
     }
 
     @Override
@@ -62,6 +61,7 @@ public class ShadowModule implements GTNHModule {
             }
             sj.getConfigurations()
                 .set(ImmutableList.of(shadowImplementation, shadeCompile, shadowCompile));
+            // Default classifier - JVMDowngraderModule will override to "predowngrade" if needed
             sj.getArchiveClassifier()
                 .set("dev");
             if (gtnh.configuration.relocateShadowedDependencies) {
@@ -70,7 +70,16 @@ public class ShadowModule implements GTNHModule {
                 sj.getEnableAutoRelocation()
                     .set(true);
             }
+
         });
+        // jar is intermediate when shadow is enabled - shadowJar consumes it
+        tasks.named("jar", Jar.class)
+            .configure(
+                j -> {
+                    j.getArchiveClassifier()
+                        .set("dev-preshadow");
+                });
+
         for (final String outgoingConfig : ImmutableList.of("runtimeElements", "apiElements")) {
             final Configuration outgoing = cfgs.getByName(outgoingConfig);
             outgoing.getOutgoing()
@@ -79,20 +88,10 @@ public class ShadowModule implements GTNHModule {
             outgoing.getOutgoing()
                 .artifact(shadowJar);
         }
-        tasks.named("jar", Jar.class)
-            .configure(
-                j -> {
-                    j.getArchiveClassifier()
-                        .set("dev-preshadow");
-                });
         tasks.named("reobfJar", ReobfuscatedJar.class)
             .configure(j -> {
                 j.getInputJar()
                     .set(shadowJar.flatMap(AbstractArchiveTask::getArchiveFile));
             });
-
-        project.getExtensions()
-            .getExtraProperties()
-            .set("publishableDevJar", shadowJar);
     }
 }

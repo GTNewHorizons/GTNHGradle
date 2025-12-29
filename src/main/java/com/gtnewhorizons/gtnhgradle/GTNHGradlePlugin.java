@@ -9,6 +9,7 @@ import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
 import com.gtnewhorizons.gtnhgradle.modules.IdeIntegrationModule;
+import com.gtnewhorizons.gtnhgradle.modules.JVMDowngraderModule;
 import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
 import com.gtnewhorizons.gtnhgradle.modules.ModernJavaModule;
 import com.gtnewhorizons.gtnhgradle.modules.OldGradleEmulationModule;
@@ -34,15 +35,20 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
 import org.gradle.process.ExecOperations;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The main GTNH buildscript plugin object. You can access it in the buildscript as {@code gtnhGradle} and use it to
@@ -94,6 +100,12 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** Parsed properties associated with this project */
         public @NotNull PropertiesConfiguration configuration;
 
+        /** Lazily computed effective toolchain version */
+        private final @NotNull Provider<Integer> effectiveToolchainVersionProvider;
+
+        /** Valid values for downgradeTargetVersion property */
+        public static final Set<Integer> VALID_DOWNGRADE_TARGET_VERSIONS = Set.of(8, 11, 17);
+
         /** A list of all available modules to activate */
         public static final List<Class<? extends GTNHModule>> ALL_MODULES = List.of( //
             GitVersionModule.class,
@@ -109,6 +121,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             WellKnownRepositoriesModule.class,
             StandardScriptsModules.RepositoriesScriptModule.class,
             MixinModule.class,
+            JVMDowngraderModule.class,
             StandardScriptsModules.DependenciesScriptModule.class,
             ModernJavaModule.class,
             IdeIntegrationModule.class,
@@ -138,6 +151,98 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public GTNHExtension(final Project project) {
             logger = Logging.getLogger(GTNHGradlePlugin.class);
             configuration = PropertiesConfiguration.GradleUtils.makePropertiesFrom(project);
+
+            // Conventions from gradle.properties
+            getModernJavaSyntaxMode().convention(ModernJavaSyntaxMode.fromString(configuration.enableModernJavaSyntax));
+            getForceToolchainVersion().convention(configuration.forceToolchainVersion);
+            getDowngradeTargetVersion().convention(configuration.downgradeTargetVersion);
+            getJvmDowngraderMultiReleaseVersions()
+                .convention(parseMultiReleaseVersions(configuration.jvmDowngraderMultiReleaseVersions));
+            getJvmDowngraderStubsProvider()
+                .convention(JvmDowngraderStubsProvider.fromString(configuration.jvmDowngraderStubsProvider));
+
+            effectiveToolchainVersionProvider = createEffectiveToolchainVersionProvider();
+        }
+
+        private Provider<Integer> createEffectiveToolchainVersionProvider() {
+            return getProviderFactory().provider(() -> {
+                final ModernJavaSyntaxMode mode = getModernJavaSyntaxMode().get();
+                final int forcedVersion = getForceToolchainVersion().get();
+                final Set<Integer> mrVersions = getJvmDowngraderMultiReleaseVersions().get();
+
+                // Find max multi-release version
+                int maxMultiReleaseVersion = 0;
+                if (mode.usesJvmDowngrader()) {
+                    for (int version : mrVersions) {
+                        maxMultiReleaseVersion = Math.max(maxMultiReleaseVersion, version);
+                    }
+                }
+
+                // Validate downgradeTargetVersion when using JVM Downgrader
+                if (mode.usesJvmDowngrader()) {
+                    final int downgradeTarget = getDowngradeTargetVersion().get();
+                    if (!VALID_DOWNGRADE_TARGET_VERSIONS.contains(downgradeTarget)) {
+                        throw new IllegalArgumentException(
+                            "Invalid downgradeTargetVersion: " + downgradeTarget
+                                + ". Valid values are: "
+                                + VALID_DOWNGRADE_TARGET_VERSIONS);
+                    }
+                }
+
+                // Compute mode default version
+                final int modeDefaultVersion = switch (mode) {
+                    case FALSE -> 8;
+                    case JABEL -> 17;
+                    case JVM_DOWNGRADER, MODERN -> 21;
+                };
+
+                if (forcedVersion != -1) {
+                    // Validate forced version against jvmDowngraderMultiReleaseVersions
+                    if (maxMultiReleaseVersion > forcedVersion) {
+                        throw new IllegalArgumentException(
+                            "forceToolchainVersion=" + forcedVersion
+                                + " is lower than max jvmDowngraderMultiReleaseVersions="
+                                + maxMultiReleaseVersion
+                                + ". Cannot create Java "
+                                + maxMultiReleaseVersion
+                                + " bytecode with a Java "
+                                + forcedVersion
+                                + " toolchain. Either increase forceToolchainVersion or reduce jvmDowngraderMultiReleaseVersions.");
+                    }
+                    return forcedVersion;
+                } else {
+                    // Auto toolchain version - use max of mode default and jvmDowngraderMultiReleaseVersions
+                    return Math.max(modeDefaultVersion, maxMultiReleaseVersion);
+                }
+            });
+        }
+
+        /**
+         * Parses a comma-separated string of Java versions into a Set.
+         *
+         * @param mrVersionsStr Comma-separated version string (e.g., "21,25")
+         * @return Set of parsed version integers
+         */
+        private static Set<Integer> parseMultiReleaseVersions(String mrVersionsStr) {
+            if (mrVersionsStr == null || mrVersionsStr.isEmpty()) {
+                return Set.of(21, 25); // Default multi-release versions
+            }
+            final Set<Integer> versions = new LinkedHashSet<>();
+            for (String versionStr : mrVersionsStr.split(",")) {
+                try {
+                    int version = Integer.parseInt(versionStr.trim());
+                    if (version < 9 || version > 99) {
+                        throw new IllegalArgumentException(
+                            "Invalid jvmDowngraderMultiReleaseVersions entry: " + version + ". Must be >= 9.");
+                    }
+                    versions.add(version);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(
+                        "Invalid jvmDowngraderMultiReleaseVersions: '" + mrVersionsStr
+                            + "'. Must be comma-separated integers (e.g., '21' or '21,25').");
+                }
+            }
+            return Set.copyOf(versions);
         }
 
         /**
@@ -189,5 +294,29 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** @return Gradle-provided injected service */
         @Inject
         public abstract @NotNull ExecOperations getExecOperations();
+
+        // Lazy configuration properties - can be overridden in build.gradle
+
+        /** @return Modern Java syntax mode property */
+        public abstract @NotNull Property<ModernJavaSyntaxMode> getModernJavaSyntaxMode();
+
+        /** @return Forced toolchain version override, or -1 to auto-detect */
+        public abstract @NotNull Property<Integer> getForceToolchainVersion();
+
+        /** @return Target JVM version for JVM Downgrader (8, 11, or 17) */
+        public abstract @NotNull Property<Integer> getDowngradeTargetVersion();
+
+        /** @return Multi-release JAR versions for JVM Downgrader */
+        public abstract @NotNull SetProperty<Integer> getJvmDowngraderMultiReleaseVersions();
+
+        /** @return How JVM Downgrader API stubs are provided */
+        public abstract @NotNull Property<JvmDowngraderStubsProvider> getJvmDowngraderStubsProvider();
+
+        // Lazy computed providers
+
+        /** @return Lazily computed effective toolchain version */
+        public @NotNull Provider<Integer> getEffectiveToolchainVersion() {
+            return effectiveToolchainVersionProvider;
+        }
     }
 }

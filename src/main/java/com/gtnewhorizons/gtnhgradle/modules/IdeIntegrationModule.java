@@ -5,7 +5,7 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
-import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
+import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
 public class IdeIntegrationModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
-        return configuration.moduleIdeIntegration;
+    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
+        return gtnh.configuration.moduleIdeIntegration;
     }
 
     @Override
@@ -59,12 +59,19 @@ public class IdeIntegrationModule implements GTNHModule {
         final EclipseJdt ejdt = eclipse.getJdt();
         ejdt.setTargetCompatibility(JavaVersion.VERSION_1_8);
         ejdt.setJavaRuntimeName("JavaSE-1.8");
-        if (gtnh.configuration.forceToolchainVersion > 8) {
-            ejdt.setSourceCompatibility(JavaVersion.toVersion(gtnh.configuration.forceToolchainVersion));
-        } else if (gtnh.configuration.enableModernJavaSyntax) {
-            ejdt.setSourceCompatibility(JavaVersion.VERSION_17);
+        final ModernJavaSyntaxMode mode = gtnh.getModernJavaSyntaxMode()
+            .get();
+        final int forceToolchain = gtnh.getForceToolchainVersion()
+            .get();
+        if (forceToolchain > 8) {
+            ejdt.setSourceCompatibility(JavaVersion.toVersion(forceToolchain));
         } else {
-            ejdt.setSourceCompatibility(JavaVersion.VERSION_1_8);
+            final JavaVersion sourceCompat = switch (mode) {
+                case FALSE -> JavaVersion.VERSION_1_8;
+                case JABEL -> JavaVersion.VERSION_17;
+                case JVM_DOWNGRADER, MODERN -> JavaVersion.VERSION_21;
+            };
+            ejdt.setSourceCompatibility(sourceCompat);
         }
 
         final IdeaModel idea = project.getExtensions()
