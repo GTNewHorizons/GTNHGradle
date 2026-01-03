@@ -36,6 +36,7 @@ import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.process.ExecOperations;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -189,5 +190,9 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** @return Gradle-provided injected service */
         @Inject
         public abstract @NotNull ExecOperations getExecOperations();
+
+        /** @return Gradle-provided */
+        @Inject
+        public abstract @NotNull JavaToolchainService getToolchainService();
     }
 }
