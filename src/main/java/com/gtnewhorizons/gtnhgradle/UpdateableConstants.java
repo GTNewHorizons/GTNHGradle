@@ -24,19 +24,19 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_JABEL = "com.github.GTNewHorizons:jabel-javac-plugin:1.0.2-GTNH";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
-    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.8.6";
+    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.8.41";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.0-beta.11";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.2";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.11";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.35";
     /** Latest version of LWJGL3 for modern Java support */
-    // https://github.com/LWJGL/lwjgl3/releases - but check what latest Minecraft uses too
-    public static final @NotNull String NEWEST_LWJGL3 = "3.4.0-20251111.002045-6";
+    // https://github.com/GTNewHorizons/lwjgl3ify/blob/master/gradle/libs.versions.toml - but check what latest Minecraft uses too
+    public static final @NotNull String NEWEST_LWJGL3 = "3.4.0-20260101.224815-9";
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-    public static final @NotNull String NEWEST_SPOTLESS = "8.0.0";
+    public static final @NotNull String NEWEST_SPOTLESS = "8.1.0";
 
     /** Latest HotSwapAgent release jar URL */
     // https://github.com/HotswapProjects/HotswapAgent/releases
