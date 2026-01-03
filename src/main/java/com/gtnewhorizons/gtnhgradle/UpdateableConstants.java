@@ -32,7 +32,8 @@ public class UpdateableConstants {
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.35";
     /** Latest version of LWJGL3 for modern Java support */
-    // https://github.com/GTNewHorizons/lwjgl3ify/blob/master/gradle/libs.versions.toml - but check what latest Minecraft uses too
+    // https://github.com/GTNewHorizons/lwjgl3ify/blob/master/gradle/libs.versions.toml - but check what latest
+    // Minecraft uses too
     public static final @NotNull String NEWEST_LWJGL3 = "3.4.0-20260101.224815-9";
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
