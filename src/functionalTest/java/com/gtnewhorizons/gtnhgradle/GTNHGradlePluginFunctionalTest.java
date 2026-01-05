@@ -184,24 +184,6 @@ class GTNHGradlePluginFunctionalTest {
     }
 
     @Test
-    void invalidDowngradeTargetVersion_failsWithHelpfulMessage() throws IOException {
-        setupProject("""
-            modName = MyMod
-            modId = mymodid
-            modGroup = com.myname.mymodid
-            enableModernJavaSyntax = jvmDowngrader
-            downgradeTargetVersion = 9
-            """);
-
-        UnexpectedBuildFailure ex = assertThrows(UnexpectedBuildFailure.class, () -> createRunner("tasks").build());
-
-        assertTrue(
-            ex.getMessage()
-                .contains("Invalid downgradeTargetVersion"),
-            "Should mention invalid downgradeTargetVersion");
-    }
-
-    @Test
     void invalidJvmDowngraderStubsProvider_failsWithHelpfulMessage() throws IOException {
         setupProject("""
             modName = MyMod

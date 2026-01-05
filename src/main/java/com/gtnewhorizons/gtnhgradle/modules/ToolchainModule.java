@@ -189,13 +189,15 @@ public abstract class ToolchainModule implements GTNHModule {
 
             if (useJabel) {
                 deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL);
-                deps.add("testAnnotationProcessor", UpdateableConstants.NEWEST_JABEL);
+                deps.add(JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL);
                 ((ModuleDependency) deps
                     .add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL))
                     .setTransitive(false);
                 // Workaround for https://github.com/bsideup/jabel/issues/174
                 deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.18.1");
-                deps.add("testAnnotationProcessor", "net.java.dev.jna:jna-platform:5.18.1");
+                deps.add(
+                    JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                    "net.java.dev.jna:jna-platform:5.18.1");
             }
         }
 

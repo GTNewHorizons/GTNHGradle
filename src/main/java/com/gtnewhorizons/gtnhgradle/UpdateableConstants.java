@@ -22,6 +22,8 @@ public class UpdateableConstants {
 
     /** Latest version of Jabel for modern Java support */
     public static final @NotNull String NEWEST_JABEL = "com.github.GTNewHorizons:jabel-javac-plugin:1.0.2-GTNH";
+    /** Jabel stubs for @Desugar annotation compatibility when using JVM Downgrader */
+    public static final @NotNull String JABEL_STUBS = "com.github.GTNewHorizons:jabel-stubs:1.0.0";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
     public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.8.6";

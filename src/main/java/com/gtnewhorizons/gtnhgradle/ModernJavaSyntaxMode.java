@@ -1,7 +1,5 @@
 package com.gtnewhorizons.gtnhgradle;
 
-import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,8 +15,6 @@ public enum ModernJavaSyntaxMode {
     JVM_DOWNGRADER("jvmDowngrader"),
     /** Native modern Java (no downgrading, requires modern JVM at runtime) */
     MODERN("modern");
-
-    private static final Logger LOGGER = Logging.getLogger(ModernJavaSyntaxMode.class);
 
     private final String propertyValue;
 
@@ -41,9 +37,6 @@ public enum ModernJavaSyntaxMode {
 
         // Handle backwards-compatible boolean values
         if (value.equalsIgnoreCase("true")) {
-            LOGGER.warn(
-                "enableModernJavaSyntax=true is deprecated. Use 'jabel' for Jabel syntax support, "
-                    + "or 'jvmDowngrader' for full modern Java with stdlib APIs.");
             return JABEL;
         }
         if (value.equalsIgnoreCase("false")) {
@@ -51,7 +44,7 @@ public enum ModernJavaSyntaxMode {
         }
 
         for (ModernJavaSyntaxMode mode : values()) {
-            if (mode.propertyValue.equalsIgnoreCase(value)) {
+            if (mode.propertyValue.equals(value)) {
                 return mode;
             }
         }

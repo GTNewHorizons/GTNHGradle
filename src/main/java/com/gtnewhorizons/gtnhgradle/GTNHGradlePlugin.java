@@ -103,9 +103,6 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** Lazily computed effective toolchain version */
         private final @NotNull Provider<Integer> effectiveToolchainVersionProvider;
 
-        /** Valid values for downgradeTargetVersion property */
-        public static final Set<Integer> VALID_DOWNGRADE_TARGET_VERSIONS = Set.of(8, 11, 17);
-
         /** A list of all available modules to activate */
         public static final List<Class<? extends GTNHModule>> ALL_MODULES = List.of( //
             GitVersionModule.class,
@@ -178,22 +175,11 @@ public class GTNHGradlePlugin implements Plugin<Project> {
                     }
                 }
 
-                // Validate downgradeTargetVersion when using JVM Downgrader
-                if (mode.usesJvmDowngrader()) {
-                    final int downgradeTarget = getDowngradeTargetVersion().get();
-                    if (!VALID_DOWNGRADE_TARGET_VERSIONS.contains(downgradeTarget)) {
-                        throw new IllegalArgumentException(
-                            "Invalid downgradeTargetVersion: " + downgradeTarget
-                                + ". Valid values are: "
-                                + VALID_DOWNGRADE_TARGET_VERSIONS);
-                    }
-                }
-
                 // Compute mode default version
                 final int modeDefaultVersion = switch (mode) {
                     case FALSE -> 8;
                     case JABEL -> 17;
-                    case JVM_DOWNGRADER, MODERN -> 21;
+                    case JVM_DOWNGRADER, MODERN -> 25;
                 };
 
                 if (forcedVersion != -1) {
@@ -231,7 +217,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             for (String versionStr : mrVersionsStr.split(",")) {
                 try {
                     int version = Integer.parseInt(versionStr.trim());
-                    if (version < 9 || version > 99) {
+                    if (version < 9) {
                         throw new IllegalArgumentException(
                             "Invalid jvmDowngraderMultiReleaseVersions entry: " + version + ". Must be >= 9.");
                     }

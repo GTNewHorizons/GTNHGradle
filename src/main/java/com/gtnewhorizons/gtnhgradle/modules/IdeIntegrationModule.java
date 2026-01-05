@@ -69,7 +69,7 @@ public class IdeIntegrationModule implements GTNHModule {
             final JavaVersion sourceCompat = switch (mode) {
                 case FALSE -> JavaVersion.VERSION_1_8;
                 case JABEL -> JavaVersion.VERSION_17;
-                case JVM_DOWNGRADER, MODERN -> JavaVersion.VERSION_21;
+                case JVM_DOWNGRADER, MODERN -> JavaVersion.VERSION_25;
             };
             ejdt.setSourceCompatibility(sourceCompat);
         }

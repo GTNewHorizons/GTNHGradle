@@ -11,8 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModernJavaSyntaxModeTest {
 
     @ParameterizedTest
-    @CsvSource({ "false, FALSE", "FALSE, FALSE", "jabel, JABEL", "JABEL, JABEL", "jvmDowngrader, JVM_DOWNGRADER",
-        "JVMDOWNGRADER, JVM_DOWNGRADER", "modern, MODERN", "MODERN, MODERN", "'', FALSE" })
+    @CsvSource({ "false, FALSE", "FALSE, FALSE", "jabel, JABEL", "jvmDowngrader, JVM_DOWNGRADER", "modern, MODERN",
+        "'', FALSE" })
     void fromString_validValues(String input, ModernJavaSyntaxMode expected) {
         assertEquals(expected, ModernJavaSyntaxMode.fromString(input));
     }

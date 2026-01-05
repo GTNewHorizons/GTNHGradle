@@ -27,7 +27,7 @@ public enum JvmDowngraderStubsProvider {
         }
 
         for (JvmDowngraderStubsProvider provider : values()) {
-            if (provider.propertyValue.equalsIgnoreCase(value)) {
+            if (provider.propertyValue.equals(value)) {
                 return provider;
             }
         }

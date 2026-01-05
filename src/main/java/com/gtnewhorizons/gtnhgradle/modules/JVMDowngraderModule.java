@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
 import com.gtnewhorizons.gtnhgradle.JvmDowngraderStubsProvider;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.ValidateLombokVersionTask;
@@ -15,6 +16,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.artifacts.repositories.MavenRepositoryContentDescriptor;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -33,10 +35,6 @@ import xyz.wagyourtail.jvmdg.gradle.task.ShadeJar;
 import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -91,7 +89,7 @@ public class JVMDowngraderModule implements GTNHModule {
 
     private void applyJvmdgPlugin(Project project, GTNHGradlePlugin.GTNHExtension gtnh, JavaVersion targetVersion) {
         project.getPluginManager()
-            .apply("xyz.wagyourtail.jvmdowngrader");
+            .apply(xyz.wagyourtail.jvmdg.gradle.JVMDowngraderPlugin.class);
 
         final JVMDowngraderExtension jvmdgExt = project.getExtensions()
             .getByType(JVMDowngraderExtension.class);
@@ -120,12 +118,11 @@ public class JVMDowngraderModule implements GTNHModule {
             } else if (version < toolchainVersion) {
                 intermediateVersions.add(JavaVersion.toVersion(version));
             } else {
-                project.getLogger()
-                    .warn(
-                        "jvmDowngraderMultiReleaseVersions contains {} which exceeds toolchain version {}. "
-                            + "Ignoring - cannot generate bytecode for a higher Java version than the compiler.",
-                        version,
-                        toolchainVersion);
+                throw new GradleException(
+                    "jvmDowngraderMultiReleaseVersions contains " + version
+                        + " which exceeds toolchain version "
+                        + toolchainVersion
+                        + ". Cannot generate bytecode for a higher Java version than the compiler.");
             }
         }
 
@@ -159,7 +156,7 @@ public class JVMDowngraderModule implements GTNHModule {
                 .maven(repo -> {
                     repo.setName("WagYourTail Maven Snapshots");
                     repo.setUrl(UpdateableConstants.JVMDG_SNAPSHOT_REPO);
-                    repo.mavenContent(content -> content.snapshotsOnly());
+                    repo.mavenContent(MavenRepositoryContentDescriptor::snapshotsOnly);
                     repo.content(desc -> desc.includeGroup(UpdateableConstants.JVMDG_GROUP));
                 });
         }
@@ -172,7 +169,6 @@ public class JVMDowngraderModule implements GTNHModule {
             config.setDescription("JVM Downgrader API jar for Java " + downgradeTarget);
             config.setCanBeConsumed(false);
             config.setCanBeResolved(true);
-            config.setVisible(false);
             config.setTransitive(false);
             config.getDependencies()
                 .add(
@@ -183,33 +179,7 @@ public class JVMDowngraderModule implements GTNHModule {
 
     /** Adds Jabel stub jar for @Desugar annotation compatibility. */
     private void addJabelStub(Project project, DependencyHandler deps) {
-        final TaskProvider<?> extractStub = project.getTasks()
-            .register("extractJabelStub", task -> {
-                final var outputFile = project.getObjects()
-                    .fileProperty();
-                outputFile.set(
-                    project.getLayout()
-                        .getBuildDirectory()
-                        .file("gtnhgradle/jabel-stub/jabel-stub.jar"));
-                task.getOutputs()
-                    .file(outputFile);
-                task.doLast(t -> {
-                    try (InputStream stubStream = getClass().getResourceAsStream("/jabel-stub/jabel-stub.jar")) {
-                        if (stubStream == null) {
-                            throw new GradleException("Jabel stub jar not found in GTNHGradle resources");
-                        }
-                        final File stubJar = outputFile.get()
-                            .getAsFile();
-                        stubJar.getParentFile()
-                            .mkdirs();
-                        Files.copy(stubStream, stubJar.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        throw new GradleException("Failed to extract Jabel stub jar", e);
-                    }
-                });
-            });
-
-        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, project.files(extractStub));
+        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.JABEL_STUBS);
     }
 
     private static class DowngradeTasks {
@@ -547,9 +517,7 @@ public class JVMDowngraderModule implements GTNHModule {
             .configure(task -> task.dependsOn(validateTask));
 
         if (!mixinSourceSetName.isEmpty()) {
-            final String mixinCompileTask = "compile" + Character.toUpperCase(mixinSourceSetName.charAt(0))
-                + mixinSourceSetName.substring(1)
-                + "Java";
+            final String mixinCompileTask = "compile" + StringUtils.capitalize(mixinSourceSetName) + "Java";
             project.getTasks()
                 .matching(
                     t -> t.getName()

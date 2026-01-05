@@ -326,7 +326,6 @@ public final class PropertiesConfiguration {
         docComment = """
             Enables modern Java syntax support. Valid values:
             - false: No modern syntax, Java 8 only
-            - true: (DEPRECATED, use 'jabel') Jabel syntax-only support
             - jabel: Jabel syntax-only support, compiles to J8 bytecode
             - jvmDowngrader: Full modern Java via JVM Downgrader (syntax + stdlib APIs)
             - modern: Native modern Java bytecode, no downgrading
@@ -353,7 +352,7 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = """
             Target JVM version for JVM Downgrader bytecode downgrading.
-            Valid values: 8, 11, 17. Only used when enableModernJavaSyntax = jvmDowngrader
+            Only used when enableModernJavaSyntax = jvmDowngrader
             """)
     public int downgradeTargetVersion = 8;
 
@@ -382,7 +381,7 @@ public final class PropertiesConfiguration {
             - gtnhlib: GTNHLib provides stubs at runtime (adds version constraint)
             - external: Another dependency provides stubs (no constraint, no warning)
             - (empty): Warning reminding you to configure stubs
-            Note: 'shade' option requires LGPL2-compatible license for your mod.
+            Note: 'shade' option requires you to verify license compliance, see: https://github.com/unimined/JvmDowngrader/blob/main/LICENSE.md
             """)
     public @NotNull String jvmDowngraderStubsProvider = "";
 
@@ -938,6 +937,13 @@ public final class PropertiesConfiguration {
             originalValues.put("gtnh.settings.blowdryerTag", group);
             System.out
                 .println("Found old settings blowdryer tag pointing to " + group + ", migrating to gradle.properties");
+        }
+
+        // Migrate enableModernJavaSyntax=true to enableModernJavaSyntax=jabel
+        final String modernJavaSyntax = originalValues.get("enableModernJavaSyntax");
+        if ("true".equalsIgnoreCase(modernJavaSyntax)) {
+            originalValues.put("enableModernJavaSyntax", "jabel");
+            System.out.println("Migrating enableModernJavaSyntax=true to enableModernJavaSyntax=jabel");
         }
 
         final StringBuilder sb = new StringBuilder();

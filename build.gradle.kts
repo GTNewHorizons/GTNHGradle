@@ -15,32 +15,6 @@ version = detectedVersion
 // Add a source set for the functional test suite
 val functionalTestSourceSet: SourceSet = sourceSets.create("functionalTest", Action {})
 
-// Add a source set for the Jabel stub (provides @Desugar when using JVMDG instead of Jabel)
-val jabelStubSourceSet: SourceSet = sourceSets.create("jabelStub") {
-    java.srcDir("src/jabelStub/java")
-}
-
-// Compile Jabel stub with Java 8 target for maximum compatibility
-tasks.named<JavaCompile>("compileJabelStubJava") {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-    options.release.set(8)
-}
-
-// Create a jar task for the Jabel stub
-val jabelStubJar by tasks.registering(Jar::class) {
-    from(jabelStubSourceSet.output)
-    archiveClassifier.set("jabel-stub")
-}
-
-// Include the Jabel stub jar as a resource
-tasks.processResources {
-    from(jabelStubJar) {
-        into("jabel-stub")
-        rename { "jabel-stub.jar" }
-    }
-}
-
 repositories {
     maven {
         name = "gtnh"
