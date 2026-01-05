@@ -40,6 +40,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.provider.SetProperty;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.process.ExecOperations;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -281,8 +282,6 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         @Inject
         public abstract @NotNull ExecOperations getExecOperations();
 
-        // Lazy configuration properties - can be overridden in build.gradle
-
         /** @return Modern Java syntax mode property */
         public abstract @NotNull Property<ModernJavaSyntaxMode> getModernJavaSyntaxMode();
 
@@ -304,5 +303,8 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public @NotNull Provider<Integer> getEffectiveToolchainVersion() {
             return effectiveToolchainVersionProvider;
         }
+        /** @return Gradle-provided */
+        @Inject
+        public abstract @NotNull JavaToolchainService getToolchainService();
     }
 }

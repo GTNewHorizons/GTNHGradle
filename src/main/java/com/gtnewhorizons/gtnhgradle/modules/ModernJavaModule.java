@@ -120,10 +120,14 @@ public abstract class ModernJavaModule implements GTNHModule {
         ext.set("java17PatchDependenciesCfg", java17PatchDependenciesCfg);
 
         if (!gtnh.configuration.modId.equals("lwjgl3ify")) {
-            deps.add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY);
+            final ModuleDependency lwjgl3ify = (ModuleDependency) deps
+                .add(java17DependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY);
             ((ModuleDependency) deps
                 .add(java17PatchDependenciesCfg.getName(), UpdateableConstants.NEWEST_LWJGL3IFY + ":forgePatches"))
                 .setTransitive(false);
+            if (gtnh.configuration.modId.equals("gtnhlib")) {
+                lwjgl3ify.exclude(ImmutableMap.of("module", "GTNHLib"));
+            }
         }
         if (!gtnh.configuration.modId.equals("hodgepodge")) {
             final ModuleDependency hodgepodge = (ModuleDependency) deps
