@@ -62,6 +62,7 @@ public class ShadowModule implements GTNHModule {
             }
             sj.getConfigurations()
                 .set(ImmutableList.of(shadowImplementation, shadeCompile, shadowCompile));
+            // Default classifier - JVMDowngraderModule will override to "predowngrade" if needed
             sj.getArchiveClassifier()
                 .set("dev");
             if (gtnh.configuration.relocateShadowedDependencies) {
@@ -70,7 +71,16 @@ public class ShadowModule implements GTNHModule {
                 sj.getEnableAutoRelocation()
                     .set(true);
             }
+
         });
+        // jar is intermediate when shadow is enabled - shadowJar consumes it
+        tasks.named("jar", Jar.class)
+            .configure(
+                j -> {
+                    j.getArchiveClassifier()
+                        .set("dev-preshadow");
+                });
+
         for (final String outgoingConfig : ImmutableList.of("runtimeElements", "apiElements")) {
             final Configuration outgoing = cfgs.getByName(outgoingConfig);
             outgoing.getOutgoing()
@@ -79,12 +89,6 @@ public class ShadowModule implements GTNHModule {
             outgoing.getOutgoing()
                 .artifact(shadowJar);
         }
-        tasks.named("jar", Jar.class)
-            .configure(
-                j -> {
-                    j.getArchiveClassifier()
-                        .set("dev-preshadow");
-                });
         tasks.named("reobfJar", ReobfuscatedJar.class)
             .configure(j -> {
                 j.getInputJar()

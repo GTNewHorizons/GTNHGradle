@@ -1,13 +1,16 @@
 package com.gtnewhorizons.gtnhgradle.tasks;
 
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
+import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
+import com.gtnewhorizons.gtnhgradle.modules.JVMDowngraderModule;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.minecraft.MinecraftTasks;
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.SystemUtils;
 import com.gtnewhorizons.retrofuturagradle.util.Distribution;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.invocation.Gradle;
@@ -28,6 +31,10 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
     public final Distribution side;
     /** The task name this task inherits the classpath from */
     public final String superTask;
+
+    /** @return The target JVM version this task runs on (e.g., 17, 21, 25) */
+    @Input
+    public abstract Property<Integer> getTargetJvmVersion();
 
     /** @return Enables HotSwapAgent for enhanced class reloading under a debugger */
     @Input
@@ -53,6 +60,7 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
                 .toLowerCase(Locale.ROOT) + " using modern Java, lwjgl3ify and Hodgepodge");
         // IntelliJ doesn't seem to allow pre-set commandline arguments, so we also support an env variable
         getEnableHotswap().convention(Boolean.parseBoolean(System.getenv("HOTSWAP")));
+        getTargetJvmVersion().convention(25);
 
         this.getLwjglVersion()
             .set(3);
@@ -88,10 +96,44 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         this.classpath(mcpTasks.getTaskPackageMcLauncher());
         this.classpath(mcpTasks.getTaskPackagePatchedMc());
         this.classpath(mcpTasks.getPatchedConfiguration());
-        this.classpath(
-            project.getTasks()
-                .named("jar"));
-        this.classpath(project.property("java17DependenciesCfg"));
+
+        // Determine which jar task to use based on mode
+        final ModernJavaSyntaxMode mode = ModernJavaSyntaxMode.fromString(gtnh.configuration.enableModernJavaSyntax);
+        final boolean usesShadow = gtnh.configuration.usesShadowedDependencies;
+
+        if (mode.usesJvmDowngrader()) {
+            // JVMDG mode: use multi-release jar (JVM selects appropriate version)
+            final int downgradeTarget = gtnh.configuration.downgradeTargetVersion;
+            final int targetVersion = getTargetJvmVersion().get();
+            if (targetVersion < downgradeTarget) {
+                throw new GradleException(
+                    "Target JVM version " + targetVersion
+                        + " is below the downgrade target version "
+                        + downgradeTarget
+                        + ". Cannot run on this JVM.");
+            }
+            this.classpath(
+                project.getExtensions()
+                    .getExtraProperties()
+                    .get("publishableDevJar"));
+
+            // For JVMDG, exclude shadow deps from classpath - they're already in the jar
+            final Configuration java17DependenciesCfg = (Configuration) project.property("java17DependenciesCfg");
+            if (usesShadow) {
+                this.classpath(
+                    JVMDowngraderModule
+                        .excludeShadowConfigurations(java17DependenciesCfg, project.getConfigurations()));
+            } else {
+                this.classpath(java17DependenciesCfg);
+            }
+        } else {
+            // Non-JVMDG mode (jabel or false): use regular jar + deps directly
+            // Shadow is only for distribution, not development
+            this.classpath(
+                project.getTasks()
+                    .named("jar"));
+            this.classpath(project.property("java17DependenciesCfg"));
+        }
 
         super.setup(project);
 

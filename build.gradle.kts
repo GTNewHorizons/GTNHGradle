@@ -20,9 +20,18 @@ repositories {
         name = "gtnh"
         url = uri("https://nexus.gtnewhorizons.com/repository/public/")
     }
+    maven {
+        name = "WagYourTail Maven"
+        url = uri("https://maven.wagyourtail.xyz/releases")
+        mavenContent {
+            releasesOnly()
+        }
+        content {
+            includeGroup("xyz.wagyourtail.jvmdowngrader")
+        }
+    }
     mavenCentral()
     gradlePluginPortal()
-    mavenLocal()
 }
 
 fun pluginDep(name: String, version: String): String {
@@ -32,6 +41,8 @@ fun pluginDep(name: String, version: String): String {
 dependencies {
     // JDOM2 for XML processing
     implementation("org.jdom:jdom2:2.0.6.1")
+    // Maven artifact for version comparison
+    implementation("org.apache.maven:maven-artifact:3.9.9")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
     api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.2"))
@@ -51,6 +62,8 @@ dependencies {
     api(pluginDep("com.github.gmazzo.buildconfig", "5.7.1"))
     api(pluginDep("com.modrinth.minotaur", "2.8.10"))
     api(pluginDep("net.darkhax.curseforgegradle", "1.1.28"))
+
+    api(pluginDep("xyz.wagyourtail.jvmdowngrader", "1.3.5"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

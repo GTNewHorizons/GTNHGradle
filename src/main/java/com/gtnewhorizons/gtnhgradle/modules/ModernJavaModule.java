@@ -166,6 +166,8 @@ public abstract class ModernJavaModule implements GTNHModule {
             .register("runClient17", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
         runClient17Task.configure(t -> {
             t.dependsOn(setupHotswapAgent17);
+            t.getTargetJvmVersion()
+                .set(17);
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java17Toolchain));
@@ -175,6 +177,8 @@ public abstract class ModernJavaModule implements GTNHModule {
             .register("runServer17", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
         runServer17Task.configure(t -> {
             t.dependsOn(setupHotswapAgent17);
+            t.getTargetJvmVersion()
+                .set(17);
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java17Toolchain));
@@ -185,6 +189,8 @@ public abstract class ModernJavaModule implements GTNHModule {
             .register("runClient21", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
         runClient21Task.configure(t -> {
             t.dependsOn(setupHotswapAgent21);
+            t.getTargetJvmVersion()
+                .set(21);
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java21Toolchain));
@@ -194,6 +200,8 @@ public abstract class ModernJavaModule implements GTNHModule {
             .register("runServer21", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
         runServer21Task.configure(t -> {
             t.dependsOn(setupHotswapAgent21);
+            t.getTargetJvmVersion()
+                .set(21);
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java21Toolchain));
@@ -204,6 +212,8 @@ public abstract class ModernJavaModule implements GTNHModule {
             .register("runClient25", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
         runClient25Task.configure(t -> {
             t.dependsOn(setupHotswapAgent25);
+            t.getTargetJvmVersion()
+                .set(25);
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java25Toolchain));
@@ -213,6 +223,8 @@ public abstract class ModernJavaModule implements GTNHModule {
             .register("runServer25", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
         runServer25Task.configure(t -> {
             t.dependsOn(setupHotswapAgent25);
+            t.getTargetJvmVersion()
+                .set(25);
             t.setup(project, gtnh);
             t.getJavaLauncher()
                 .set(getToolchainService().launcherFor(java25Toolchain));
@@ -241,6 +253,8 @@ public abstract class ModernJavaModule implements GTNHModule {
                 .register("runClientX", RunHotswappableMinecraftTask.class, Distribution.CLIENT, "runClient");
             runClientXTask.configure(t -> {
                 t.dependsOn(setupHotswapAgentX);
+                t.getTargetJvmVersion()
+                    .set(forcedToolchain);
                 t.setup(project, gtnh);
                 t.getJavaLauncher()
                     .set(getToolchainService().launcherFor(javaXToolchain));
@@ -250,6 +264,8 @@ public abstract class ModernJavaModule implements GTNHModule {
                 .register("runServerX", RunHotswappableMinecraftTask.class, Distribution.DEDICATED_SERVER, "runServer");
             runServerXTask.configure(t -> {
                 t.dependsOn(setupHotswapAgentX);
+                t.getTargetJvmVersion()
+                    .set(forcedToolchain);
                 t.setup(project, gtnh);
                 t.getJavaLauncher()
                     .set(getToolchainService().launcherFor(javaXToolchain));

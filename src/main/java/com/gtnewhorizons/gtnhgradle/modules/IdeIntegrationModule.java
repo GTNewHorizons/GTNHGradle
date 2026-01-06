@@ -5,6 +5,7 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
 import org.gradle.api.GradleException;
@@ -59,12 +60,17 @@ public class IdeIntegrationModule implements GTNHModule {
         final EclipseJdt ejdt = eclipse.getJdt();
         ejdt.setTargetCompatibility(JavaVersion.VERSION_1_8);
         ejdt.setJavaRuntimeName("JavaSE-1.8");
-        if (gtnh.configuration.forceToolchainVersion > 8) {
-            ejdt.setSourceCompatibility(JavaVersion.toVersion(gtnh.configuration.forceToolchainVersion));
-        } else if (gtnh.configuration.enableModernJavaSyntax) {
-            ejdt.setSourceCompatibility(JavaVersion.VERSION_17);
+        final ModernJavaSyntaxMode mode = ModernJavaSyntaxMode.fromString(gtnh.configuration.enableModernJavaSyntax);
+        final int forceToolchain = gtnh.configuration.forceToolchainVersion;
+        if (forceToolchain > 8) {
+            ejdt.setSourceCompatibility(JavaVersion.toVersion(forceToolchain));
         } else {
-            ejdt.setSourceCompatibility(JavaVersion.VERSION_1_8);
+            final JavaVersion sourceCompat = switch (mode) {
+                case FALSE -> JavaVersion.VERSION_1_8;
+                case JABEL -> JavaVersion.VERSION_17;
+                case JVM_DOWNGRADER, MODERN -> JavaVersion.VERSION_25;
+            };
+            ejdt.setSourceCompatibility(sourceCompat);
         }
 
         final IdeaModel idea = project.getExtensions()

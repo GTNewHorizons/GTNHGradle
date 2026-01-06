@@ -9,6 +9,7 @@ import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
 import com.gtnewhorizons.gtnhgradle.modules.IdeIntegrationModule;
+import com.gtnewhorizons.gtnhgradle.modules.JVMDowngraderModule;
 import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
 import com.gtnewhorizons.gtnhgradle.modules.ModernJavaModule;
 import com.gtnewhorizons.gtnhgradle.modules.OldGradleEmulationModule;
@@ -110,6 +111,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             WellKnownRepositoriesModule.class,
             StandardScriptsModules.RepositoriesScriptModule.class,
             MixinModule.class,
+            JVMDowngraderModule.class,
             StandardScriptsModules.DependenciesScriptModule.class,
             ModernJavaModule.class,
             IdeIntegrationModule.class,
@@ -191,7 +193,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         @Inject
         public abstract @NotNull ExecOperations getExecOperations();
 
-        /** @return Gradle-provided */
+        /** @return Gradle-provided injected service */
         @Inject
         public abstract @NotNull JavaToolchainService getToolchainService();
     }

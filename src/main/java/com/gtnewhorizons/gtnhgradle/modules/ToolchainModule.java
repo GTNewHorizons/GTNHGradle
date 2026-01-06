@@ -7,6 +7,7 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
@@ -120,9 +121,10 @@ public abstract class ToolchainModule implements GTNHModule {
             .extendsFrom(runtimeOnlyNonPublishable);
 
         // Set up Java
+        final ModernJavaSyntaxMode mode = ModernJavaSyntaxMode.fromString(gtnh.configuration.enableModernJavaSyntax);
         final boolean forcedToolchain = gtnh.configuration.forceToolchainVersion != -1;
-        final boolean useJabel = gtnh.configuration.enableModernJavaSyntax && !forcedToolchain;
-        final int javaVersion = useJabel ? 17 : forcedToolchain ? gtnh.configuration.forceToolchainVersion : 8;
+        final int javaVersion = computeToolchainVersion(mode, gtnh.configuration.forceToolchainVersion);
+        final boolean useJabel = mode == ModernJavaSyntaxMode.JABEL && !forcedToolchain;
         java.getToolchain()
             .getVendor()
             .set(JvmVendorSpec.AZUL);
@@ -167,31 +169,32 @@ public abstract class ToolchainModule implements GTNHModule {
                     }
 
                     jc.setSourceCompatibility(String.valueOf(javaVersion));
-                    jc.getOptions()
-                        .getRelease()
-                        .set(8);
+                    // For JABEL mode: set --release 8 to restrict to J8 APIs
+                    // For JVMDG/MODERN: leave release unset (null) to allow modern stdlib APIs
+                    if (mode == ModernJavaSyntaxMode.JABEL) {
+                        jc.getOptions()
+                            .getRelease()
+                            .set(8);
+                    } else if (mode.requiresModernStdlib()) {
+                        jc.getOptions()
+                            .getRelease()
+                            .set((Integer) null);
+                    }
                     jc.getJavaCompiler()
                         .set(compiler);
                 });
 
             if (useJabel) {
                 deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL);
+                deps.add(JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL);
                 ((ModuleDependency) deps
                     .add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL))
                     .setTransitive(false);
                 // Workaround for https://github.com/bsideup/jabel/issues/174
                 deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.18.1");
-
-                tasks.withType(JavaCompile.class)
-                    .configureEach(jc -> {
-                        if (doNotUpgrade.contains(jc.getName())) {
-                            return;
-                        }
-
-                        jc.getOptions()
-                            .getRelease()
-                            .set(8);
-                    });
+                deps.add(
+                    JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                    "net.java.dev.jna:jna-platform:5.18.1");
             }
         }
 
@@ -474,5 +477,21 @@ public abstract class ToolchainModule implements GTNHModule {
             tasks.named(serverTaskName, RunMinecraftTask.class)
                 .configure(t -> t.setWorkingDir(gtnh.configuration.runServerDirectory));
         }
+    }
+
+    /**
+     * Computes the toolchain version based on the mode and optional forced version. Note: For JVM_DOWNGRADER mode,
+     * JVMDowngraderModule handles the full computation including multi-release version considerations.
+     * This method provides a simpler computation for ToolchainModule's needs.
+     */
+    private static int computeToolchainVersion(ModernJavaSyntaxMode mode, int forcedVersion) {
+        if (forcedVersion != -1) {
+            return forcedVersion;
+        }
+        return switch (mode) {
+            case FALSE -> 8;
+            case JABEL -> 17;
+            case JVM_DOWNGRADER, MODERN -> 25;
+        };
     }
 }
