@@ -44,7 +44,7 @@ public class UpdateableConstants {
 
     /** JVM Downgrader API/stubs version for shading - can be snapshot */
     // https://maven.wagyourtail.xyz/#/snapshots/xyz/wagyourtail/jvmdowngrader
-    public static final @NotNull String JVMDG_VERSION = "1.3.5-SNAPSHOT";
+    public static final @NotNull String JVMDG_VERSION = "1.3.5";
 
     /** JVM Downgrader group ID */
     public static final @NotNull String JVMDG_GROUP = "xyz.wagyourtail.jvmdowngrader";

@@ -63,7 +63,7 @@ dependencies {
     api(pluginDep("com.modrinth.minotaur", "2.8.10"))
     api(pluginDep("net.darkhax.curseforgegradle", "1.1.28"))
 
-    api(pluginDep("xyz.wagyourtail.jvmdowngrader", "1.3.4"))
+    api(pluginDep("xyz.wagyourtail.jvmdowngrader", "1.3.5"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
