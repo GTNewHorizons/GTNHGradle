@@ -32,8 +32,8 @@ import java.util.Map;
 public class UtilityModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.moduleUtility;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.moduleUtility;
     }
 
     @Override

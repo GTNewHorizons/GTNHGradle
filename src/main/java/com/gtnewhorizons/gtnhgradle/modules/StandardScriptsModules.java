@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,8 +16,8 @@ public class StandardScriptsModules {
         public abstract @NotNull String getScriptName();
 
         @Override
-        public final boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-            return gtnh.configuration.moduleStandardScripts;
+        public final boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+            return configuration.moduleStandardScripts;
         }
 
         @Override

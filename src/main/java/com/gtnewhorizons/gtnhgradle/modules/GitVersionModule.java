@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.ObjectUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.Strings;
@@ -24,8 +25,8 @@ import java.util.regex.Pattern;
 public class GitVersionModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.moduleGitVersion;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.moduleGitVersion;
     }
 
     @Override

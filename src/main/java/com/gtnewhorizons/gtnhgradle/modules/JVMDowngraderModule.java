@@ -3,8 +3,10 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
-import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
 import com.gtnewhorizons.gtnhgradle.JvmDowngraderStubsProvider;
+import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.ValidateLombokVersionTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
@@ -38,6 +40,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -50,20 +53,26 @@ public class JVMDowngraderModule implements GTNHModule {
     private static final String REOBF_JAR_TASK = "reobfJar";
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.getModernJavaSyntaxMode()
-            .get()
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return ModernJavaSyntaxMode.fromString(configuration.enableModernJavaSyntax)
             .usesJvmDowngrader();
     }
 
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
-        final int downgradeTarget = gtnh.getDowngradeTargetVersion()
-            .get();
+        // Parse configuration values
+        final ModernJavaSyntaxMode mode = ModernJavaSyntaxMode.fromString(gtnh.configuration.enableModernJavaSyntax);
+        final int downgradeTarget = gtnh.configuration.downgradeTargetVersion;
         final JavaVersion targetVersion = JavaVersion.toVersion(downgradeTarget);
-        final JvmDowngraderStubsProvider stubsProvider = gtnh.getJvmDowngraderStubsProvider()
-            .get();
+        final JvmDowngraderStubsProvider stubsProvider = JvmDowngraderStubsProvider
+            .fromString(gtnh.configuration.jvmDowngraderStubsProvider);
         final boolean shadeStubs = stubsProvider.shouldShadeStubs();
+        final Set<Integer> multiReleaseVersions = parseMultiReleaseVersions(
+            gtnh.configuration.jvmDowngraderMultiReleaseVersions);
+        final int effectiveToolchainVersion = computeEffectiveToolchainVersion(
+            mode,
+            gtnh.configuration.forceToolchainVersion,
+            multiReleaseVersions);
 
         if (gtnh.configuration.jvmDowngraderStubsProvider.isEmpty()) {
             project.getLogger()
@@ -73,7 +82,7 @@ public class JVMDowngraderModule implements GTNHModule {
         }
 
         ensureJvmdgSnapshotRepo(project);
-        applyJvmdgPlugin(project, gtnh, targetVersion);
+        applyJvmdgPlugin(project, gtnh, targetVersion, effectiveToolchainVersion, multiReleaseVersions);
         configureCompileDependencies(project, gtnh, downgradeTarget, stubsProvider);
         final DowngradeTasks downgradeTasks = registerDowngradeTasks(project, gtnh, targetVersion);
         configureTestTask(project, gtnh, downgradeTasks);
@@ -84,10 +93,73 @@ public class JVMDowngraderModule implements GTNHModule {
             targetVersion,
             shadeStubs);
         configureRunTasks(gtnh, project, downgradeTasks, publishableDevJar);
-        validateLombokVersion(gtnh, project);
+        validateLombokVersion(gtnh, project, effectiveToolchainVersion, multiReleaseVersions);
     }
 
-    private void applyJvmdgPlugin(Project project, GTNHGradlePlugin.GTNHExtension gtnh, JavaVersion targetVersion) {
+    private static Set<Integer> parseMultiReleaseVersions(String mrVersionsStr) {
+        if (mrVersionsStr == null || mrVersionsStr.isEmpty()) {
+            return Set.of(21, 25); // Default multi-release versions
+        }
+        final Set<Integer> versions = new LinkedHashSet<>();
+        for (String versionStr : mrVersionsStr.split(",")) {
+            try {
+                int version = Integer.parseInt(versionStr.trim());
+                if (version < 9) {
+                    throw new IllegalArgumentException(
+                        "Invalid jvmDowngraderMultiReleaseVersions entry: " + version + ". Must be >= 9.");
+                }
+                versions.add(version);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                    "Invalid jvmDowngraderMultiReleaseVersions: '" + mrVersionsStr
+                        + "'. Must be comma-separated integers (e.g., '21' or '21,25').");
+            }
+        }
+        return Set.copyOf(versions);
+    }
+
+    /**
+     * Computes the effective toolchain version based on mode, forced version, and multi-release versions.
+     */
+    private static int computeEffectiveToolchainVersion(ModernJavaSyntaxMode mode, int forcedVersion,
+        Set<Integer> mrVersions) {
+        // Find max multi-release version
+        int maxMultiReleaseVersion = 0;
+        if (mode.usesJvmDowngrader()) {
+            for (int version : mrVersions) {
+                maxMultiReleaseVersion = Math.max(maxMultiReleaseVersion, version);
+            }
+        }
+
+        // Compute mode default version
+        final int modeDefaultVersion = switch (mode) {
+            case FALSE -> 8;
+            case JABEL -> 17;
+            case JVM_DOWNGRADER, MODERN -> 25;
+        };
+
+        if (forcedVersion != -1) {
+            // Validate forced version against jvmDowngraderMultiReleaseVersions
+            if (maxMultiReleaseVersion > forcedVersion) {
+                throw new IllegalArgumentException(
+                    "forceToolchainVersion=" + forcedVersion
+                        + " is lower than max jvmDowngraderMultiReleaseVersions="
+                        + maxMultiReleaseVersion
+                        + ". Cannot create Java "
+                        + maxMultiReleaseVersion
+                        + " bytecode with a Java "
+                        + forcedVersion
+                        + " toolchain. Either increase forceToolchainVersion or reduce jvmDowngraderMultiReleaseVersions.");
+            }
+            return forcedVersion;
+        } else {
+            // Auto toolchain version - use max of mode default and jvmDowngraderMultiReleaseVersions
+            return Math.max(modeDefaultVersion, maxMultiReleaseVersion);
+        }
+    }
+
+    private void applyJvmdgPlugin(Project project, GTNHGradlePlugin.GTNHExtension gtnh, JavaVersion targetVersion,
+        int effectiveToolchainVersion, Set<Integer> multiReleaseVersions) {
         project.getPluginManager()
             .apply(xyz.wagyourtail.jvmdg.gradle.JVMDowngraderPlugin.class);
 
@@ -96,16 +168,11 @@ public class JVMDowngraderModule implements GTNHModule {
         jvmdgExt.getDowngradeTo()
             .set(targetVersion);
 
-        configureMultiReleaseJar(project, jvmdgExt, gtnh);
+        configureMultiReleaseJar(jvmdgExt, effectiveToolchainVersion, multiReleaseVersions);
     }
 
-    private void configureMultiReleaseJar(Project project, JVMDowngraderExtension jvmdgExt,
-        GTNHGradlePlugin.GTNHExtension gtnh) {
-        final int toolchainVersion = gtnh.getEffectiveToolchainVersion()
-            .get();
-        final Set<Integer> multiReleaseVersions = gtnh.getJvmDowngraderMultiReleaseVersions()
-            .get();
-
+    private void configureMultiReleaseJar(JVMDowngraderExtension jvmdgExt, int toolchainVersion,
+        Set<Integer> multiReleaseVersions) {
         if (multiReleaseVersions.isEmpty()) {
             return;
         }
@@ -142,11 +209,17 @@ public class JVMDowngraderModule implements GTNHModule {
         addJabelStub(project, deps);
 
         if (!stubsProvider.shouldShadeStubs() && !stubsProvider.isExternal()) {
-            deps.getConstraints()
-                .add(
-                    JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-                    UpdateableConstants.MIN_GTNHLIB_FOR_JVMDG_STUBS,
-                    constraint -> constraint.because("Required for JVM Downgrader stubs when not shading them"));
+            project.getConfigurations()
+                .all(c -> {
+                    if (c.isCanBeDeclared()) {
+                        deps.getConstraints()
+                            .add(
+                                c.getName(),
+                                UpdateableConstants.MIN_GTNHLIB_FOR_JVMDG_STUBS,
+                                constraint -> constraint
+                                    .because("Required for JVM Downgrader stubs when not shading them"));
+                    }
+                });
         }
     }
 
@@ -364,8 +437,7 @@ public class JVMDowngraderModule implements GTNHModule {
         if (!project.getPlugins()
             .hasPlugin("com.github.johnrengelman.shadow")) {
             throw new GradleException(
-                "JVMDowngraderModule requires ShadowModule when usesShadowedDependencies is true. "
-                    + "Ensure ShadowModule is applied before JVMDowngraderModule.");
+                "JVMDowngraderModule requires ShadowModule when usesShadowedDependencies is true.");
         }
     }
 
@@ -475,7 +547,8 @@ public class JVMDowngraderModule implements GTNHModule {
 
     private static final String VALIDATE_LOMBOK_TASK = "validateLombokForJava25";
 
-    private void validateLombokVersion(GTNHGradlePlugin.GTNHExtension gtnh, Project project) {
+    private void validateLombokVersion(GTNHGradlePlugin.GTNHExtension gtnh, Project project,
+        int effectiveToolchainVersion, Set<Integer> multiReleaseVersions) {
         final String mixinSourceSetName = gtnh.configuration.separateMixinSourceSet;
         final Configuration annotationProcessor = project.getConfigurations()
             .getByName("annotationProcessor");
@@ -483,11 +556,7 @@ public class JVMDowngraderModule implements GTNHModule {
             : project.getConfigurations()
                 .findByName(mixinSourceSetName + "AnnotationProcessor");
 
-        final int toolchain = gtnh.getEffectiveToolchainVersion()
-            .get();
-        final Set<Integer> mrVersions = gtnh.getJvmDowngraderMultiReleaseVersions()
-            .get();
-        final boolean targetsJava25Plus = toolchain >= 25 || mrVersions.stream()
+        final boolean targetsJava25Plus = effectiveToolchainVersion >= 25 || multiReleaseVersions.stream()
             .anyMatch(v -> v >= 25);
 
         final TaskProvider<ValidateLombokVersionTask> validateTask = project.getTasks()

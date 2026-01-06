@@ -6,6 +6,7 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
@@ -37,8 +38,8 @@ import java.util.stream.Collectors;
 public class IdeIntegrationModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.moduleIdeIntegration;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.moduleIdeIntegration;
     }
 
     @Override
@@ -59,10 +60,8 @@ public class IdeIntegrationModule implements GTNHModule {
         final EclipseJdt ejdt = eclipse.getJdt();
         ejdt.setTargetCompatibility(JavaVersion.VERSION_1_8);
         ejdt.setJavaRuntimeName("JavaSE-1.8");
-        final ModernJavaSyntaxMode mode = gtnh.getModernJavaSyntaxMode()
-            .get();
-        final int forceToolchain = gtnh.getForceToolchainVersion()
-            .get();
+        final ModernJavaSyntaxMode mode = ModernJavaSyntaxMode.fromString(gtnh.configuration.enableModernJavaSyntax);
+        final int forceToolchain = gtnh.configuration.forceToolchainVersion;
         if (forceToolchain > 8) {
             ejdt.setSourceCompatibility(JavaVersion.toVersion(forceToolchain));
         } else {

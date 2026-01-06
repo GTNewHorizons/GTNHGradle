@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.RunHotswappableMinecraftTask;
 import com.gtnewhorizons.gtnhgradle.tasks.SetupHotswapAgentTask;
@@ -66,8 +67,8 @@ public abstract class ModernJavaModule implements GTNHModule {
     public abstract JavaToolchainService getToolchainService();
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.moduleModernJava;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.moduleModernJava;
     }
 
     @Override

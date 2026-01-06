@@ -10,10 +10,10 @@ import org.jetbrains.annotations.NotNull;
 public interface GTNHModule {
 
     /**
-     * @param gtnh The GTNH extension providing access to configuration and lazy providers
+     * @param configuration The project configuration
      * @return If this module should be enabled for the input project settings
      */
-    boolean isEnabled(@NotNull GTNHGradlePlugin.GTNHExtension gtnh);
+    boolean isEnabled(@NotNull PropertiesConfiguration configuration);
 
     /**
      * Activates this module on the given project.
@@ -53,7 +53,7 @@ public interface GTNHModule {
         final GTNHModule instance = gtnh.getObjectFactory()
             .newInstance(moduleClass);
 
-        final boolean enabled = instance.isEnabled(gtnh);
+        final boolean enabled = instance.isEnabled(gtnh.configuration);
         if (enabled) {
             try {
                 instance.apply(gtnh, project);

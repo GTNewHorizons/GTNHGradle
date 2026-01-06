@@ -98,14 +98,12 @@ public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         this.classpath(mcpTasks.getPatchedConfiguration());
 
         // Determine which jar task to use based on mode
-        final ModernJavaSyntaxMode mode = gtnh.getModernJavaSyntaxMode()
-            .get();
+        final ModernJavaSyntaxMode mode = ModernJavaSyntaxMode.fromString(gtnh.configuration.enableModernJavaSyntax);
         final boolean usesShadow = gtnh.configuration.usesShadowedDependencies;
 
         if (mode.usesJvmDowngrader()) {
             // JVMDG mode: use multi-release jar (JVM selects appropriate version)
-            final int downgradeTarget = gtnh.getDowngradeTargetVersion()
-                .get();
+            final int downgradeTarget = gtnh.configuration.downgradeTargetVersion;
             final int targetVersion = getTargetJvmVersion().get();
             if (targetVersion < downgradeTarget) {
                 throw new GradleException(

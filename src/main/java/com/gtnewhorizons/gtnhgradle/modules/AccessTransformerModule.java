@@ -2,6 +2,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -18,8 +19,8 @@ import java.nio.file.Path;
 public class AccessTransformerModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.moduleAccessTransformers;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.moduleAccessTransformers;
     }
 
     @Override

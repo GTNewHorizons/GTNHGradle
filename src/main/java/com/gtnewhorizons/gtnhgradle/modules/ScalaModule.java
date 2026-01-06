@@ -2,6 +2,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.scala.ScalaPlugin;
 import org.gradle.api.tasks.scala.ScalaCompile;
@@ -13,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 public class ScalaModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.moduleScala;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.moduleScala;
     }
 
     @Override

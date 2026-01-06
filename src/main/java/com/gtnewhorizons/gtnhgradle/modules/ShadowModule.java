@@ -6,6 +6,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -20,8 +21,8 @@ import org.jetbrains.annotations.NotNull;
 public class ShadowModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.usesShadowedDependencies;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.usesShadowedDependencies;
     }
 
     @Override
@@ -93,5 +94,9 @@ public class ShadowModule implements GTNHModule {
                 j.getInputJar()
                     .set(shadowJar.flatMap(AbstractArchiveTask::getArchiveFile));
             });
+
+        project.getExtensions()
+            .getExtraProperties()
+            .set("publishableDevJar", shadowJar);
     }
 }

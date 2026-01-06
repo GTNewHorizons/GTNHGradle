@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,27 +39,35 @@ class ModernJavaSyntaxModeTest {
                 .contains(input));
     }
 
-    @Test
-    void usesJvmDowngrader() {
-        assertFalse(ModernJavaSyntaxMode.FALSE.usesJvmDowngrader());
-        assertFalse(ModernJavaSyntaxMode.JABEL.usesJvmDowngrader());
-        assertTrue(ModernJavaSyntaxMode.JVM_DOWNGRADER.usesJvmDowngrader());
-        assertFalse(ModernJavaSyntaxMode.MODERN.usesJvmDowngrader());
+    @ParameterizedTest
+    @EnumSource(ModernJavaSyntaxMode.class)
+    void usesJvmDowngrader(ModernJavaSyntaxMode mode) {
+        boolean expected = switch (mode) {
+            case FALSE, JABEL, MODERN -> false;
+            case JVM_DOWNGRADER -> true;
+        };
+        assertEquals(expected, mode.usesJvmDowngrader());
     }
 
-    @Test
-    void requiresModernStdlib() {
-        assertFalse(ModernJavaSyntaxMode.FALSE.requiresModernStdlib());
-        assertFalse(ModernJavaSyntaxMode.JABEL.requiresModernStdlib());
-        assertTrue(ModernJavaSyntaxMode.JVM_DOWNGRADER.requiresModernStdlib());
-        assertTrue(ModernJavaSyntaxMode.MODERN.requiresModernStdlib());
+    @ParameterizedTest
+    @EnumSource(ModernJavaSyntaxMode.class)
+    void requiresModernStdlib(ModernJavaSyntaxMode mode) {
+        boolean expected = switch (mode) {
+            case FALSE, JABEL -> false;
+            case JVM_DOWNGRADER, MODERN -> true;
+        };
+        assertEquals(expected, mode.requiresModernStdlib());
     }
 
-    @Test
-    void getPropertyValue() {
-        assertEquals("false", ModernJavaSyntaxMode.FALSE.getPropertyValue());
-        assertEquals("jabel", ModernJavaSyntaxMode.JABEL.getPropertyValue());
-        assertEquals("jvmDowngrader", ModernJavaSyntaxMode.JVM_DOWNGRADER.getPropertyValue());
-        assertEquals("modern", ModernJavaSyntaxMode.MODERN.getPropertyValue());
+    @ParameterizedTest
+    @EnumSource(ModernJavaSyntaxMode.class)
+    void getPropertyValue(ModernJavaSyntaxMode mode) {
+        String expected = switch (mode) {
+            case FALSE -> "false";
+            case JABEL -> "jabel";
+            case JVM_DOWNGRADER -> "jvmDowngrader";
+            case MODERN -> "modern";
+        };
+        assertEquals(expected, mode.getPropertyValue());
     }
 }

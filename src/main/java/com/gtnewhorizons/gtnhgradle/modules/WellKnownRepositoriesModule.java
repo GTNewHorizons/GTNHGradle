@@ -2,6 +2,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
@@ -14,8 +15,8 @@ import java.util.List;
 public class WellKnownRepositoriesModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.includeWellKnownRepositories;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.includeWellKnownRepositories;
     }
 
     @Override

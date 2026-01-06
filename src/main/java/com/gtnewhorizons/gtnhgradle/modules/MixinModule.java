@@ -3,6 +3,7 @@ package com.gtnewhorizons.gtnhgradle.modules;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
+import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
 import com.gtnewhorizons.gtnhgradle.tasks.GenerateMixinAssetsTask;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
@@ -25,8 +26,8 @@ import org.jetbrains.annotations.NotNull;
 public class MixinModule implements GTNHModule {
 
     @Override
-    public boolean isEnabled(GTNHGradlePlugin.@NotNull GTNHExtension gtnh) {
-        return gtnh.configuration.moduleMixin;
+    public boolean isEnabled(@NotNull PropertiesConfiguration configuration) {
+        return configuration.moduleMixin;
     }
 
     @Override
