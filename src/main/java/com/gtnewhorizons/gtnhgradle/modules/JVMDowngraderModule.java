@@ -19,6 +19,7 @@ import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.repositories.MavenRepositoryContentDescriptor;
+import org.gradle.api.attributes.java.TargetJvmVersion;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -428,7 +429,7 @@ public class JVMDowngraderModule implements GTNHModule {
             publishableDevJar = downgradeJar;
         }
 
-        updateOutgoingArtifacts(project, cfgs, publishableDevJar);
+        updateOutgoingArtifacts(project, cfgs, targetVersion, publishableDevJar);
 
         return publishableDevJar;
     }
@@ -484,7 +485,7 @@ public class JVMDowngraderModule implements GTNHModule {
         return shadeDowngradedApi;
     }
 
-    private void updateOutgoingArtifacts(Project project, ConfigurationContainer cfgs,
+    private void updateOutgoingArtifacts(Project project, ConfigurationContainer cfgs, JavaVersion targetVersion,
         TaskProvider<? extends AbstractArchiveTask> publishableDevJar) {
         for (final String outgoingConfig : List.of("runtimeElements", "apiElements")) {
             final Configuration outgoing = cfgs.findByName(outgoingConfig);
@@ -494,6 +495,8 @@ public class JVMDowngraderModule implements GTNHModule {
                     .clear();
                 outgoing.getOutgoing()
                     .artifact(publishableDevJar);
+                outgoing.getAttributes()
+                    .attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, targetVersion.ordinal() + 1);
             }
         }
 
