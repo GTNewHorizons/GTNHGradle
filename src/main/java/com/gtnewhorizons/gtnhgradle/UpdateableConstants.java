@@ -29,14 +29,14 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.9.0";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.6";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.7";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.39";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/blob/master/gradle/libs.versions.toml - but check what latest
     // Minecraft uses too
-    public static final @NotNull String NEWEST_LWJGL3 = "3.4.0-20260101.224815-9";
+    public static final @NotNull String NEWEST_LWJGL3 = "3.4.0";
 
     /** Minimum GTNHLib version required for JVM Downgrader stub support */
     // When jvmDowngraderStubsProvider=gtnhlib, GTNHLib must provide the stubs at runtime
