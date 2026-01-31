@@ -446,7 +446,7 @@ public abstract class ToolchainModule implements GTNHModule {
         final SourceSetContainer sourceSets = project.getExtensions()
             .getByType(JavaPluginExtension.class)
             .getSourceSets();
-        tasks.register("apiJar", Jar.class, t -> {
+        final TaskProvider<Jar> apiJar = tasks.register("apiJar", Jar.class, t -> {
             final SourceSet main = sourceSets.getByName("main");
             t.from(main.getAllSource(), cs -> { cs.include(modGroupPath + "/" + apiPackagePath + "/**"); });
             t.from(main.getOutput(), cs -> { cs.include(modGroupPath + "/" + apiPackagePath + "/**"); });
@@ -457,6 +457,12 @@ public abstract class ToolchainModule implements GTNHModule {
             t.getArchiveClassifier()
                 .set("api");
         });
+
+        if (!gtnh.configuration.apiPackage.isEmpty()) {
+            project.getExtensions()
+                .getExtraProperties()
+                .set("publishableApiJar", apiJar);
+        }
 
         // Artifacts
         if (!gtnh.configuration.noPublishedSources) {
