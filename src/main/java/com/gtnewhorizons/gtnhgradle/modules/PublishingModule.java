@@ -261,9 +261,7 @@ public class PublishingModule implements GTNHModule {
                     .named("sourcesJar"));
         }
         if (!gtnh.configuration.apiPackage.isEmpty()) {
-            out.add(
-                project.getTasks()
-                    .named("apiJar"));
+            out.add(ext.get("publishableApiJar"));
         }
         return out;
     }

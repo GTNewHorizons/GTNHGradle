@@ -93,6 +93,7 @@ public class JVMDowngraderModule implements GTNHModule {
             downgradeTarget,
             targetVersion,
             shadeStubs);
+        configureApiJarDowngrade(gtnh, project, targetVersion);
         configureRunTasks(gtnh, project, downgradeTasks, publishableDevJar);
         validateLombokVersion(gtnh, project, effectiveToolchainVersion, multiReleaseVersions);
     }
@@ -503,6 +504,40 @@ public class JVMDowngraderModule implements GTNHModule {
         project.getExtensions()
             .getExtraProperties()
             .set("publishableDevJar", publishableDevJar);
+    }
+
+    private void configureApiJarDowngrade(GTNHGradlePlugin.GTNHExtension gtnh, Project project,
+        JavaVersion targetVersion) {
+        if (gtnh.configuration.apiPackage.isEmpty()) {
+            return;
+        }
+
+        final TaskContainer tasks = project.getTasks();
+
+        tasks.named("apiJar", Jar.class)
+            .configure(
+                jar -> jar.getArchiveClassifier()
+                    .set("api-predowngrade"));
+
+        final TaskProvider<DowngradeJar> downgradeApiJar = tasks
+            .register("downgradeApiJar", DowngradeJar.class, task -> {
+                task.dependsOn(tasks.named("apiJar"));
+                task.getInputFile()
+                    .set(
+                        tasks.named("apiJar", Jar.class)
+                            .flatMap(AbstractArchiveTask::getArchiveFile));
+                task.getDowngradeTo()
+                    .set(targetVersion);
+                task.getArchiveClassifier()
+                    .set("api");
+            });
+
+        tasks.named("assemble")
+            .configure(t -> t.dependsOn(downgradeApiJar));
+
+        project.getExtensions()
+            .getExtraProperties()
+            .set("publishableApiJar", downgradeApiJar);
     }
 
     private void configureRunTasks(GTNHGradlePlugin.GTNHExtension gtnh, Project project, DowngradeTasks downgradeTasks,
