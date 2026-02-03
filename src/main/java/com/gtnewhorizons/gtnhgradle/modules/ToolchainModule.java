@@ -1,9 +1,5 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
-import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
-import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
-import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
-import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
@@ -14,6 +10,10 @@ import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
+import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
+import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
 import com.gtnewhorizons.retrofuturagradle.util.ProviderToStringWrapper;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -43,9 +43,9 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension;
 
 import javax.inject.Inject;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
@@ -183,9 +183,15 @@ public abstract class ToolchainModule implements GTNHModule {
         // Set up Kotlin if enabled
         project.getPlugins()
             .withId("org.jetbrains.kotlin.jvm", plugin -> {
-                final KotlinBaseExtension kotlin = (KotlinBaseExtension) project.getExtensions()
-                    .getByName("kotlin");
-                kotlin.jvmToolchain(8);
+                Object extension = project.getExtensions().getByName("kotlin");
+                try {
+                    // Use reflection to remove the kgp dependency
+                    // kotlin.jvmToolchain(8)
+                    Method jvmToolchainMethod = extension.getClass().getMethod("jvmToolchain", Integer.TYPE);
+                    jvmToolchainMethod.invoke(extension, 8);
+                } catch (Throwable t) {
+                    throw new RuntimeException(t);
+                }
                 final Set<String> disabledKotlinTasks = ImmutableSet.of(
                     "kaptGenerateStubsMcLauncherKotlin",
                     "kaptGenerateStubsPatchedMcKotlin",
