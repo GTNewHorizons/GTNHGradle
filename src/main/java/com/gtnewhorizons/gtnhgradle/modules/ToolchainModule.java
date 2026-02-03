@@ -183,11 +183,13 @@ public abstract class ToolchainModule implements GTNHModule {
         // Set up Kotlin if enabled
         project.getPlugins()
             .withId("org.jetbrains.kotlin.jvm", plugin -> {
-                Object extension = project.getExtensions().getByName("kotlin");
+                Object extension = project.getExtensions()
+                    .getByName("kotlin");
                 try {
                     // Use reflection to remove the kgp dependency
                     // kotlin.jvmToolchain(8)
-                    Method jvmToolchainMethod = extension.getClass().getMethod("jvmToolchain", Integer.TYPE);
+                    Method jvmToolchainMethod = extension.getClass()
+                        .getMethod("jvmToolchain", Integer.TYPE);
                     jvmToolchainMethod.invoke(extension, 8);
                 } catch (Throwable t) {
                     throw new RuntimeException(t);
