@@ -151,7 +151,7 @@ public class UpdaterModule implements GTNHModule {
 
         final TaskProvider<Wrapper> v2WrapperTask = tasks.register("buildScriptV2Wrapper", Wrapper.class, t -> {
             t.setGroup("GTNH Buildscript Internal");
-            t.setGradleVersion("9.2.1");
+            t.setGradleVersion("9.3.1");
             t.getValidateDistributionUrl()
                 .set(true);
             t.getNetworkTimeout()

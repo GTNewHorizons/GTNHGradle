@@ -86,6 +86,6 @@ public abstract class V2UpgradeTask extends DefaultTask {
             .get()
             .toPath();
         SettingsUpdater updater = new SettingsUpdater();
-        updater.update(settingsPath, "2.0.7");
+        updater.update(settingsPath, "2.0.20");
     }
 }
