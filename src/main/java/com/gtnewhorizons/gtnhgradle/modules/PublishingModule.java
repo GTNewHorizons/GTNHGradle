@@ -65,9 +65,7 @@ public class PublishingModule implements GTNHModule {
                         project.getComponents()
                             .findByName("java"));
                     if (!gtnh.configuration.apiPackage.isEmpty()) {
-                        mvn.artifact(
-                            project.getTasks()
-                                .findByName("apiJar"));
+                        mvn.artifact(ext.get("publishableApiJar"));
                     }
                     mvn.setGroupId(
                         ObjectUtils.firstNonNull(
