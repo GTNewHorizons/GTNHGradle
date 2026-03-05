@@ -126,8 +126,6 @@ public class UpdaterModule implements GTNHModule {
         updateDaemonJvm.configure(t -> {
             t.getLanguageVersion()
                 .set(JavaLanguageVersion.of(25));
-            t.getVendor()
-                .set(JvmVendorSpec.ADOPTIUM);
         });
 
         tasks.register("updateBuildScript", UpdateBuildscriptTask.class, t -> {
