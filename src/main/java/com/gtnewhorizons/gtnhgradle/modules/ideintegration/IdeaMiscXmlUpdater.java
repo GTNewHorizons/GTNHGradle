@@ -27,6 +27,9 @@ public final class IdeaMiscXmlUpdater {
               <item index="2" class="java.lang.String" itemvalue="net.minecraftforge.fml.common.eventhandler.SubscribeEvent" />
               <item index="3" class="java.lang.String" itemvalue="org.spongepowered.asm.mixin.Mixin" />
             </list>
+            <patterns>
+              <pattern value="*.CommonProxy" hierarchically="true" />
+            </patterns>
           </component>
           <component name="ExternalStorageConfigurationManager" enabled="true" />
           <component name="ProjectRootManager" version="2">
@@ -109,6 +112,9 @@ public final class IdeaMiscXmlUpdater {
     private static final String TAG_LIST = "list";
     private static final String TAG_ITEM = "item";
     private static final String ATT_ITEMVALUE = "itemvalue";
+    private static final String TAG_PATTERNS = "patterns";
+    private static final String TAG_PATTERN = "pattern";
+    private static final String ATT_VALUE = "value";
 
     private static void updateEntryPointsManager(Element refComp, Element tgeComp) {
 
@@ -118,24 +124,35 @@ public final class IdeaMiscXmlUpdater {
         final Element targetList = tgeComp.getChild(TAG_LIST);
         if (targetList == null) {
             tgeComp.addContent(modelList.clone());
+        } else {
+            for (Element modelItem : modelList.getChildren(TAG_ITEM)) {
+                addItemIfAbsent(targetList, modelItem);
+            }
+
+            final List<Element> targetItems = targetList.getChildren(TAG_ITEM);
+            final int targetItemsSize = targetItems.size();
+            for (int i = 0; i < targetItemsSize; i++) {
+                targetItems.get(i)
+                    .setAttribute("index", java.lang.String.valueOf(i));
+            }
+            targetList.setAttribute("size", java.lang.String.valueOf(targetItemsSize));
+        }
+
+        final Element modelPatterns = refComp.getChild(TAG_PATTERNS);
+        if (modelPatterns == null) return;
+
+        final Element targetPatterns = tgeComp.getChild(TAG_PATTERNS);
+        if (targetPatterns == null) {
+            tgeComp.addContent(modelPatterns.clone());
             return;
         }
 
-        for (Element modelItem : modelList.getChildren(TAG_ITEM)) {
-            addItemIfAbsent(targetList, modelItem);
+        for (Element modelPattern : modelPatterns.getChildren(TAG_PATTERN)) {
+            addPatternIfAbsent(targetPatterns, modelPattern);
         }
-
-        final List<Element> targetItems = targetList.getChildren(TAG_ITEM);
-        final int targetItemsSize = targetItems.size();
-        for (int i = 0; i < targetItemsSize; i++) {
-            targetItems.get(i)
-                .setAttribute("index", java.lang.String.valueOf(i));
-        }
-        targetList.setAttribute("size", java.lang.String.valueOf(targetItemsSize));
     }
 
     private static void addItemIfAbsent(Element targetList, Element modelItem) {
-
         for (Element item : targetList.getChildren(TAG_ITEM)) {
             if (modelItem.getAttributeValue(ATT_ITEMVALUE)
                 .equals(item.getAttributeValue(ATT_ITEMVALUE))) {
@@ -143,6 +160,16 @@ public final class IdeaMiscXmlUpdater {
             }
         }
         targetList.addContent(modelItem.clone());
+    }
+
+    private static void addPatternIfAbsent(Element targetPatterns, Element modelPattern) {
+        for (Element pattern : targetPatterns.getChildren(TAG_PATTERN)) {
+            if (modelPattern.getAttributeValue(ATT_VALUE)
+                .equals(pattern.getAttributeValue(ATT_VALUE))) {
+                return;
+            }
+        }
+        targetPatterns.addContent(modelPattern.clone());
     }
 
     private static final XMLOutputter PRETTY_XML_OUTPUTTER = new XMLOutputter(
