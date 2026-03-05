@@ -16,6 +16,9 @@ import org.gradle.api.artifacts.ResolvedConfiguration;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.wrapper.Wrapper;
+import org.gradle.buildconfiguration.tasks.UpdateDaemonJvm;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -118,6 +121,14 @@ public class UpdaterModule implements GTNHModule {
                 .error("Could not register buildscript updater, gradle.properties not found at {}", propertiesGradle);
             return;
         }
+
+        final var updateDaemonJvm = tasks.named("updateDaemonJvm", UpdateDaemonJvm.class);
+        updateDaemonJvm.configure(t -> {
+            t.getLanguageVersion()
+                .set(JavaLanguageVersion.of(25));
+            t.getVendor()
+                .set(JvmVendorSpec.ADOPTIUM);
+        });
 
         tasks.register("updateBuildScript", UpdateBuildscriptTask.class, t -> {
             t.notCompatibleWithConfigurationCache("Scanning a resolved plugin Configuration");
