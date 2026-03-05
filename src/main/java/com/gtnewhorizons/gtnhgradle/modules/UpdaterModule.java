@@ -13,22 +13,40 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedConfiguration;
+import org.gradle.api.internal.project.ProjectInternal;
+import org.gradle.api.problems.Problems;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.wrapper.Wrapper;
 import org.gradle.buildconfiguration.tasks.UpdateDaemonJvm;
+import org.gradle.internal.Pair;
+import org.gradle.internal.buildconfiguration.resolvers.UnconfiguredToolchainRepositoriesResolver;
+import org.gradle.internal.deprecation.Documentation;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.gradle.jvm.toolchain.JavaToolchainDownload;
+import org.gradle.jvm.toolchain.JavaToolchainSpec;
+import org.gradle.jvm.toolchain.JvmVendorSpec;
+import org.gradle.jvm.toolchain.internal.DefaultJavaToolchainRequest;
+import org.gradle.jvm.toolchain.internal.DefaultJvmVendorSpec;
+import org.gradle.jvm.toolchain.internal.DefaultToolchainSpec;
+import org.gradle.jvm.toolchain.internal.JavaToolchainResolverService;
+import org.gradle.platform.BuildPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /** Allows automatic buildscript updates */
 public class UpdaterModule implements GTNHModule {
@@ -151,7 +169,7 @@ public class UpdaterModule implements GTNHModule {
 
         final TaskProvider<Wrapper> v2WrapperTask = tasks.register("buildScriptV2Wrapper", Wrapper.class, t -> {
             t.setGroup("GTNH Buildscript Internal");
-            t.setGradleVersion("9.3.1");
+            t.setGradleVersion("9.4.0");
             t.getValidateDistributionUrl()
                 .set(true);
             t.getNetworkTimeout()
@@ -178,6 +196,95 @@ public class UpdaterModule implements GTNHModule {
                     .set(mainDaemonJvmTask.getToolchainPlatforms());
                 t.getToolchainDownloadUrls()
                     .set(mainDaemonJvmTask.getToolchainDownloadUrls());
+                t.getToolchainDownloadUrls()
+                    .convention(
+                        t.getToolchainPlatforms()
+                            .zip(
+                                t.getLanguageVersion()
+                                    .zip(
+                                        t.getVendor()
+                                            .orElse(DefaultJvmVendorSpec.any()),
+                                        Pair::of)
+                                    .zip(t.getNativeImageCapable(), Pair::of),
+                                (platforms, versionVendorNative) -> {
+                                    JvmVendorSpec vendor = versionVendorNative.getLeft()
+                                        .getRight();
+                                    JavaToolchainSpec toolchainSpec = project.getObjects()
+                                        .newInstance(DefaultToolchainSpec.class);
+                                    toolchainSpec.getLanguageVersion()
+                                        .set(
+                                            versionVendorNative.getLeft()
+                                                .getLeft());
+                                    if (!vendor.equals(DefaultJvmVendorSpec.any())) {
+                                        toolchainSpec.getVendor()
+                                            .set(vendor);
+                                    }
+                                    if (versionVendorNative.getRight()) {
+                                        toolchainSpec.getNativeImageCapable()
+                                            .set(true);
+                                    }
+                                    if (platforms.isEmpty()) {
+                                        return new HashMap<>(0);
+                                    }
+
+                                    var reporter = ((ProjectInternal) project).getServices()
+                                        .get(Problems.class)
+                                        .getReporter();
+                                    JavaToolchainResolverService resolverService = ((ProjectInternal) project)
+                                        .getServices()
+                                        .get(JavaToolchainResolverService.class);
+                                    if (!resolverService.hasConfiguredToolchainRepositories()) {
+                                        UnconfiguredToolchainRepositoriesResolver exception = new UnconfiguredToolchainRepositoriesResolver();
+                                        throw reporter.throwing(
+                                            exception,
+                                            UpdateDaemonJvm.TASK_CONFIGURATION_PROBLEM_ID,
+                                            problemSpec -> {
+                                                problemSpec.solution(
+                                                    "Learn more about toolchain repositories at "
+                                                        + Documentation
+                                                            .userManual("toolchains", "sub:download_repositories")
+                                                            .getUrl()
+                                                        + ".");
+                                            });
+                                    }
+                                    Map<BuildPlatform, Optional<URI>> buildPlatformOptionalUriMap = platforms.stream()
+                                        .collect(
+                                            Collectors.toMap(
+                                                platform -> platform,
+                                                platform -> resolverService
+                                                    .tryResolve(
+                                                        new DefaultJavaToolchainRequest(toolchainSpec, platform))
+                                                    .map(JavaToolchainDownload::getUri)));
+                                    Map<BuildPlatform, URI> platformToDownloadUri = buildPlatformOptionalUriMap
+                                        .entrySet()
+                                        .stream()
+                                        .filter(
+                                            e -> e.getValue()
+                                                .isPresent())
+                                        .collect(
+                                            Collectors.toMap(
+                                                Map.Entry::getKey,
+                                                e -> e.getValue()
+                                                    .get()));
+                                    if (platformToDownloadUri.isEmpty()) {
+                                        throw reporter.throwing(
+                                            new IllegalStateException(
+                                                "Toolchain resolvers did not return download URLs providing a JDK matching "
+                                                    + toolchainSpec
+                                                    + " for any of the requested platforms "
+                                                    + platforms),
+                                            UpdateDaemonJvm.TASK_CONFIGURATION_PROBLEM_ID,
+                                            problemSpec -> {
+                                                problemSpec.solution(
+                                                    "Use a toolchain download repository capable of resolving the toolchain spec for the given platforms");
+                                                problemSpec.documentedAt(
+                                                    Documentation
+                                                        .userManual("gradle_daemon", "sec:daemon_jvm_provisioning")
+                                                        .getUrl());
+                                            });
+                                    }
+                                    return platformToDownloadUri;
+                                }));
             });
 
         tasks.register("upgradeBuildScriptMajor", V2UpgradeTask.class, t -> {
