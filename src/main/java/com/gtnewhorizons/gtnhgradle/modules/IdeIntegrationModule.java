@@ -44,7 +44,6 @@ public class IdeIntegrationModule implements GTNHModule {
 
     @Override
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
-
         project.getPluginManager()
             .apply(IdeaExtPlugin.class);
         project.getPluginManager()
@@ -58,7 +57,12 @@ public class IdeIntegrationModule implements GTNHModule {
         eclipse.getClasspath()
             .setDownloadJavadoc(true);
         final EclipseJdt ejdt = eclipse.getJdt();
-        ejdt.setTargetCompatibility(JavaVersion.VERSION_1_8);
+        JavaVersion targetCompat = JavaVersion.VERSION_1_8;
+        ejdt.setTargetCompatibility(targetCompat);
+        ejdt.getFile()
+            .withProperties(properties -> {
+                properties.setProperty("org.eclipse.jdt.core.compiler.compliance", targetCompat.toString());
+            });
         ejdt.setJavaRuntimeName("JavaSE-1.8");
         final ModernJavaSyntaxMode mode = ModernJavaSyntaxMode.fromString(gtnh.configuration.enableModernJavaSyntax);
         final int forceToolchain = gtnh.configuration.forceToolchainVersion;
