@@ -18,7 +18,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.wrapper.Wrapper;
 import org.gradle.buildconfiguration.tasks.UpdateDaemonJvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
-import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -123,10 +122,11 @@ public class UpdaterModule implements GTNHModule {
         }
 
         final var updateDaemonJvm = tasks.named("updateDaemonJvm", UpdateDaemonJvm.class);
-        updateDaemonJvm.configure(t -> {
-            t.getLanguageVersion()
-                .set(JavaLanguageVersion.of(25));
-        });
+        updateDaemonJvm.configure(
+            t -> {
+                t.getLanguageVersion()
+                    .set(JavaLanguageVersion.of(25));
+            });
 
         tasks.register("updateBuildScript", UpdateBuildscriptTask.class, t -> {
             t.notCompatibleWithConfigurationCache("Scanning a resolved plugin Configuration");
