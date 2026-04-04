@@ -68,6 +68,7 @@ public abstract class UpdateBuildscriptTask extends DefaultTask {
         // Update the wrapper too
         if (!Boolean.getBoolean("DISABLE_BUILDSCRIPT_GRADLE_UPDATE")) {
             this.dependsOn("wrapper");
+            this.dependsOn("updateDaemonJvm");
         }
     }
 

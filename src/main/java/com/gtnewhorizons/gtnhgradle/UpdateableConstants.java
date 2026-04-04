@@ -10,7 +10,7 @@ public class UpdateableConstants {
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
     @SuppressWarnings("unused") // Used via reflection
-    public static final @NotNull String NEWEST_GRADLE_VERSION = "9.3.1";
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "9.4.0";
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
@@ -26,17 +26,17 @@ public class UpdateableConstants {
     public static final @NotNull String JABEL_STUBS = "com.github.GTNewHorizons:jabel-stubs:1.0.0";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
-    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.9.20";
+    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.9.36";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.10";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.15";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.62";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.97";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/blob/master/gradle/libs.versions.toml - but check what latest
     // Minecraft uses too
-    public static final @NotNull String NEWEST_LWJGL3 = "3.4.2-20260213.173042-1";
+    public static final @NotNull String NEWEST_LWJGL3 = "3.4.2-20260225.192616-2";
 
     /** Minimum GTNHLib version required for JVM Downgrader stub support */
     // When jvmDowngraderStubsProvider=gtnhlib, GTNHLib must provide the stubs at runtime
@@ -44,7 +44,8 @@ public class UpdateableConstants {
 
     /** JVM Downgrader API/stubs version for shading - can be snapshot */
     // https://maven.wagyourtail.xyz/#/snapshots/xyz/wagyourtail/jvmdowngrader
-    public static final @NotNull String JVMDG_VERSION = "1.3.5";
+    // https://github.com/unimined/JvmDowngrader/releases
+    public static final @NotNull String JVMDG_VERSION = "1.3.6";
 
     /** JVM Downgrader group ID */
     public static final @NotNull String JVMDG_GROUP = "xyz.wagyourtail.jvmdowngrader";
@@ -71,7 +72,7 @@ public class UpdateableConstants {
 
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-    public static final @NotNull String NEWEST_SPOTLESS = "8.1.0";
+    public static final @NotNull String NEWEST_SPOTLESS = "8.3.0";
     /** Latest version of Checkstyle compatible with modern Java versions */
     // https://mvnrepository.com/artifact/com.puppycrawl.tools/checkstyle
     public static final @NotNull String NEWEST_CHECKSTYLE = "12.3.1";
