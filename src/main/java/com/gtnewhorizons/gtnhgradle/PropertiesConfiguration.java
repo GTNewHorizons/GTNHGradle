@@ -324,10 +324,66 @@ public final class PropertiesConfiguration {
         preferPopulated = true,
         required = false,
         docComment = """
-            Enables using modern Java syntax (up to version 17) via Jabel, while still targeting JVM 8.
-            See https://github.com/bsideup/jabel for details on how this works.
+            Enables modern Java syntax support. Valid values:
+            - false: No modern syntax, Java 8 only
+            - jabel: Jabel syntax-only support, compiles to J8 bytecode
+            - jvmDowngrader: Full modern Java via JVM Downgrader (syntax + stdlib APIs)
+            - modern: Native modern Java bytecode, no downgrading
             """)
-    public boolean enableModernJavaSyntax = false;
+    public @NotNull String enableModernJavaSyntax = "false";
+
+    /** See annotation */
+    @Prop(
+        name = "forceToolchainVersion",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            If set, ignores the above setting and compiles with the given toolchain. This may cause unexpected issues,
+            and should *not* be used in most situations. -1 disables this.
+            """)
+    public int forceToolchainVersion = -1;
+
+    /** See annotation */
+    @Prop(
+        name = "downgradeTargetVersion",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Target JVM version for JVM Downgrader bytecode downgrading.
+            Only used when enableModernJavaSyntax = jvmDowngrader
+            """)
+    public int downgradeTargetVersion = 8;
+
+    /** See annotation */
+    @Prop(
+        name = "jvmDowngraderMultiReleaseVersions",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Comma-separated list of Java versions for multi-release jar support (JVM Downgrader only).
+            Classes will be available in META-INF/versions/N/ for each version N in this list.
+            Default: "21,25" (J25+ gets native classes, J21-24 gets partial downgrade, J8-20 gets full downgrade).
+            """)
+    public @NotNull String jvmDowngraderMultiReleaseVersions = "21,25";
+
+    /** See annotation */
+    @Prop(
+        name = "jvmDowngraderStubsProvider",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Specifies how JVM Downgrader API stubs are provided. Options:
+            - shade: Shade minimized stubs into the jar
+            - gtnhlib: GTNHLib provides stubs at runtime (adds version constraint)
+            - external: Another dependency provides stubs (no constraint, no warning)
+            - (empty): Warning reminding you to configure stubs
+            Note: 'shade' option requires you to verify license compliance, see: https://github.com/unimined/JvmDowngrader/blob/main/LICENSE.md
+            """)
+    public @NotNull String jvmDowngraderStubsProvider = "";
 
     /** See annotation */
     @Prop(
@@ -468,14 +524,11 @@ public final class PropertiesConfiguration {
     public @NotNull String mixinPlugin = "";
 
     /** See annotation */
-    @Prop(
-        name = "mixinsPackage",
-        isSettings = false,
-        preferPopulated = true,
-        required = false,
-        docComment = """
-            Specify the package that contains all of your Mixins. You may only place Mixins in this package or the build will fail!
-            """)
+    @Prop(name = "mixinsPackage", isSettings = false, preferPopulated = true, required = false, docComment = """
+        Specify the package that contains all of your Mixins. The package must exist or
+        the build will fail. If you have a package property defined in your mixins.<modid>.json,
+        it must match with this or the build will fail.
+        """)
     public @NotNull String mixinsPackage = "";
 
     /** See annotation */
@@ -620,7 +673,7 @@ public final class PropertiesConfiguration {
               type can be one of [project, version],
               and the name is the Modrinth project or version slug/id of the other mod.
         Example: required-project:fplib;optional-project:gasstation;incompatible-project:gregtech
-        Note: GTNH Mixins is automatically set as a required dependency if usesMixins = true
+        Note: UniMixins is automatically set as a required dependency if usesMixins = true.
         """)
     public @NotNull String modrinthRelations = "";
 
@@ -660,6 +713,28 @@ public final class PropertiesConfiguration {
             projects. New projects should not use this parameter.
             """)
     public @NotNull String customArchiveBaseName = "";
+
+    /** See annotation */
+    @Prop(
+        name = "runClientWorkingDirectory",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Optional parameter to customize the default working directory used by the runClient* tasks. Relative to the project directory.
+            """)
+    public @NotNull String runClientDirectory = "run/client";
+
+    /** See annotation */
+    @Prop(
+        name = "runServerWorkingDirectory",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Optional parameter to customize the default working directory used by the runServer* tasks. Relative to the project directory.
+            """)
+    public @NotNull String runServerDirectory = "run/server";
 
     /** See annotation */
     @Prop(name = "versionPattern", isSettings = false, preferPopulated = false, required = false, docComment = """
@@ -853,7 +928,7 @@ public final class PropertiesConfiguration {
      * @throws Throwable for convenience
      */
     public String generateUpdatedProperties(Path settingsPath, Map<String, String> originalValues) throws Throwable {
-        final String settingsContents = new String(Files.readAllBytes(settingsPath), StandardCharsets.UTF_8);
+        final String settingsContents = Files.readString(settingsPath, StandardCharsets.UTF_8);
 
         // Migrate from pre-GTNHGradle buildscript
         final Matcher blowdryerMatch = BLOWDRYER_SETTINGS_PATTERN.matcher(settingsContents);
@@ -862,6 +937,13 @@ public final class PropertiesConfiguration {
             originalValues.put("gtnh.settings.blowdryerTag", group);
             System.out
                 .println("Found old settings blowdryer tag pointing to " + group + ", migrating to gradle.properties");
+        }
+
+        // Migrate enableModernJavaSyntax=true to enableModernJavaSyntax=jabel
+        final String modernJavaSyntax = originalValues.get("enableModernJavaSyntax");
+        if ("true".equalsIgnoreCase(modernJavaSyntax)) {
+            originalValues.put("enableModernJavaSyntax", "jabel");
+            System.out.println("Migrating enableModernJavaSyntax=true to enableModernJavaSyntax=jabel");
         }
 
         final StringBuilder sb = new StringBuilder();
@@ -1009,7 +1091,7 @@ public final class PropertiesConfiguration {
         @NotNull
         String name();
 
-        /** @return Is the property is used globally across many projects from a settings.gradle context? */
+        /** @return Is the property used globally across many projects from a settings.gradle context? */
         boolean isSettings() default false;
 
         /** @return Should the property's value be frozen in the properties file on plugin update? */

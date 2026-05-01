@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.github.jengelman.gradle.plugins.shadow.ShadowExtension;
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
@@ -10,8 +11,6 @@ import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
-import org.gradle.api.component.AdhocComponentWithVariants;
-import org.gradle.api.component.ConfigurationVariantDetails;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
@@ -30,6 +29,13 @@ public class ShadowModule implements GTNHModule {
     public void apply(GTNHGradlePlugin.@NotNull GTNHExtension gtnh, @NotNull Project project) throws Throwable {
         project.getPlugins()
             .apply(ShadowPlugin.class);
+
+        final ShadowExtension shadowExt = project.getExtensions()
+            .getByType(ShadowExtension.class);
+        shadowExt.getAddShadowVariantIntoJavaComponent()
+            .set(false);
+        shadowExt.getAddTargetJvmVersionAttribute()
+            .set(false);
 
         final ConfigurationContainer cfgs = project.getConfigurations();
         final TaskContainer tasks = project.getTasks();
@@ -54,14 +60,27 @@ public class ShadowModule implements GTNHModule {
             if (gtnh.configuration.minimizeShadowedDependencies) {
                 sj.minimize();
             }
-            sj.setConfigurations(ImmutableList.of(shadowImplementation, shadeCompile, shadowCompile));
+            sj.getConfigurations()
+                .set(ImmutableList.of(shadowImplementation, shadeCompile, shadowCompile));
+            // Default classifier - JVMDowngraderModule will override to "predowngrade" if needed
             sj.getArchiveClassifier()
                 .set("dev");
             if (gtnh.configuration.relocateShadowedDependencies) {
-                sj.setRelocationPrefix(gtnh.configuration.modGroup + ".shadow");
-                sj.setEnableRelocation(true);
+                sj.getRelocationPrefix()
+                    .set(gtnh.configuration.modGroup + ".shadow");
+                sj.getEnableAutoRelocation()
+                    .set(true);
             }
+
         });
+        // jar is intermediate when shadow is enabled - shadowJar consumes it
+        tasks.named("jar", Jar.class)
+            .configure(
+                j -> {
+                    j.getArchiveClassifier()
+                        .set("dev-preshadow");
+                });
+
         for (final String outgoingConfig : ImmutableList.of("runtimeElements", "apiElements")) {
             final Configuration outgoing = cfgs.getByName(outgoingConfig);
             outgoing.getOutgoing()
@@ -70,23 +89,11 @@ public class ShadowModule implements GTNHModule {
             outgoing.getOutgoing()
                 .artifact(shadowJar);
         }
-        tasks.named("jar", Jar.class)
-            .configure(
-                j -> {
-                    j.getArchiveClassifier()
-                        .set("dev-preshadow");
-                });
         tasks.named("reobfJar", ReobfuscatedJar.class)
-            .configure(
-                j -> {
-                    j.getInputJar()
-                        .set(shadowJar.flatMap(AbstractArchiveTask::getArchiveFile));
-                });
-
-        final AdhocComponentWithVariants javaComponent = (AdhocComponentWithVariants) project.getComponents()
-            .named("java")
-            .get();
-        javaComponent.withVariantsFromConfiguration(shadowRuntimeElements, ConfigurationVariantDetails::skip);
+            .configure(j -> {
+                j.getInputJar()
+                    .set(shadowJar.flatMap(AbstractArchiveTask::getArchiveFile));
+            });
 
         project.getExtensions()
             .getExtraProperties()

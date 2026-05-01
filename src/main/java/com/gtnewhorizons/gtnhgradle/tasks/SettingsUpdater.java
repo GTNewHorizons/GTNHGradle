@@ -23,7 +23,7 @@ public class SettingsUpdater {
      */
     @SuppressWarnings("unused") // used by reflection
     public void update(Path settingsPath) throws Throwable {
-        final String oldSettings = new String(Files.readAllBytes(settingsPath), StandardCharsets.UTF_8);
+        final String oldSettings = Files.readString(settingsPath, StandardCharsets.UTF_8);
         String newSettings = oldSettings;
 
         final Matcher blowdryerBlock = BLOWDRYER_BLOCK_PATTERN.matcher(newSettings);
@@ -49,7 +49,7 @@ public class SettingsUpdater {
 
         // noinspection StringEquality
         if (newSettings != oldSettings) {
-            Files.write(settingsPath, newSettings.getBytes(StandardCharsets.UTF_8));
+            Files.writeString(settingsPath, newSettings, StandardCharsets.UTF_8);
         }
     }
 }

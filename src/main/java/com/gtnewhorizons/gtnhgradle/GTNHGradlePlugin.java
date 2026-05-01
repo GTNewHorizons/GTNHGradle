@@ -4,12 +4,12 @@
 package com.gtnewhorizons.gtnhgradle;
 
 import com.diffplug.blowdryer.Blowdryer;
-import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableList;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.gtnhgradle.modules.AccessTransformerModule;
 import com.gtnewhorizons.gtnhgradle.modules.CodeStyleModule;
 import com.gtnewhorizons.gtnhgradle.modules.GitVersionModule;
 import com.gtnewhorizons.gtnhgradle.modules.IdeIntegrationModule;
+import com.gtnewhorizons.gtnhgradle.modules.JVMDowngraderModule;
 import com.gtnewhorizons.gtnhgradle.modules.MixinModule;
 import com.gtnewhorizons.gtnhgradle.modules.ModernJavaModule;
 import com.gtnewhorizons.gtnhgradle.modules.OldGradleEmulationModule;
@@ -24,7 +24,6 @@ import com.gtnewhorizons.gtnhgradle.modules.UtilityModule;
 import com.gtnewhorizons.gtnhgradle.modules.WellKnownRepositoriesModule;
 import com.gtnewhorizons.retrofuturagradle.UserDevPlugin;
 import de.undercouch.gradle.tasks.download.DownloadTaskPlugin;
-import org.ajoberstar.grgit.gradle.GrgitPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.Plugin;
 import org.gradle.api.file.ArchiveOperations;
@@ -38,6 +37,7 @@ import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.process.ExecOperations;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -69,7 +69,6 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         // Apply shared plugins used by all mods
         plugins.apply(JavaLibraryPlugin.class);
         plugins.apply(MavenPublishPlugin.class);
-        plugins.apply(GrgitPlugin.class);
         plugins.apply(DownloadTaskPlugin.class);
         plugins.apply(UserDevPlugin.class); // RFG
 
@@ -98,8 +97,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         public @NotNull PropertiesConfiguration configuration;
 
         /** A list of all available modules to activate */
-        @SuppressWarnings("unchecked") // too long, varargs can't handle generics
-        public static final List<Class<? extends GTNHModule>> ALL_MODULES = ImmutableList.of( //
+        public static final List<Class<? extends GTNHModule>> ALL_MODULES = List.of( //
             GitVersionModule.class,
             CodeStyleModule.class,
             ToolchainModule.class,
@@ -113,6 +111,7 @@ public class GTNHGradlePlugin implements Plugin<Project> {
             WellKnownRepositoriesModule.class,
             StandardScriptsModules.RepositoriesScriptModule.class,
             MixinModule.class,
+            JVMDowngraderModule.class,
             StandardScriptsModules.DependenciesScriptModule.class,
             ModernJavaModule.class,
             IdeIntegrationModule.class,
@@ -193,5 +192,9 @@ public class GTNHGradlePlugin implements Plugin<Project> {
         /** @return Gradle-provided injected service */
         @Inject
         public abstract @NotNull ExecOperations getExecOperations();
+
+        /** @return Gradle-provided injected service */
+        @Inject
+        public abstract @NotNull JavaToolchainService getToolchainService();
     }
 }

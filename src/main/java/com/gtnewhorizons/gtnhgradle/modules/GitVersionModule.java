@@ -6,6 +6,7 @@ import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.ObjectUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.Strings;
 import com.palantir.gradle.gitversion.GitVersionCacheService;
 import com.palantir.gradle.gitversion.GitVersionPlugin;
 import com.palantir.gradle.gitversion.VersionDetails;
@@ -44,13 +45,18 @@ public class GitVersionModule implements GTNHModule {
                 final GitVersionCacheService gitService = GitVersionCacheService
                     .getSharedGitVersionCacheService(project)
                     .get();
+                project.getTasks()
+                    .named("printVersion")
+                    .configure(task -> {
+                        task.notCompatibleWithConfigurationCache("Upstream issue");
+                    });
                 final VersionDetails gitDetails = gitService.getVersionDetails(project.getProjectDir(), null);
                 final String gitVersion = gitService.getGitVersion(project.getProjectDir(), null);
                 var isDirty = gitVersion.endsWith(".dirty"); // No public API for this, isCleanTag has a different
                                                              // meaning
                 String branchName = ObjectUtils
                     .firstNonNull(gitDetails.getBranchName(), System.getenv("GIT_BRANCH"), "git");
-                branchName = StringUtils.removeStart(branchName, "origin/");
+                branchName = Strings.CS.removeStart(branchName, "origin/");
                 branchName = branchName.replaceAll("[^a-zA-Z0-9-]+", "-"); // sanitize branch names for semver
                 identifiedVersion = ObjectUtils.firstNonNull(gitDetails.getLastTag(), gitDetails.getGitHash(), "0.0.0");
                 if (gitDetails.getCommitDistance() > 0) {

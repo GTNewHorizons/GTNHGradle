@@ -13,6 +13,7 @@ import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.Immu
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.TaskOutcome;
+import org.gradle.testkit.runner.UnexpectedBuildFailure;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +27,7 @@ class GTNHGradlePluginFunctionalTest {
     File projectDir;
 
     private File getBuildFile() {
-        return new File(projectDir, "build.gradle");
+        return new File(projectDir, "build.gradle.kts");
     }
 
     private File getPropertiesFile() {
@@ -34,7 +35,7 @@ class GTNHGradlePluginFunctionalTest {
     }
 
     private File getSettingsFile() {
-        return new File(projectDir, "settings.gradle");
+        return new File(projectDir, "settings.gradle.kts");
     }
 
     private static final String SIMPLE_SETTINGS_FILE = """
@@ -42,8 +43,8 @@ class GTNHGradlePluginFunctionalTest {
             repositories {
                 maven {
                     // RetroFuturaGradle
-                    name "GTNH Maven"
-                    url "https://nexus.gtnewhorizons.com/repository/public/"
+                    name = "GTNH Maven"
+                    url = uri("https://nexus.gtnewhorizons.com/repository/public/")
                     mavenContent {
                         includeGroup("com.gtnewhorizons")
                         includeGroupByRegex("com\\\\.gtnewhorizons\\\\..+")
@@ -55,13 +56,13 @@ class GTNHGradlePluginFunctionalTest {
             }
         }
         plugins {
-            id('com.gtnewhorizons.gtnhsettingsconvention')
+            id("com.gtnewhorizons.gtnhsettingsconvention")
         }
         """;
 
     private static final String SIMPLE_BUILD_FILE = """
         plugins {
-            id('com.gtnewhorizons.gtnhconvention')
+            id("com.gtnewhorizons.gtnhconvention")
         }
         repositories {
             mavenLocal()
@@ -88,10 +89,15 @@ class GTNHGradlePluginFunctionalTest {
         // Run the build
         GradleRunner runner = GradleRunner.create()
             .withEnvironment(ImmutableMap.of("VERSION", "1.0.0"))
-            .withArguments("--stacktrace");
+            .withArguments(
+                "--stacktrace",
+                "--build-cache",
+                "--configuration-cache",
+                "--warning-mode",
+                "all",
+                "downloadVanillaJars");
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("downloadVanillaJars");
         runner.withProjectDir(projectDir);
         BuildResult result = runner.build();
 
@@ -106,5 +112,221 @@ class GTNHGradlePluginFunctionalTest {
         try (Writer writer = new FileWriter(file)) {
             writer.write(string);
         }
+    }
+
+    private GradleRunner createRunner(String... args) {
+        return GradleRunner.create()
+            .withEnvironment(ImmutableMap.of("VERSION", "1.0.0"))
+            .withArguments(args)
+            .forwardOutput()
+            .withPluginClasspath()
+            .withProjectDir(projectDir);
+    }
+
+    private void setupProject(String propertiesContent) throws IOException {
+        writeString(getSettingsFile(), SIMPLE_SETTINGS_FILE);
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE);
+        writeString(getPropertiesFile(), propertiesContent);
+        Files.createDirectories(
+            projectDir.toPath()
+                .resolve("src/main/java/com/myname/mymodid"));
+    }
+
+    @Test
+    void jvmDowngraderMode_registersDowngradeTasks() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            """);
+
+        BuildResult result = createRunner("tasks", "--all").build();
+        String output = result.getOutput();
+
+        assertTrue(output.contains("downgradeJar"), "downgradeJar task should be registered");
+        assertTrue(output.contains("shadeDowngradedApi"), "shadeDowngradedApi task should be registered");
+        assertTrue(output.contains("downgradeMainClasses"), "downgradeMainClasses task should be registered");
+        assertTrue(output.contains("downgradeTestClasses"), "downgradeTestClasses task should be registered");
+    }
+
+    @Test
+    void jabelMode_doesNotRegisterJvmdgTasks() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jabel
+            """);
+
+        BuildResult result = createRunner("tasks", "--all").build();
+        String output = result.getOutput();
+
+        assertFalse(output.contains("downgradeMainClasses"), "downgradeMainClasses should not exist in jabel mode");
+        assertFalse(output.contains("downgradeTestClasses"), "downgradeTestClasses should not exist in jabel mode");
+    }
+
+    @Test
+    void invalidModernJavaSyntaxMode_failsWithHelpfulMessage() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = invalid_value
+            """);
+
+        UnexpectedBuildFailure ex = assertThrows(UnexpectedBuildFailure.class, () -> createRunner("tasks").build());
+
+        assertTrue(
+            ex.getMessage()
+                .contains("Invalid value for enableModernJavaSyntax"),
+            "Should mention invalid enableModernJavaSyntax value");
+    }
+
+    @Test
+    void invalidJvmDowngraderStubsProvider_failsWithHelpfulMessage() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            jvmDowngraderStubsProvider = invalid
+            """);
+
+        UnexpectedBuildFailure ex = assertThrows(UnexpectedBuildFailure.class, () -> createRunner("tasks").build());
+
+        assertTrue(
+            ex.getMessage()
+                .contains("Invalid jvmDowngraderStubsProvider"),
+            "Should mention invalid jvmDowngraderStubsProvider");
+    }
+
+    @Test
+    void validDowngradeTargetVersions_accepted() throws IOException {
+        for (int version : new int[] { 8, 11, 17 }) {
+            setupProject("""
+                modName = MyMod
+                modId = mymodid
+                modGroup = com.myname.mymodid
+                enableModernJavaSyntax = jvmDowngrader
+                downgradeTargetVersion = %d
+                """.formatted(version));
+
+            BuildResult result = createRunner("tasks", "--all").build();
+            assertTrue(
+                result.getOutput()
+                    .contains("downgradeJar"));
+        }
+    }
+
+    @Test
+    void invalidMultiReleaseVersions_failsWithHelpfulMessage() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            jvmDowngraderMultiReleaseVersions = invalid
+            """);
+
+        UnexpectedBuildFailure ex = assertThrows(UnexpectedBuildFailure.class, () -> createRunner("tasks").build());
+
+        assertTrue(
+            ex.getMessage()
+                .contains("Invalid jvmDowngraderMultiReleaseVersions"),
+            "Should mention invalid jvmDowngraderMultiReleaseVersions");
+    }
+
+    @Test
+    void negativeMultiReleaseVersion_failsWithHelpfulMessage() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            jvmDowngraderMultiReleaseVersions = -1
+            """);
+
+        UnexpectedBuildFailure ex = assertThrows(UnexpectedBuildFailure.class, () -> createRunner("tasks").build());
+
+        assertTrue(
+            ex.getMessage()
+                .contains("Invalid jvmDowngraderMultiReleaseVersions"),
+            "Should mention invalid jvmDowngraderMultiReleaseVersions");
+    }
+
+    @Test
+    void validMultiReleaseVersions_accepted() throws IOException {
+        for (String versions : new String[] { "21", "17,21", "17,21,25" }) {
+            setupProject("""
+                modName = MyMod
+                modId = mymodid
+                modGroup = com.myname.mymodid
+                enableModernJavaSyntax = jvmDowngrader
+                jvmDowngraderMultiReleaseVersions = %s
+                """.formatted(versions));
+
+            BuildResult result = createRunner("tasks", "--all").build();
+            assertTrue(
+                result.getOutput()
+                    .contains("downgradeJar"),
+                "jvmDowngraderMultiReleaseVersions=" + versions + " should be accepted");
+        }
+    }
+
+    @Test
+    void emptyMultiReleaseVersions_accepted() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            jvmDowngraderMultiReleaseVersions =
+            """);
+
+        BuildResult result = createRunner("tasks", "--all").build();
+        assertTrue(
+            result.getOutput()
+                .contains("downgradeJar"),
+            "Empty jvmDowngraderMultiReleaseVersions should be accepted (disables multi-release)");
+    }
+
+    @Test
+    void multiReleaseHigherThanForcedToolchain_failsWithHelpfulMessage() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            forceToolchainVersion = 21
+            jvmDowngraderMultiReleaseVersions = 21,25
+            """);
+
+        UnexpectedBuildFailure ex = assertThrows(UnexpectedBuildFailure.class, () -> createRunner("tasks").build());
+
+        assertTrue(
+            ex.getMessage()
+                .contains("forceToolchainVersion=21")
+                && ex.getMessage()
+                    .contains("jvmDowngraderMultiReleaseVersions=25"),
+            "Should mention forceToolchainVersion conflict with jvmDowngraderMultiReleaseVersions");
+    }
+
+    @Test
+    void multiReleaseHigherThanDefault_bumpsToolchain() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            jvmDowngraderMultiReleaseVersions = 21,25
+            """);
+
+        // Should succeed - toolchain auto-bumped to 25
+        BuildResult result = createRunner("tasks", "--all").build();
+        assertTrue(
+            result.getOutput()
+                .contains("downgradeJar"),
+            "jvmDowngraderMultiReleaseVersions=21,25 should auto-bump toolchain to 25");
     }
 }

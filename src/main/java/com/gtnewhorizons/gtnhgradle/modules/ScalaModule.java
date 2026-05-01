@@ -32,10 +32,9 @@ public class ScalaModule implements GTNHModule {
         // Set up Scala
         project.getTasks()
             .withType(ScalaCompile.class)
-            .configureEach(
-                sc -> {
-                    sc.getOptions()
-                        .setEncoding(StandardCharsets.UTF_8.name());
-                });
+            .configureEach(sc -> {
+                sc.getOptions()
+                    .setEncoding(StandardCharsets.UTF_8.name());
+            });
     }
 }

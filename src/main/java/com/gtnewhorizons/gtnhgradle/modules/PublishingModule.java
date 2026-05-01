@@ -56,38 +56,39 @@ public class PublishingModule implements GTNHModule {
                 .toString());
 
         // Maven
-        publishing.getPublications()
-            .register("maven", MavenPublication.class, mvn -> {
-                mvn.from(
-                    project.getComponents()
-                        .findByName("java"));
-                if (!gtnh.configuration.apiPackage.isEmpty()) {
-                    mvn.artifact(
-                        project.getTasks()
-                            .findByName("apiJar"));
-                }
-                mvn.setGroupId(
-                    ObjectUtils.firstNonNull(
-                        System.getenv("ARTIFACT_GROUP_ID"),
-                        project.getGroup()
-                            .toString()));
-                mvn.setArtifactId(ObjectUtils.firstNonNull(System.getenv("ARTIFACT_ID"), project.getName()));
-                project.afterEvaluate(
-                    _p -> mvn.setVersion(ObjectUtils.firstNonNull(System.getenv("RELEASE_VERSION"), modVersion.get())));
-            });
-        final String mavenUser = System.getenv("MAVEN_USER");
-        final String mavenPass = System.getenv("MAVEN_PASSWORD");
-        if (gtnh.configuration.usesMavenPublishing && mavenUser != null) {
-            publishing.getRepositories()
-                .maven(mvn -> {
-                    mvn.setName("main");
-                    mvn.setUrl(gtnh.configuration.mavenPublishUrl);
-                    mvn.setAllowInsecureProtocol(gtnh.configuration.mavenPublishUrl.startsWith("http://"));
-                    mvn.getCredentials()
-                        .setUsername(ObjectUtils.firstNonNull(mavenUser, "NONE"));
-                    mvn.getCredentials()
-                        .setPassword(ObjectUtils.firstNonNull(mavenPass, "NONE"));
+        if (gtnh.configuration.usesMavenPublishing) {
+            final String mavenUser = System.getenv("MAVEN_USER");
+            final String mavenPass = System.getenv("MAVEN_PASSWORD");
+            publishing.getPublications()
+                .register("maven", MavenPublication.class, mvn -> {
+                    mvn.from(
+                        project.getComponents()
+                            .findByName("java"));
+                    if (!gtnh.configuration.apiPackage.isEmpty()) {
+                        mvn.artifact(ext.get("publishableApiJar"));
+                    }
+                    mvn.setGroupId(
+                        ObjectUtils.firstNonNull(
+                            System.getenv("ARTIFACT_GROUP_ID"),
+                            project.getGroup()
+                                .toString()));
+                    mvn.setArtifactId(ObjectUtils.firstNonNull(System.getenv("ARTIFACT_ID"), project.getName()));
+                    project.afterEvaluate(
+                        _p -> mvn
+                            .setVersion(ObjectUtils.firstNonNull(System.getenv("RELEASE_VERSION"), modVersion.get())));
                 });
+            if (mavenUser != null) {
+                publishing.getRepositories()
+                    .maven(mvn -> {
+                        mvn.setName("main");
+                        mvn.setUrl(gtnh.configuration.mavenPublishUrl);
+                        mvn.setAllowInsecureProtocol(gtnh.configuration.mavenPublishUrl.startsWith("http://"));
+                        mvn.getCredentials()
+                            .setUsername(ObjectUtils.firstNonNull(mavenUser, "NONE"));
+                        mvn.getCredentials()
+                            .setPassword(ObjectUtils.firstNonNull(mavenPass, "NONE"));
+                    });
+            }
         }
 
         final File changelogFile = new File(ObjectUtils.firstNonNull(System.getenv("CHANGELOG_FILE"), "CHANGELOG.md"));
@@ -110,7 +111,7 @@ public class PublishingModule implements GTNHModule {
             mr.getVersionType()
                 .set(modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release"));
             if (changelogFile.exists()) {
-                final String contents = new String(Files.readAllBytes(changelogFile.toPath()), StandardCharsets.UTF_8);
+                final String contents = Files.readString(changelogFile.toPath(), StandardCharsets.UTF_8);
                 mr.getChangelog()
                     .set(contents);
             }
@@ -258,9 +259,7 @@ public class PublishingModule implements GTNHModule {
                     .named("sourcesJar"));
         }
         if (!gtnh.configuration.apiPackage.isEmpty()) {
-            out.add(
-                project.getTasks()
-                    .named("apiJar"));
+            out.add(ext.get("publishableApiJar"));
         }
         return out;
     }

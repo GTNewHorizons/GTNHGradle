@@ -1,9 +1,9 @@
 plugins {
     `java-gradle-plugin`
-    id("com.palantir.git-version") version "3.0.0"
+    id("com.palantir.git-version") version "4.2.0"
     `maven-publish`
-    id("com.diffplug.spotless") version "6.25.0"
-    id("com.github.gmazzo.buildconfig") version "5.3.5"
+    id("com.diffplug.spotless") version "8.0.0"
+    id("com.github.gmazzo.buildconfig") version "5.7.1"
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -13,12 +13,22 @@ val detectedVersion: String = System.getenv("VERSION") ?: gitVersion()
 version = detectedVersion
 
 // Add a source set for the functional test suite
-val functionalTestSourceSet = sourceSets.create("functionalTest") {}
+val functionalTestSourceSet: SourceSet = sourceSets.create("functionalTest", Action {})
 
 repositories {
     maven {
         name = "gtnh"
         url = uri("https://nexus.gtnewhorizons.com/repository/public/")
+    }
+    maven {
+        name = "WagYourTail Maven"
+        url = uri("https://maven.wagyourtail.xyz/releases")
+        mavenContent {
+            releasesOnly()
+        }
+        content {
+            includeGroup("xyz.wagyourtail.jvmdowngrader")
+        }
     }
     mavenCentral()
     gradlePluginPortal()
@@ -29,33 +39,33 @@ fun pluginDep(name: String, version: String): String {
 }
 
 dependencies {
-    annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
-    testAnnotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1")
-    compileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") { isTransitive = false }
-    // workaround for https://github.com/bsideup/jabel/issues/174
-    annotationProcessor("net.java.dev.jna:jna-platform:5.13.0")
+    // JDOM2 for XML processing
+    implementation("org.jdom:jdom2:2.0.6.1")
+    // Maven artifact for version comparison
+    implementation("org.apache.maven:maven-artifact:3.9.9")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.5"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.2"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
-    api(pluginDep("org.gradle.toolchains.foojay-resolver-convention", "0.9.0"))
+    api(pluginDep("org.gradle.toolchains.foojay-resolver-convention", "1.0.0"))
 
     // Project plugins
-    api(pluginDep("com.gradleup.shadow", "8.3.5"))
-    api(pluginDep("com.palantir.git-version", "3.1.0"))
-    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.1.10"))
-    api(pluginDep("org.jetbrains.kotlin.jvm", "2.1.0"))
-    api(pluginDep("org.jetbrains.kotlin.kapt", "2.1.0"))
-    api(pluginDep("com.google.devtools.ksp", "2.1.0-1.0.29"))
-    api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(pluginDep("com.gradleup.shadow", "9.2.2"))
+    api(pluginDep("com.palantir.git-version", "4.2.0"))
+    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.3"))
+    api(pluginDep("org.jetbrains.kotlin.jvm", "2.2.21"))
+    api(pluginDep("org.jetbrains.kotlin.kapt", "2.2.21"))
+    api(pluginDep("com.google.devtools.ksp", "2.2.21-2.0.4"))
     api(pluginDep("de.undercouch.download", "5.6.0"))
-    api(pluginDep("com.github.gmazzo.buildconfig", "3.1.0")) // Unused, available for addon.gradle
-    api(pluginDep("com.modrinth.minotaur", "2.8.7"))
-    api(pluginDep("net.darkhax.curseforgegradle", "1.1.26"))
+    api(pluginDep("com.github.gmazzo.buildconfig", "5.7.1"))
+    api(pluginDep("com.modrinth.minotaur", "2.8.10"))
+    api(pluginDep("net.darkhax.curseforgegradle", "1.1.28"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
+    api(pluginDep("xyz.wagyourtail.jvmdowngrader", "1.3.5"))
+
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -64,27 +74,27 @@ gradlePlugin {
         website.set("https://github.com/GTNewHorizons/GTNHGradle")
         vcsUrl.set("https://github.com/GTNewHorizons/GTNHGradle.git")
         isAutomatedPublishing = false
-        create("gtnhGradle") {
+        create("gtnhGradle", Action {
             id = "com.gtnewhorizons.gtnhgradle"
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin"
             displayName = "GTNHGradle"
             description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods"
             tags.set(listOf("minecraft", "modding"))
-        }
-        create("gtnhConvention") {
+        })
+        create("gtnhConvention", Action {
             id = "com.gtnewhorizons.gtnhconvention"
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHConventionPlugin"
             displayName = "GTNHConvention"
             description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods - automatically applies all features"
             tags.set(listOf("minecraft", "modding"))
-        }
-        create("gtnhSettingsConvention") {
+        })
+        create("gtnhSettingsConvention", Action {
             id = "com.gtnewhorizons.gtnhsettingsconvention"
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHSettingsConventionPlugin"
             displayName = "GTNHConvention"
             description = "Shared Settings logic for all GTNH mods and some other 1.7.10 mods"
             tags.set(listOf("minecraft", "modding"))
-        }
+        })
     }
 }
 
@@ -98,7 +108,7 @@ spotless {
         target(".gitignore")
 
         trimTrailingWhitespace()
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         endWithNewline()
     }
     java {
@@ -106,8 +116,9 @@ spotless {
 
         toggleOffOn()
         removeUnusedImports()
+        forbidWildcardImports()
         trimTrailingWhitespace()
-        eclipse("4.19").configFile("spotless.eclipseformat.xml")
+        eclipse("4.37.0").configFile("spotless.eclipseformat.xml")
     }
 }
 
@@ -117,45 +128,39 @@ buildConfig {
     buildConfigField("VERSION", detectedVersion)
 }
 
-// Enable Jabel for java 8 bytecode from java 17 sources
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-        vendor.set(JvmVendorSpec.AZUL)
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
     withSourcesJar()
     withJavadocJar()
 }
 tasks.javadoc {
     javadocTool.set(javaToolchains.javadocToolFor {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.AZUL)
+        languageVersion.set(JavaLanguageVersion.of(25))
     })
+    source = fileTree("src/main/java") // Process only main tree
     with(options as StandardJavadocDocletOptions) {
+        addBooleanOption("Xdoclint:-missing", true) // Ignores missing tags
         links(
             "https://docs.gradle.org/${gradle.gradleVersion}/javadoc/",
-            "https://docs.oracle.com/en/java/javase/21/docs/api/"
+            "https://docs.oracle.com/en/java/javase/25/docs/api/",
+            "https://www.gtnewhorizons.com/RetroFuturaGradle/2.0.0/javadoc/"
         )
     }
 }
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "21" // for the IDE support
-    options.release.set(8)
     options.encoding = "UTF-8"
-
-    javaCompiler.set(javaToolchains.compilerFor {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.AZUL)
-    })
 }
 
 tasks.wrapper.configure {
-    gradleVersion = "8.13"
+    gradleVersion = "9.3.1"
     distributionType = Wrapper.DistributionType.ALL
 }
 
 tasks.updateDaemonJvm.configure {
-    languageVersion = JavaLanguageVersion.of(21)
+    languageVersion = JavaLanguageVersion.of(25)
+    vendor.set(JvmVendorSpec.ADOPTIUM)
 }
 
 configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
@@ -183,6 +188,9 @@ tasks.test {
     environment("VERSION", "1.0.0")
 }
 
+tasks.printVersion.configure {
+    notCompatibleWithConfigurationCache("upstream issue")
+}
 
 publishing {
     publications {
@@ -195,6 +203,8 @@ publishing {
             create<MavenPublication>(declaration.name + "PluginMarkerMaven") {
                 artifactId = declaration.id + ".gradle.plugin"
                 groupId = declaration.id
+                val publishingGroup = project.group.toString()
+                val publishingVersion = project.version.toString()
                 pom {
                     name.set(declaration.displayName)
                     description.set(declaration.description)
@@ -204,11 +214,11 @@ publishing {
                         val dependencies = root.appendChild(document.createElement("dependencies"))
                         val dependency = dependencies.appendChild(document.createElement("dependency"))
                         val groupId = dependency.appendChild(document.createElement("groupId"))
-                        groupId.textContent = project.group.toString()
+                        groupId.textContent = publishingGroup
                         val artifactId = dependency.appendChild(document.createElement("artifactId"))
                         artifactId.textContent = "gtnhgradle"
                         val version = dependency.appendChild(document.createElement("version"))
-                        version.textContent = project.version.toString()
+                        version.textContent = publishingVersion
                     }
                 }
             }
