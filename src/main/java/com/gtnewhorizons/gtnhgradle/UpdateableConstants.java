@@ -75,7 +75,7 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_SPOTLESS = "8.3.0";
     /** Latest version of Checkstyle compatible with modern Java versions */
     // https://mvnrepository.com/artifact/com.puppycrawl.tools/checkstyle
-    public static final @NotNull String NEWEST_CHECKSTYLE = "12.3.1";
+    public static final @NotNull String NEWEST_CHECKSTYLE = "13.5.0";
 
     /** Latest HotSwapAgent release jar URL */
     // https://github.com/HotswapProjects/HotswapAgent/releases
