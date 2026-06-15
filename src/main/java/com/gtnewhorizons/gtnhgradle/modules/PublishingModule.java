@@ -230,7 +230,9 @@ public class PublishingModule implements GTNHModule {
     }
 
     private static String getChangelog(@NotNull Project project) throws Throwable {
-        Path changelogPath = project.getProjectDir().toPath().resolve(ObjectUtils.firstNonNull(System.getenv("CHANGELOG_FILE"), "CHANGELOG.md"));
+        Path changelogPath = project.getProjectDir()
+            .toPath()
+            .resolve(ObjectUtils.firstNonNull(System.getenv("CHANGELOG_FILE"), "CHANGELOG.md"));
         if (Files.isRegularFile(changelogPath)) return Files.readString(changelogPath, StandardCharsets.UTF_8);
 
         return null;
