@@ -1,6 +1,7 @@
 package com.gtnewhorizons.gtnhgradle;
 
 import com.diffplug.blowdryer.BlowdryerSetup;
+import com.diffplug.blowdryer.BlowdryerSetup.GitHub;
 import com.diffplug.blowdryer.BlowdryerSetupPlugin;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
@@ -12,7 +13,8 @@ import org.gradle.toolchains.foojay.FoojayToolchainsConventionPlugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Applies some shared settings.gradle logic used by the GTNH mod development ecosystem.
+ * Applies some shared settings.gradle logic used by the GTNH mod development
+ * ecosystem.
  */
 @SuppressWarnings("unused") // used by Gradle
 public abstract class GTNHSettingsConventionPlugin implements Plugin<Settings> {
@@ -47,10 +49,13 @@ public abstract class GTNHSettingsConventionPlugin implements Plugin<Settings> {
                 if ("LOCAL".equals(config.blowdryerTag)) {
                     blowdryer.devLocal(".");
                 } else {
-                    blowdryer.github(
+                    final GitHub github = blowdryer.github(
                         config.exampleModGithubOwner + "/" + config.exampleModGithubProject,
                         BlowdryerSetup.GitAnchorType.TAG,
                         config.blowdryerTag);
+                    if (!config.blowdryerGitHubAuthToken.isEmpty()) {
+                        github.authToken(config.blowdryerGitHubAuthToken);
+                    }
                 }
             }
         }

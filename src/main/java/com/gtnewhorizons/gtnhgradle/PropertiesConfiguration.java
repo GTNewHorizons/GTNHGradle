@@ -62,6 +62,18 @@ public final class PropertiesConfiguration {
             """)
     public @NotNull String blowdryerTag = UpdateableConstants.NEWEST_BLOWDRYER_TAG;
 
+    /** See annotation. */
+    @Prop(
+        name = "gtnh.settings.blowdryerGitHubAuthToken",
+        isSettings = true,
+        preferPopulated = false,
+        required = false,
+        hidden = true,
+        docComment = """
+                The authentication token to use when making requests to GitHub via the Blowdryer Gradle plugin.
+            """)
+    public @NotNull String blowdryerGitHubAuthToken = "";
+
     /** See annotation */
     @Prop(
         name = "gtnh.settings.dynamicSpotlessVersion",
