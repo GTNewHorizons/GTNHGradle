@@ -126,9 +126,6 @@ public abstract class ToolchainModule implements GTNHModule {
         final int javaVersion = computeToolchainVersion(mode, gtnh.configuration.forceToolchainVersion);
         final boolean useJabel = mode == ModernJavaSyntaxMode.JABEL && !forcedToolchain;
         java.getToolchain()
-            .getVendor()
-            .set(JvmVendorSpec.AZUL);
-        java.getToolchain()
             .getLanguageVersion()
             .set(JavaLanguageVersion.of(javaVersion));
         if (!gtnh.configuration.noPublishedSources) {
