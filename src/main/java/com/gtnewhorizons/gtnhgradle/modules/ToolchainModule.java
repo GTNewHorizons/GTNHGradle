@@ -126,8 +126,9 @@ public abstract class ToolchainModule implements GTNHModule {
         final boolean forcedToolchain = gtnh.configuration.forceToolchainVersion != -1;
         final int javaVersion = computeToolchainVersion(mode, gtnh.configuration.forceToolchainVersion);
         final boolean useJabel = mode == ModernJavaSyntaxMode.JABEL && !forcedToolchain;
-        // foojay-resolver fails to properly select the right JDK but only specifically on MacOS arm64 when trying to fetch Java 8
-        // due to the lack of arm support with openjdk and adoptium, other platforms aren't affected by this.
+        // foojay-resolver fails to properly select the right JDK but only specifically on MacOS arm64 when trying to
+        // fetch Java 8 due to the lack of arm support with openjdk and adoptium, other platforms
+        // aren't affected by this.
         if (javaVersion == 8 && SystemUtils.IS_OS_MAC) {
             java.getToolchain()
                 .getVendor()
