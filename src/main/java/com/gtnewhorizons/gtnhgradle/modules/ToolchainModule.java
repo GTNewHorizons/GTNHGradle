@@ -1,9 +1,5 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
-import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
-import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
-import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
-import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
 import com.gtnewhorizons.gtnhgradle.GTNHConstants;
 import com.gtnewhorizons.gtnhgradle.GTNHGradlePlugin;
 import com.gtnewhorizons.gtnhgradle.GTNHModule;
@@ -15,6 +11,11 @@ import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
+import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
+import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
+import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.SystemUtils;
 import com.gtnewhorizons.retrofuturagradle.util.ProviderToStringWrapper;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -125,9 +126,14 @@ public abstract class ToolchainModule implements GTNHModule {
         final boolean forcedToolchain = gtnh.configuration.forceToolchainVersion != -1;
         final int javaVersion = computeToolchainVersion(mode, gtnh.configuration.forceToolchainVersion);
         final boolean useJabel = mode == ModernJavaSyntaxMode.JABEL && !forcedToolchain;
-        java.getToolchain()
-            .getVendor()
-            .set(JvmVendorSpec.AZUL);
+        // foojay-resolver fails to properly select the right JDK but only specifically on MacOS arm64 when trying to
+        // fetch Java 8 due to the lack of arm support with openjdk and adoptium, other platforms
+        // aren't affected by this.
+        if (javaVersion == 8 && SystemUtils.IS_OS_MAC) {
+            java.getToolchain()
+                .getVendor()
+                .set(JvmVendorSpec.AZUL);
+        }
         java.getToolchain()
             .getLanguageVersion()
             .set(JavaLanguageVersion.of(javaVersion));
