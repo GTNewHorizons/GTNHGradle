@@ -26,11 +26,11 @@ public class UpdateableConstants {
     public static final @NotNull String JABEL_STUBS = "com.github.GTNewHorizons:jabel-stubs:1.0.0";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
-    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.11.0";
-    /** Latest version of GTNHLib for modern Java support */
+    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.11.37";
+    /** Latest version of lwjgl3ify for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
     public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.20";
-    /** Latest version of GTNHLib for modern Java support */
+    /** Latest version of Hodgepodge for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
     public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.153";
     /** Latest version of LWJGL3 for modern Java support */
@@ -45,7 +45,7 @@ public class UpdateableConstants {
     /** JVM Downgrader API/stubs version for shading - can be snapshot */
     // https://maven.wagyourtail.xyz/#/snapshots/xyz/wagyourtail/jvmdowngrader
     // https://github.com/unimined/JvmDowngrader/releases
-    public static final @NotNull String JVMDG_VERSION = "1.3.6";
+    public static final @NotNull String JVMDG_VERSION = "2.0.1";
 
     /** JVM Downgrader group ID */
     public static final @NotNull String JVMDG_GROUP = "xyz.wagyourtail.jvmdowngrader";
