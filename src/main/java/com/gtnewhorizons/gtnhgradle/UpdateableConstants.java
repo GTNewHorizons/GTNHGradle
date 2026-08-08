@@ -29,18 +29,18 @@ public class UpdateableConstants {
     public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.11.37";
     /** Latest version of lwjgl3ify for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.20";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.31";
     /** Latest version of Hodgepodge for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.153";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.181";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/blob/master/gradle/libs.versions.toml - but check what latest
     // Minecraft uses too
-    public static final @NotNull String NEWEST_LWJGL3 = "3.4.2-20260225.192616-2";
+    public static final @NotNull String NEWEST_LWJGL3 = "3.4.2";
 
     /** Minimum GTNHLib version required for JVM Downgrader stub support */
     // When jvmDowngraderStubsProvider=gtnhlib, GTNHLib must provide the stubs at runtime
-    public static final @NotNull String MIN_GTNHLIB_FOR_JVMDG_STUBS = "com.github.GTNewHorizons:GTNHLib:0.9.0";
+    public static final @NotNull String MIN_GTNHLIB_FOR_JVMDG_STUBS = "com.github.GTNewHorizons:GTNHLib:0.11.37";
 
     /** JVM Downgrader API/stubs version for shading - can be snapshot */
     // https://maven.wagyourtail.xyz/#/snapshots/xyz/wagyourtail/jvmdowngrader
