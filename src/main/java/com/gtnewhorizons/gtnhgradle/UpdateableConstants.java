@@ -14,7 +14,7 @@ public class UpdateableConstants {
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
-    public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.3";
+    public static final @NotNull String NEWEST_BLOWDRYER_TAG = "0.2.2";
 
     /** Latest version of UniMixins */
     // https://github.com/LegacyModdingMC/UniMixins/releases
