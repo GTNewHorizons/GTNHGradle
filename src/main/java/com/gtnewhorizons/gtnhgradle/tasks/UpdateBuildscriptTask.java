@@ -9,6 +9,7 @@ import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -26,6 +27,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 /** The task to update the buildscript(s) to the latest GTNHGradle version */
+@DisableCachingByDefault(because = "Always mutates buildscripts from a resolved plugin jar")
 public abstract class UpdateBuildscriptTask extends DefaultTask {
 
     /**
