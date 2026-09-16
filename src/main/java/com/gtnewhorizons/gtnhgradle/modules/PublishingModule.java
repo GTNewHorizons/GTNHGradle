@@ -16,6 +16,7 @@ import com.modrinth.minotaur.dependencies.VersionDependency;
 import masecla.modrinth4j.client.agent.UserAgent;
 import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
+import net.darkhax.curseforgegradle.Constants;
 import net.darkhax.curseforgegradle.CurseForgeGradlePlugin;
 import net.darkhax.curseforgegradle.TaskPublishCurseForge;
 import org.gradle.api.Project;
@@ -32,7 +33,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -170,6 +173,7 @@ public class PublishingModule implements GTNHModule {
         // Curseforge
         final String cfToken = System.getenv("CURSEFORGE_TOKEN");
         if (!gtnh.configuration.curseForgeProjectId.isEmpty()) {
+            final Set<String> environments = parseCurseForgeEnvironments(gtnh.configuration.curseForgeEnvironments);
             project.getPlugins()
                 .apply(CurseForgeGradlePlugin.class);
             final TaskProvider<TaskPublishCurseForge> publishCurseforge = project.getTasks()
@@ -189,12 +193,14 @@ public class PublishingModule implements GTNHModule {
                     task.disableVersionDetection();
                     task.upload(gtnh.configuration.curseForgeProjectId, obfFile, artifact -> {
                         if (changelogFile.exists()) {
-                            artifact.changelogType = "markdown";
+                            artifact.changelogType = Constants.CHANGELOG_MARKDOWN;
                             artifact.changelog = changelogFile;
                         }
-                        artifact.releaseType = modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release");
-                        artifact.addGameVersion(gtnh.configuration.minecraftVersion, "Forge");
+                        artifact.releaseType = modVersion.map(
+                            v -> v.endsWith("-pre") ? Constants.RELEASE_TYPE_BETA : Constants.RELEASE_TYPE_RELEASE);
+                        artifact.addGameVersion(gtnh.configuration.minecraftVersion);
                         artifact.addModLoader("Forge");
+                        artifact.addEnvironment(environments.toArray());
 
                         if (!gtnh.configuration.curseForgeRelations.isEmpty()) {
                             final String[] deps = gtnh.configuration.curseForgeRelations.split(";");
@@ -208,7 +214,7 @@ public class PublishingModule implements GTNHModule {
                             }
                         }
                         if (gtnh.configuration.usesMixins) {
-                            artifact.addRelation("unimixins", "requiredDependency");
+                            artifact.addRelation("unimixins", Constants.RELATION_REQUIRED);
                         }
 
                         for (final Object secondary : getSecondaryArtifacts(project, gtnh)) {
@@ -227,6 +233,30 @@ public class PublishingModule implements GTNHModule {
                     .configure(task -> task.dependsOn(publishCurseforge));
             }
         }
+    }
+
+    private static Set<String> parseCurseForgeEnvironments(String value) {
+        final Set<String> environments = new LinkedHashSet<>();
+        for (String entry : value.toLowerCase(Locale.ROOT)
+            .split(",")) {
+            entry = entry.trim();
+            if (entry.isEmpty()) {
+                continue;
+            }
+            final String environment = switch (entry) {
+                case "client" -> "Client";
+                case "server" -> "Server";
+                default -> throw new IllegalArgumentException(
+                    "Invalid curseForgeEnvironments entry: '" + entry + "'. Valid values are: client, server.");
+            };
+            environments.add(environment);
+        }
+        if (environments.isEmpty()) {
+            throw new IllegalArgumentException(
+                "Invalid curseForgeEnvironments: '" + value
+                    + "'. Must contain at least one environment: client or server.");
+        }
+        return environments;
     }
 
     private static final Set<String> VALID_MODRINTH_SCOPES = ImmutableSet

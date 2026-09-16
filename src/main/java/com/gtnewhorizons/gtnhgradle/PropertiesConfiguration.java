@@ -692,6 +692,19 @@ public final class PropertiesConfiguration {
     public @NotNull String curseForgeProjectId = "";
 
     /** See annotation */
+    @Prop(
+        name = "curseForgeEnvironments",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            Comma-separated supported CurseForge environments: client, server (case-insensitive).
+            Use client or server for mods that only support one environment. Defaults to client,server.
+            These tags describe where the mod can run, not whether installation is required on both sides.
+            """)
+    public @NotNull String curseForgeEnvironments = "client,server";
+
+    /** See annotation */
     @Prop(name = "curseForgeRelations", isSettings = false, preferPopulated = true, required = false, docComment = """
         The project's relations on CurseForge. You can use this to refer to other projects on CurseForge.
         Syntax: type1:name1;type2:name2;...
