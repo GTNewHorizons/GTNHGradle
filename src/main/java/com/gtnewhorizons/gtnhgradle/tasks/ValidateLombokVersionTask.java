@@ -7,10 +7,12 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 /**
  * Validates that Lombok versions are compatible with Java 25+ bytecode.
  */
+@DisableCachingByDefault(because = "Validation-only; produces no cacheable outputs")
 public abstract class ValidateLombokVersionTask extends DefaultTask {
 
     /** @return Lombok version strings to validate */

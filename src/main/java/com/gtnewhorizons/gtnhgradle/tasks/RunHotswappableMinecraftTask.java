@@ -17,6 +17,7 @@ import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.options.Option;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /** Helper for running Minecraft with modern Java */
+@DisableCachingByDefault(because = "Launches an interactive Minecraft process")
 public abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
 
     /** The distribution this task runs */

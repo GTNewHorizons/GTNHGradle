@@ -62,6 +62,18 @@ public final class PropertiesConfiguration {
             """)
     public @NotNull String blowdryerTag = UpdateableConstants.NEWEST_BLOWDRYER_TAG;
 
+    /** See annotation. */
+    @Prop(
+        name = "gtnh.settings.blowdryerGitHubAuthToken",
+        isSettings = true,
+        preferPopulated = false,
+        required = false,
+        hidden = true,
+        docComment = """
+                The authentication token to use when making requests to GitHub via the Blowdryer Gradle plugin.
+            """)
+    public @NotNull String blowdryerGitHubAuthToken = "";
+
     /** See annotation */
     @Prop(
         name = "gtnh.settings.dynamicSpotlessVersion",
@@ -690,6 +702,19 @@ public final class PropertiesConfiguration {
             Leave this empty if you don't want to publish on CurseForge.
             """)
     public @NotNull String curseForgeProjectId = "";
+
+    /** See annotation */
+    @Prop(
+        name = "curseForgeEnvironments",
+        isSettings = false,
+        preferPopulated = true,
+        required = false,
+        docComment = """
+            Comma-separated supported CurseForge environments: client, server (case-insensitive).
+            Use client or server for mods that only support one environment. Defaults to client,server.
+            These tags describe where the mod can run, not whether installation is required on both sides.
+            """)
+    public @NotNull String curseForgeEnvironments = "client,server";
 
     /** See annotation */
     @Prop(name = "curseForgeRelations", isSettings = false, preferPopulated = true, required = false, docComment = """

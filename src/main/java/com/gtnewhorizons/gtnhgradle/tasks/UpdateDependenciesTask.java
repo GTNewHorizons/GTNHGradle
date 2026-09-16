@@ -7,6 +7,7 @@ import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -31,6 +32,7 @@ import java.util.regex.Pattern;
 /**
  * The task to update dependencies under GTNH maven
  */
+@DisableCachingByDefault(because = "Always fetches Maven metadata and rewrites dependencies.gradle")
 public abstract class UpdateDependenciesTask extends DefaultTask {
 
     private static final Pattern GTNH_DEPENDENCY = Pattern

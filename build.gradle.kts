@@ -1,9 +1,9 @@
 plugins {
     `java-gradle-plugin`
-    id("com.palantir.git-version") version "4.2.0"
+    id("com.palantir.git-version") version "4.3.0"
     `maven-publish`
-    id("com.diffplug.spotless") version "8.0.0"
-    id("com.github.gmazzo.buildconfig") version "5.7.1"
+    id("com.diffplug.spotless") version "8.10.2"
+    id("com.github.gmazzo.buildconfig") version "6.1.0"
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -42,30 +42,30 @@ dependencies {
     // JDOM2 for XML processing
     implementation("org.jdom:jdom2:2.0.6.1")
     // Maven artifact for version comparison
-    implementation("org.apache.maven:maven-artifact:3.9.9")
+    implementation("org.apache.maven:maven-artifact:3.9.16")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.2"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.4"))
 
     // Settings plugins
-    api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
+    api(pluginDep("com.diffplug.blowdryerSetup", "1.8.0"))
     api(pluginDep("org.gradle.toolchains.foojay-resolver-convention", "1.0.0"))
 
     // Project plugins
-    api(pluginDep("com.gradleup.shadow", "9.2.2"))
-    api(pluginDep("com.palantir.git-version", "4.2.0"))
-    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.3"))
+    api(pluginDep("com.gradleup.shadow", "9.6.1"))
+    api(pluginDep("com.palantir.git-version", "4.3.0"))
+    api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.4.1"))
     api(pluginDep("org.jetbrains.kotlin.jvm", "2.2.21"))
     api(pluginDep("org.jetbrains.kotlin.kapt", "2.2.21"))
-    api(pluginDep("com.google.devtools.ksp", "2.2.21-2.0.4"))
-    api(pluginDep("de.undercouch.download", "5.6.0"))
-    api(pluginDep("com.github.gmazzo.buildconfig", "5.7.1"))
-    api(pluginDep("com.modrinth.minotaur", "2.8.10"))
-    api(pluginDep("net.darkhax.curseforgegradle", "1.1.28"))
+    api(pluginDep("com.google.devtools.ksp", "2.2.21-2.0.5"))
+    api(pluginDep("de.undercouch.download", "5.7.0"))
+    api(pluginDep("com.github.gmazzo.buildconfig", "6.1.0"))
+    api(pluginDep("com.modrinth.minotaur", "2.9.0"))
+    api(pluginDep("net.darkhax.curseforgegradle", "1.3.33"))
 
-    api(pluginDep("xyz.wagyourtail.jvmdowngrader", "1.3.5"))
+    api(pluginDep("xyz.wagyourtail.jvmdowngrader", "2.0.1"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -154,7 +154,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.wrapper.configure {
-    gradleVersion = "9.3.1"
+    gradleVersion = "9.7.1"
     distributionType = Wrapper.DistributionType.ALL
 }
 

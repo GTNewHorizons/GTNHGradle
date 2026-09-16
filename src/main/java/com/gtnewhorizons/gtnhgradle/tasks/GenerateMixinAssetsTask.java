@@ -7,6 +7,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -18,6 +19,8 @@ import java.nio.file.Path;
  * Helper to generate a mixins.modid.json file in src/main/resources, used by
  * {@link com.gtnewhorizons.gtnhgradle.modules.MixinModule}.
  */
+@DisableCachingByDefault(
+    because = "One-shot mixin JSON scaffold written into source; skipped if the file already exists")
 public abstract class GenerateMixinAssetsTask extends DefaultTask {
 
     /** @return If the "usesMixins" property is true */
