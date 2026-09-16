@@ -10,7 +10,7 @@ public class UpdateableConstants {
     /** Latest Gradle version to update to. */
     // https://github.com/gradle/gradle/releases
     @SuppressWarnings("unused") // Used via reflection
-    public static final @NotNull String NEWEST_GRADLE_VERSION = "9.4.0";
+    public static final @NotNull String NEWEST_GRADLE_VERSION = "9.7.1";
 
     /** Latest tag of ExampleMod with blowdryer settings */
     // https://github.com/GTNewHorizons/ExampleMod1.7.10/releases
@@ -26,13 +26,13 @@ public class UpdateableConstants {
     public static final @NotNull String JABEL_STUBS = "com.github.GTNewHorizons:jabel-stubs:1.0.0";
     /** Latest version of GTNHLib for modern Java support */
     // https://github.com/GTNewHorizons/GTNHLib/releases
-    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.11.37";
+    public static final @NotNull String NEWEST_GTNH_LIB = "com.github.GTNewHorizons:GTNHLib:0.11.48";
     /** Latest version of lwjgl3ify for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/releases
-    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.31";
+    public static final @NotNull String NEWEST_LWJGL3IFY = "com.github.GTNewHorizons:lwjgl3ify:3.0.33";
     /** Latest version of Hodgepodge for modern Java support */
     // https://github.com/GTNewHorizons/Hodgepodge/releases
-    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.181";
+    public static final @NotNull String NEWEST_HODGEPODGE = "com.github.GTNewHorizons:Hodgepodge:2.7.206";
     /** Latest version of LWJGL3 for modern Java support */
     // https://github.com/GTNewHorizons/lwjgl3ify/blob/master/gradle/libs.versions.toml - but check what latest
     // Minecraft uses too
@@ -72,14 +72,14 @@ public class UpdateableConstants {
 
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-    public static final @NotNull String NEWEST_SPOTLESS = "8.3.0";
+    public static final @NotNull String NEWEST_SPOTLESS = "8.10.2";
     /** Latest version of Checkstyle compatible with modern Java versions */
     // https://mvnrepository.com/artifact/com.puppycrawl.tools/checkstyle
-    public static final @NotNull String NEWEST_CHECKSTYLE = "13.5.0";
+    public static final @NotNull String NEWEST_CHECKSTYLE = "14.1.0";
 
     /** Latest HotSwapAgent release jar URL */
     // https://github.com/HotswapProjects/HotswapAgent/releases
-    public static final @NotNull String NEWEST_HOTSWAPAGENT = "https://github.com/HotswapProjects/HotswapAgent/releases/download/RELEASE-2.0.1/hotswap-agent-2.0.1.jar";
+    public static final @NotNull String NEWEST_HOTSWAPAGENT = "https://github.com/HotswapProjects/HotswapAgent/releases/download/RELEASE-2.0.3/hotswap-agent-2.0.3.jar";
 
     /** Specifier for the latest GTNHGradle version to update to */
     // Only update once a new major change is made, ensure a backport to the previous major's updater is released first.

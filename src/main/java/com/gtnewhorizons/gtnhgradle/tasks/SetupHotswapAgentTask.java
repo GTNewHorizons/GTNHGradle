@@ -12,6 +12,7 @@ import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JavaToolchainSpec;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 /** Installs HotSwapAgent into a JVM runtime directory */
+@DisableCachingByDefault(because = "Downloads HotSwapAgent into the JDK installation directory")
 public abstract class SetupHotswapAgentTask extends DefaultTask {
 
     /** @return Latest HotSwapAgent release URL */
