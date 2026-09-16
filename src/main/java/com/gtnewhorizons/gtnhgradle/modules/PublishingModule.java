@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -94,7 +95,7 @@ public class PublishingModule implements GTNHModule {
             }
         }
 
-        final File changelogFile = new File(ObjectUtils.firstNonNull(System.getenv("CHANGELOG_FILE"), "CHANGELOG.md"));
+        final String changelog = getChangelog(project);
 
         // Modrinth
         final String mrToken = System.getenv("MODRINTH_TOKEN");
@@ -113,10 +114,9 @@ public class PublishingModule implements GTNHModule {
                 .set(modVersion);
             mr.getVersionType()
                 .set(modVersion.map(v -> v.endsWith("-pre") ? "beta" : "release"));
-            if (changelogFile.exists()) {
-                final String contents = Files.readString(changelogFile.toPath(), StandardCharsets.UTF_8);
+            if (changelog != null) {
                 mr.getChangelog()
-                    .set(contents);
+                    .set(changelog);
             }
             mr.getUploadFile()
                 .set(project.provider(() -> project.property("publishableObfJar")));
@@ -192,9 +192,9 @@ public class PublishingModule implements GTNHModule {
                     task.apiToken = cfToken;
                     task.disableVersionDetection();
                     task.upload(gtnh.configuration.curseForgeProjectId, obfFile, artifact -> {
-                        if (changelogFile.exists()) {
+                        if (changelog != null) {
                             artifact.changelogType = Constants.CHANGELOG_MARKDOWN;
-                            artifact.changelog = changelogFile;
+                            artifact.changelog = changelog;
                         }
                         artifact.releaseType = modVersion.map(
                             v -> v.endsWith("-pre") ? Constants.RELEASE_TYPE_BETA : Constants.RELEASE_TYPE_RELEASE);
@@ -233,6 +233,15 @@ public class PublishingModule implements GTNHModule {
                     .configure(task -> task.dependsOn(publishCurseforge));
             }
         }
+    }
+
+    private static String getChangelog(@NotNull Project project) throws Throwable {
+        Path changelogPath = project.getProjectDir()
+            .toPath()
+            .resolve(ObjectUtils.firstNonNull(System.getenv("CHANGELOG_FILE"), "CHANGELOG.md"));
+        if (Files.isRegularFile(changelogPath)) return Files.readString(changelogPath, StandardCharsets.UTF_8);
+
+        return null;
     }
 
     private static Set<String> parseCurseForgeEnvironments(String value) {
