@@ -223,7 +223,9 @@ public class PublishingModule implements GTNHModule {
                                 .getArchiveFile()
                                 .get()
                                 .getAsFile();
-                            artifact.withAdditionalFile(secondaryFile);
+                            // Work around child validation in CurseForgeGradle 1.3.33; omitted from upload metadata.
+                            // Remove once https://github.com/Darkhax/CurseForgeGradle/issues/35 is fixed upstream.
+                            artifact.withAdditionalFile(secondaryFile).gameVersions.addAll(artifact.gameVersions);
                         }
                     });
                 });
