@@ -114,6 +114,9 @@ public class IdeIntegrationModule implements GTNHModule {
                             .getOptions()
                             .getAllCompilerArgs())));
 
+        runs.withType(Gradle.class)
+            .configureEach(run -> run.setProject(project));
+
         runs.register("0. Build and Test", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("build")); });
         runs.register("1. Run Client", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("runClient")); });
         runs.register("2. Run Server", Gradle.class, run -> { run.setTaskNames(ImmutableList.of("runServer")); });
