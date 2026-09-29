@@ -45,7 +45,7 @@ dependencies {
     implementation("org.apache.maven:maven-artifact:3.9.16")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.5"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle","2.0.6"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.8.0"))
