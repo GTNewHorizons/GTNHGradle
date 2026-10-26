@@ -6,6 +6,7 @@ import com.gtnewhorizons.gtnhgradle.GTNHModule;
 import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
+import com.gtnewhorizons.gtnhgradle.modules.utils.KotlinGradlePluginUtil;
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension;
 import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
@@ -45,7 +46,6 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
@@ -205,29 +205,9 @@ public abstract class ToolchainModule implements GTNHModule {
         }
 
         // Set up Kotlin if enabled
-        project.getPlugins()
-            .withId("org.jetbrains.kotlin.jvm", plugin -> {
-                final KotlinBaseExtension kotlin = (KotlinBaseExtension) project.getExtensions()
-                    .getByName("kotlin");
-                kotlin.jvmToolchain(8);
-                final Set<String> disabledKotlinTasks = ImmutableSet.of(
-                    "kaptGenerateStubsMcLauncherKotlin",
-                    "kaptGenerateStubsPatchedMcKotlin",
-                    "kaptGenerateStubsInjectedTagsKotlin",
-                    "compileMcLauncherKotlin",
-                    "compilePatchedMcKotlin",
-                    "compileInjectedTagsKotlin",
-                    "kaptMcLauncherKotlin",
-                    "kaptPatchedMcKotlin",
-                    "kaptInjectedTagsKotlin",
-                    "kspMcLauncherKotlin",
-                    "kspPatchedMcKotlin",
-                    "kspInjectedTagsKotlin");
-                tasks.configureEach(t -> {
-                    if (disabledKotlinTasks.contains(t.getName())) {
-                        t.setEnabled(false);
-                    }
-                });
+        project.getPluginManager()
+            .withPlugin("org.jetbrains.kotlin.jvm", plugin -> {
+                KotlinGradlePluginUtil.configureKotlinGradlePlugin(project, tasks);
             });
 
         // Set up basic project settings

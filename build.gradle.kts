@@ -55,15 +55,18 @@ dependencies {
     api(pluginDep("com.gradleup.shadow", "9.6.1"))
     api(pluginDep("com.palantir.git-version", "4.3.0"))
     api(pluginDep("org.jetbrains.gradle.plugin.idea-ext", "1.4.1"))
-    api(pluginDep("org.jetbrains.kotlin.jvm", "2.2.21"))
-    api(pluginDep("org.jetbrains.kotlin.kapt", "2.2.21"))
-    api(pluginDep("com.google.devtools.ksp", "2.2.21-2.0.5"))
     api(pluginDep("de.undercouch.download", "5.7.0"))
     api(pluginDep("com.github.gmazzo.buildconfig", "6.1.0"))
     api(pluginDep("com.modrinth.minotaur", "2.9.0"))
     api(pluginDep("net.darkhax.curseforgegradle", "1.3.33"))
 
     api(pluginDep("xyz.wagyourtail.jvmdowngrader", "2.0.1"))
+
+    // these are made optional, so that users can decide which version they want to use, as the version used in
+    // GTNHGradle is always out-of-date.
+    compileOnly(pluginDep("org.jetbrains.kotlin.jvm", "2.2.21"))
+    compileOnly(pluginDep("org.jetbrains.kotlin.kapt", "2.2.21"))
+    compileOnly(pluginDep("com.google.devtools.ksp", "2.2.21-2.0.5"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
