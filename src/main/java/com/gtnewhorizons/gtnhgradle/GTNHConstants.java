@@ -10,7 +10,13 @@ public class GTNHConstants {
     public static final @NotNull String GTNH_MAVEN_PUBLIC_REPOSITORY = "https://nexus.gtnewhorizons.com/repository/public/";
     /** URL of the "releases" GTNH Maven repository, contains only our mod packages */
     public static final @NotNull String GTNH_MAVEN_RELEASES_REPOSITORY = "https://nexus.gtnewhorizons.com/repository/releases/";
-    /** The current Checkstyle configuration file contents used */
+    /**
+     * The Checkstyle configuration file contents used before Checkstyle was replaced
+     *
+     * @deprecated Wildcard imports are now checked by
+     *             {@link com.gtnewhorizons.gtnhgradle.tasks.CheckWildcardImportsTask}
+     */
+    @Deprecated
     public static final @NotNull String CHECKSTYLE_CONFIG = """
         <!DOCTYPE module PUBLIC
           "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
