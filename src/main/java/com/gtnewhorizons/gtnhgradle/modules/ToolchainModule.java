@@ -26,6 +26,7 @@ import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.ModuleVersionSelector;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
+import org.gradle.api.file.Directory;
 import org.gradle.api.java.archives.Manifest;
 import org.gradle.api.plugins.BasePluginExtension;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
@@ -33,6 +34,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
@@ -56,6 +58,8 @@ import java.util.Set;
 
 /** Configures the Java/Scala/Kotlin toolchain settings */
 public abstract class ToolchainModule implements GTNHModule {
+
+    private static final String MCMOD_INFO = "mcmod.info";
 
     /** @return Gradle-provided */
     @Inject
@@ -401,17 +405,31 @@ public abstract class ToolchainModule implements GTNHModule {
             props.put("modVersion", modVersion);
         }
 
+        // In its own task, as the version would make processResources copy every resource again on each commit
+        final SourceSet mainSourceSet = java.getSourceSets()
+            .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        final Provider<Directory> mcmodInfoDir = project.getLayout()
+            .getBuildDirectory()
+            .dir("generated/resources/mcmodInfo");
+        final TaskProvider<Copy> processMcmodInfo = tasks.register("processMcmodInfo", Copy.class, t -> {
+            t.setDescription("Expands the mod properties in mcmod.info");
+            t.from(mainSourceSet.getResources(), cs -> cs.include(MCMOD_INFO));
+            t.into(mcmodInfoDir);
+        });
+        mainSourceSet.getOutput()
+            .dir(ImmutableMap.of("builtBy", processMcmodInfo), mcmodInfoDir);
         tasks.named("processResources", ProcessResources.class)
-            .configure(t -> { t.exclude("spotless.gradle"); });
+            .configure(t -> {
+                t.exclude("spotless.gradle");
+                t.exclude(MCMOD_INFO);
+            });
         project.afterEvaluate(p -> {
-            p.getTasks()
-                .named("processResources", ProcessResources.class)
-                .configure(t -> {
-                    final Map<String, String> expandedProperties = getMcmodInfoProperties().get();
-                    t.getInputs()
-                        .properties(expandedProperties);
-                    t.filesMatching("mcmod.info", fcd -> { fcd.expand(expandedProperties); });
-                });
+            processMcmodInfo.configure(t -> {
+                final Map<String, String> expandedProperties = getMcmodInfoProperties().get();
+                t.getInputs()
+                    .properties(expandedProperties);
+                t.filesMatching(MCMOD_INFO, fcd -> { fcd.expand(expandedProperties); });
+            });
         });
         // Configure the output manifest
         final TaskProvider<Jar> devJar = tasks.named("jar", Jar.class);

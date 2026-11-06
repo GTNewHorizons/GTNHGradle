@@ -8,9 +8,14 @@ import com.gtnewhorizons.gtnhgradle.ModernJavaSyntaxMode;
 import com.gtnewhorizons.gtnhgradle.PropertiesConfiguration;
 import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.lang3.StringUtils;
 import com.gtnewhorizons.gtnhgradle.UpdateableConstants;
+import com.gtnewhorizons.gtnhgradle.tasks.ArchiveFastPath;
 import com.gtnewhorizons.gtnhgradle.tasks.ValidateLombokVersionTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.compress.archivers.zip.ZipExtraField;
+import com.gtnewhorizons.retrofuturagradle.shadow.org.apache.commons.compress.archivers.zip.ZipFile;
 import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
@@ -21,29 +26,52 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.repositories.MavenRepositoryContentDescriptor;
 import org.gradle.api.attributes.java.TargetJvmVersion;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.internal.file.archive.ZipEntryConstants;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+import org.gradle.api.tasks.bundling.ZipEntryCompression;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.wagyourtail.jvmdg.ClassDowngrader;
+import xyz.wagyourtail.jvmdg.cli.Flags;
+import xyz.wagyourtail.jvmdg.compile.PathDowngrader;
 import xyz.wagyourtail.jvmdg.gradle.JVMDowngraderExtension;
+import xyz.wagyourtail.jvmdg.gradle.flags.ToFlagsKt;
 import xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar;
 import xyz.wagyourtail.jvmdg.gradle.task.ShadeJar;
 import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles;
+import xyz.wagyourtail.jvmdg.util.Utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.jar.JarFile;
 
 /** JVM Downgrader module. Must be applied after {@link ShadowModule} when shadow is used. */
 public class JVMDowngraderModule implements GTNHModule {
@@ -313,6 +341,10 @@ public class JVMDowngraderModule implements GTNHModule {
                 task.setInputCollection(
                     testSourceSet.getOutput()
                         .getClassesDirs());
+                declareOutputsOfMissingInputs(
+                    task,
+                    testSourceSet.getOutput()
+                        .getClassesDirs());
                 task.setClasspath(testSourceSet.getCompileClasspath());
                 task.getDowngradeTo()
                     .set(targetVersion);
@@ -340,6 +372,10 @@ public class JVMDowngraderModule implements GTNHModule {
                 task.setInputCollection(
                     sourceSet.getOutput()
                         .getClassesDirs());
+                declareOutputsOfMissingInputs(
+                    task,
+                    sourceSet.getOutput()
+                        .getClassesDirs());
                 task.setClasspath(sourceSet.getCompileClasspath());
                 task.getDowngradeTo()
                     .set(targetVersion);
@@ -347,15 +383,68 @@ public class JVMDowngraderModule implements GTNHModule {
             });
     }
 
+    /** DowngradeFiles only declares outputs for existing inputs, so tests ran nothing on a clean tree without this */
+    private static void declareOutputsOfMissingInputs(DowngradeFiles task, FileCollection inputs) {
+        for (final File input : inputs.getFiles()) {
+            if (!input.exists()) {
+                task.getOutputs()
+                    .dir(new File(task.getTemporaryDir(), input.getName()));
+            }
+        }
+    }
+
+    /**
+     * Turns multi-release off in the test JVM so tests load the downgraded classes from the jar. It applies to every
+     * jar on the test classpath, so it is only set when the tests read that jar.
+     */
+    private static class MultiReleaseFlag implements CommandLineArgumentProvider {
+
+        private final Provider<Boolean> testsUseDowngradedJar;
+
+        MultiReleaseFlag(Provider<Boolean> testsUseDowngradedJar) {
+            this.testsUseDowngradedJar = testsUseDowngradedJar;
+        }
+
+        /** @return Whether the tests read the downgraded jar */
+        @Input
+        public Provider<Boolean> getTestsUseDowngradedJar() {
+            return testsUseDowngradedJar;
+        }
+
+        @Override
+        public Iterable<String> asArguments() {
+            return testsUseDowngradedJar.get() ? List.of("-Djdk.util.jar.enableMultiRelease=false") : List.of();
+        }
+    }
+
     private void configureTestTask(Project project, GTNHGradlePlugin.GTNHExtension gtnh,
         DowngradeTasks downgradeTasks) {
+        // Tests reuse the classes downgraded in the dev jar, unless shading relocated them or copy rules may omit some
+        final boolean usesShadow = gtnh.configuration.usesShadowedDependencies;
+        final TaskProvider<Jar> inputJar = project.getTasks()
+            .named(usesShadow ? SHADOW_JAR_TASK : JavaPlugin.JAR_TASK_NAME, Jar.class);
+        final TaskProvider<DowngradeJar> downgradeJar = project.getTasks()
+            .named(DOWNGRADE_JAR_TASK, DowngradeJar.class);
+        final Provider<Boolean> jarHasAllClasses = project.provider(
+            () -> !ArchiveFastPath.filtersEntries(inputJar.get(), ShadowModule.DEFAULT_EXCLUDES)
+                && !ArchiveFastPath.filtersEntries(downgradeJar.get(), Set.of()));
+        final Provider<Boolean> testsUseDowngradedJar = usesShadow ? ShadowModule.shadowsNothing(project)
+            .zip(jarHasAllClasses, (shadowsNothing, hasAllClasses) -> shadowsNothing && hasAllClasses)
+            : jarHasAllClasses;
+        final Provider<RegularFile> downgradedJar = downgradeJar.flatMap(DowngradeJar::getArchiveFile);
+        final List<TaskProvider<DowngradeFiles>> classesDowngrades = new ArrayList<>();
+        classesDowngrades.add(downgradeTasks.main);
+        if (downgradeTasks.mixin != null) {
+            classesDowngrades.add(downgradeTasks.mixin);
+        }
+
         project.getTasks()
             .named(JavaPlugin.TEST_TASK_NAME, Test.class)
             .configure(test -> {
-                test.dependsOn(downgradeTasks.test, downgradeTasks.main);
-                if (downgradeTasks.mixin != null) {
-                    test.dependsOn(downgradeTasks.mixin);
-                }
+                test.dependsOn(downgradeTasks.test);
+                test.dependsOn(testsUseDowngradedJar.map(useJar -> useJar ? List.of() : classesDowngrades));
+                test.getJvmArgumentProviders()
+                    .add(new MultiReleaseFlag(testsUseDowngradedJar));
 
                 final FileCollection mainClassesDirs = downgradeTasks.mainSourceSet.getOutput()
                     .getClassesDirs();
@@ -371,22 +460,18 @@ public class JVMDowngraderModule implements GTNHModule {
                 final FileCollection finalExcludedDirs = excludedDirs;
                 final FileCollection testOutput = project
                     .files(downgradeTasks.test.map(DowngradeFiles::getOutputCollection));
-                final FileCollection mainOutput = project
-                    .files(downgradeTasks.main.map(DowngradeFiles::getOutputCollection));
+                final FileCollection mainOutput = project.files(
+                    (Callable<Object>) () -> testsUseDowngradedJar.get() ? downgradedJar
+                        : classesDowngrades.stream()
+                            .map(task -> task.map(DowngradeFiles::getOutputCollection))
+                            .toList());
 
                 test.setTestClassesDirs(testOutput);
-
-                FileCollection newClasspath = testOutput.plus(mainOutput);
-                if (downgradeTasks.mixin != null) {
-                    newClasspath = newClasspath
-                        .plus(project.files(downgradeTasks.mixin.map(DowngradeFiles::getOutputCollection)));
-                }
-
-                final FileCollection downgradedClasspath = newClasspath;
                 test.setClasspath(
-                    downgradedClasspath.plus(
-                        test.getClasspath()
-                            .minus(finalExcludedDirs)));
+                    testOutput.plus(mainOutput)
+                        .plus(
+                            test.getClasspath()
+                                .minus(finalExcludedDirs)));
             });
     }
 
@@ -410,6 +495,7 @@ public class JVMDowngraderModule implements GTNHModule {
                 .set(targetVersion);
             task.getArchiveClassifier()
                 .set(shadeStubs ? "downgraded" : "dev");
+            downgradeDirectlyIntoArchive(task);
         });
 
         final TaskProvider<? extends AbstractArchiveTask> publishableDevJar;
@@ -530,6 +616,7 @@ public class JVMDowngraderModule implements GTNHModule {
                     .set(targetVersion);
                 task.getArchiveClassifier()
                     .set("api");
+                downgradeDirectlyIntoArchive(task);
             });
 
         tasks.named("assemble")
@@ -575,6 +662,167 @@ public class JVMDowngraderModule implements GTNHModule {
 
                     task.setClasspath(filtered);
                 });
+        }
+    }
+
+    /** DowngradeJar unpacks its result and compresses every entry again, this copies the compressed entries instead */
+    private static void downgradeDirectlyIntoArchive(DowngradeJar task) {
+        final Set<String> defaultCopyActions = ArchiveFastPath.copyActions(task);
+        ArchiveFastPath.replacePackaging(task, t -> {
+            final DowngradeJar downgradeJar = (DowngradeJar) t;
+            if (hasArchiveCustomizations(downgradeJar, defaultCopyActions)) {
+                t.getLogger()
+                    .info("Custom archive rules, downgrading with the normal Jar action");
+                return false;
+            }
+            try {
+                t.getLogger()
+                    .info(
+                        "Downgrading directly into {}",
+                        downgradeJar.getArchiveFile()
+                            .get());
+                final Set<URL> classpath = new HashSet<>();
+                for (final File file : downgradeJar.getClasspath()
+                    .getFiles()) {
+                    classpath.add(
+                        file.toURI()
+                            .toURL());
+                }
+                writeDowngradedJar(
+                    ToFlagsKt.toFlags(downgradeJar),
+                    downgradeJar.getInputFile()
+                        .get()
+                        .getAsFile()
+                        .toPath(),
+                    classpath,
+                    downgradeJar.getArchiveFile()
+                        .get()
+                        .getAsFile()
+                        .toPath(),
+                    downgradeJar.getTemporaryDir()
+                        .toPath(),
+                    downgradeJar.isPreserveFileTimestamps(),
+                    downgradeJar.isReproducibleFileOrder());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return true;
+        });
+    }
+
+    private static boolean hasArchiveCustomizations(DowngradeJar task, Set<String> defaultCopyActions) {
+        // Entries keep the compression they already have
+        if (task.getEntryCompression() != ZipEntryCompression.DEFLATED) {
+            return true;
+        }
+        final org.gradle.api.java.archives.Manifest manifest = task.getManifest()
+            .getEffectiveManifest();
+        if (!manifest.getAttributes()
+            .equals(Map.of("Manifest-Version", "1.0"))
+            || !manifest.getSections()
+                .isEmpty()) {
+            return true;
+        }
+        final File generatedManifest = new File(task.getTemporaryDir(), "MANIFEST.MF");
+        final boolean[] customized = { false };
+        task.getRootSpec()
+            .walk(spec -> {
+                customized[0] |= !spec.getAllIncludes()
+                    .isEmpty()
+                    || !spec.getAllExcludes()
+                        .isEmpty()
+                    || !spec.getAllIncludeSpecs()
+                        .isEmpty()
+                    || !spec.getAllExcludeSpecs()
+                        .isEmpty()
+                    || spec.getAllCopyActions()
+                        .stream()
+                        .anyMatch(
+                            action -> !defaultCopyActions.contains(
+                                action.getClass()
+                                    .getName()))
+                    || (!spec.getAllCopyActions()
+                        .isEmpty()
+                        && !spec.getDestPath()
+                            .getPathString()
+                            .isEmpty());
+                spec.getSource()
+                    .visit(details -> {
+                        if (!details.isDirectory()) {
+                            customized[0] |= !details.getFile()
+                                .equals(generatedManifest)
+                                || !spec.getDestPath()
+                                    .append(details.getRelativePath())
+                                    .getPathString()
+                                    .equals(JarFile.MANIFEST_NAME);
+                        }
+                    });
+            });
+        return customized[0];
+    }
+
+    private static void writeDowngradedJar(Flags flags, Path input, Set<URL> classpath, Path output, Path tempDir,
+        boolean preserveFileTimestamps, boolean reproducibleFileOrder) throws IOException {
+        Files.createDirectories(output.getParent());
+        Files.createDirectories(tempDir);
+        final Path downgraded = tempDir.resolve("downgraded.jar");
+        final Path repacked = tempDir.resolve("repacked.jar");
+        Files.deleteIfExists(downgraded);
+        Files.deleteIfExists(repacked);
+        try {
+            try (ClassDowngrader downgrader = ClassDowngrader.downgradeTo(flags);
+                FileSystem in = Utils.openZipFileSystem(input, false);
+                FileSystem out = Utils.openZipFileSystem(downgraded, true)) {
+                // First for tools reading jars as a stream, downgrading then updates it in place
+                final Path manifest = in.getPath(JarFile.MANIFEST_NAME);
+                if (Files.exists(manifest)) {
+                    Files.createDirectories(out.getPath("META-INF"));
+                    Files.copy(manifest, out.getPath(JarFile.MANIFEST_NAME));
+                }
+                PathDowngrader.downgradePaths(
+                    downgrader,
+                    Collections.singletonList(in.getPath("/")),
+                    Collections.singletonList(out.getPath("/")),
+                    classpath);
+            }
+            repackWithoutExtraFields(downgraded, repacked, preserveFileTimestamps, reproducibleFileOrder);
+            Files.move(repacked, output, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            Files.deleteIfExists(downgraded);
+            Files.deleteIfExists(repacked);
+        }
+    }
+
+    /**
+     * Copies a jar without recompressing it, dropping the extra fields. On Windows the zip file system writes a 36 byte
+     * NTFS timestamp per entry, over 2 MB on GT5U.
+     */
+    static void repackWithoutExtraFields(Path source, Path target, boolean preserveFileTimestamps,
+        boolean reproducibleFileOrder) throws IOException {
+        try (ZipFile in = new ZipFile(source); ZipArchiveOutputStream out = new ZipArchiveOutputStream(target)) {
+            final List<ZipArchiveEntry> entries = Collections.list(in.getEntries());
+            if (reproducibleFileOrder) {
+                entries.sort(
+                    Comparator.comparing(
+                        (ZipArchiveEntry entry) -> !entry.getName()
+                            .equals(JarFile.MANIFEST_NAME))
+                        .thenComparing(ZipArchiveEntry::getName));
+            }
+            for (final ZipArchiveEntry entry : entries) {
+                final ZipArchiveEntry copy = new ZipArchiveEntry(entry);
+                if (!preserveFileTimestamps) {
+                    copy.setTime(ZipEntryConstants.CONSTANT_TIME_FOR_ZIP_ENTRIES);
+                }
+                copy.setExtraFields(new ZipExtraField[0]);
+                if (entry.isDirectory()) {
+                    out.putArchiveEntry(copy);
+                    out.closeArchiveEntry();
+                } else {
+                    try (InputStream raw = in.getRawInputStream(entry)) {
+                        out.addRawArchiveEntry(copy, raw);
+                    }
+                }
+            }
         }
     }
 

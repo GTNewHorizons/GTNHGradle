@@ -109,7 +109,7 @@ public final class PropertiesConfiguration {
         preferPopulated = false,
         required = false,
         hidden = true,
-        docComment = "Sets up code style plugins like Spotless and Checkstyle.")
+        docComment = "Sets up code style plugins like Spotless, and the wildcard import check.")
     public boolean moduleCodeStyle = true;
 
     /** See annotation */

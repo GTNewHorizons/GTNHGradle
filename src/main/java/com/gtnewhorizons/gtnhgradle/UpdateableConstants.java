@@ -73,8 +73,13 @@ public class UpdateableConstants {
     /** Latest version of Spotless compatible with modern Java versions */
     // https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
     public static final @NotNull String NEWEST_SPOTLESS = "8.10.2";
-    /** Latest version of Checkstyle compatible with modern Java versions */
+    /**
+     * Latest version of Checkstyle compatible with modern Java versions
+     *
+     * @deprecated Checkstyle is no longer used, see {@link com.gtnewhorizons.gtnhgradle.tasks.CheckWildcardImportsTask}
+     */
     // https://mvnrepository.com/artifact/com.puppycrawl.tools/checkstyle
+    @Deprecated
     public static final @NotNull String NEWEST_CHECKSTYLE = "14.1.0";
 
     /** Latest HotSwapAgent release jar URL */

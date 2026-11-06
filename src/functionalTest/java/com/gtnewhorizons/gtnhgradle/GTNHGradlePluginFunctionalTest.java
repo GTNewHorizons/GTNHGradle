@@ -5,9 +5,17 @@ package com.gtnewhorizons.gtnhgradle;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import org.gradle.testkit.runner.GradleRunner;
@@ -16,6 +24,11 @@ import org.gradle.testkit.runner.TaskOutcome;
 import org.gradle.testkit.runner.UnexpectedBuildFailure;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -117,13 +130,37 @@ class GTNHGradlePluginFunctionalTest {
         }
     }
 
+    /** Project setups with their dependencies downloaded, for --offline builds */
+    private static final Set<String> CACHED_SETUPS = new HashSet<>();
+
     private GradleRunner createRunner(String... args) {
+        final List<String> arguments = List.of(args);
+        if (arguments.contains("--offline") && CACHED_SETUPS.add(readProperties())) {
+            // A fresh TestKit home, like on CI, has nothing cached yet
+            createOnlineRunner(
+                arguments.stream()
+                    .filter(argument -> !argument.equals("--offline"))
+                    .toList())
+                .build();
+        }
+        return createOnlineRunner(arguments);
+    }
+
+    private GradleRunner createOnlineRunner(List<String> args) {
         return GradleRunner.create()
             .withEnvironment(ImmutableMap.of("VERSION", "1.0.0"))
             .withArguments(args)
             .forwardOutput()
             .withPluginClasspath()
             .withProjectDir(projectDir);
+    }
+
+    private String readProperties() {
+        try {
+            return Files.readString(getPropertiesFile().toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private void setupProject(String propertiesContent) throws IOException {
@@ -151,6 +188,278 @@ class GTNHGradlePluginFunctionalTest {
         assertTrue(output.contains("shadeDowngradedApi"), "shadeDowngradedApi task should be registered");
         assertTrue(output.contains("downgradeMainClasses"), "downgradeMainClasses task should be registered");
         assertTrue(output.contains("downgradeTestClasses"), "downgradeTestClasses task should be registered");
+    }
+
+    @Test
+    void jvmDowngraderMode_declaresClassOutputsOnACleanTree() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            """);
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + """
+            tasks.register("printDowngradeOutputs") {
+                val outputs = listOf("downgradeMainClasses", "downgradeTestClasses")
+                    .map { name -> name + "=" + tasks.named(name).get().outputs.files.files.map { it.name } }
+                doLast { outputs.forEach { println(it) } }
+            }
+            """);
+
+        // Nothing is compiled yet, the tests would find no classes if the outputs were missing
+        final String output = createRunner("printDowngradeOutputs").build()
+            .getOutput();
+
+        assertTrue(output.contains("downgradeMainClasses=[main]"), output);
+        assertTrue(output.contains("downgradeTestClasses=[test]"), output);
+    }
+
+    @Test
+    void jvmDowngraderMode_testsUseTheDowngradedJar() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            """);
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + PRINT_TEST_JVM_ARGS);
+
+        final String output = createRunner("test", "--dry-run").build()
+            .getOutput();
+
+        assertTrue(output.contains(":downgradeJar SKIPPED"), "test should use the downgraded jar");
+        assertFalse(output.contains(":downgradeMainClasses SKIPPED"), "main classes should not be downgraded twice");
+        // Otherwise the test JVM loads the multi-release copies for its own Java version
+        assertTrue(
+            createRunner("printTestJvmArgs").build()
+                .getOutput()
+                .contains("-Djdk.util.jar.enableMultiRelease=false"),
+            "the tests read the downgraded jar, so multi-release has to be off");
+    }
+
+    @Test
+    void jvmDowngraderModeWithShadedDependencies_testsUseDowngradedClasses() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            usesShadowedDependencies = true
+            """);
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + PRINT_TEST_JVM_ARGS + """
+            dependencies {
+                "shadowImplementation"("com.google.code.findbugs:jsr305:3.0.2")
+            }
+            """);
+
+        final String output = createRunner("test", "--dry-run").build()
+            .getOutput();
+
+        // The test code uses the shaded dependencies' original names, which the jar relocated
+        assertTrue(output.contains(":downgradeMainClasses SKIPPED"), "test should use the unrelocated main classes");
+        assertFalse(output.contains(":downgradeJar SKIPPED"), "test should not need the downgraded jar");
+        // The flag applies to every jar on the test classpath, so it is only set where the tests need it
+        assertFalse(
+            createRunner("printTestJvmArgs").build()
+                .getOutput()
+                .contains("enableMultiRelease"),
+            "the tests read the class directories, so multi-release should be left alone");
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "false,jar", "false,downgradeJar", "true,shadowJar" })
+    void jvmDowngraderModeWithExcludedFiles_testsUseDowngradedClasses(boolean shadow, String task) throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            enableModernJavaSyntax = jvmDowngrader
+            usesShadowedDependencies = %s
+            """.formatted(shadow));
+        writeString(
+            getBuildFile(),
+            SIMPLE_BUILD_FILE + PRINT_TEST_JVM_ARGS
+                + "\ntasks.named<org.gradle.jvm.tasks.Jar>(\""
+                + task
+                + "\") { exclude(\"com/myname/mymodid/Internal*\") }\n");
+
+        final String output = createRunner("test", "--dry-run").build()
+            .getOutput();
+
+        // Tests can use a class that is left out of the jar
+        assertTrue(output.contains(":downgradeMainClasses SKIPPED"), "test should not rely on the jar's contents");
+        assertFalse(
+            createRunner("printTestJvmArgs").build()
+                .getOutput()
+                .contains("enableMultiRelease"),
+            "the tests read the class directories, so multi-release should be left alone");
+    }
+
+    private static final String PRINT_TEST_JVM_ARGS = """
+        tasks.register("printTestJvmArgs") {
+            val args = tasks.test.get().jvmArgumentProviders.flatMap { it.asArguments() }
+            doLast { println("TEST_JVM_ARGS=" + args) }
+        }
+        """;
+
+    @ParameterizedTest
+    @CsvSource({ "downgradeJar,manifest", "downgradeJar,from", "downgradeJar,exclude", "downgradeApiJar,from",
+        "downgradeJar,storedCompression" })
+    void downgradedArchives_keepCustomizations(String task, String rule) throws IOException {
+        setupArchiveProject();
+        final String configuration = switch (rule) {
+            case "manifest" -> "manifest.attributes(\"Custom-Attribute\" to \"preserved\")";
+            case "from" -> "from(\"extra.txt\")";
+            case "exclude" -> "exclude(\"pack.mcmeta\")";
+            case "storedCompression" -> "entryCompression = org.gradle.api.tasks.bundling.ZipEntryCompression.STORED";
+            default -> throw new AssertionError(rule);
+        };
+        writeString(
+            getBuildFile(),
+            Files.readString(getBuildFile().toPath())
+                + "\ntasks.named<xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar>(\""
+                + task
+                + "\") {\n"
+                + configuration
+                + "\n}\n");
+        createRunner(task).build();
+        createRunner(task, "--configuration-cache", "--offline").build();
+        final String suffix = task.equals("downgradeJar") ? "-dev.jar" : "-api.jar";
+        Files.delete(findJar(suffix));
+        final BuildResult reused = createRunner(task, "--configuration-cache", "--offline").build();
+        assertTrue(
+            reused.getOutput()
+                .contains("Reusing configuration cache"),
+            reused.getOutput());
+        try (java.util.jar.JarFile jar = new java.util.jar.JarFile(findJar(suffix).toFile())) {
+            switch (rule) {
+                case "manifest" -> assertEquals(
+                    "preserved",
+                    jar.getManifest()
+                        .getMainAttributes()
+                        .getValue("Custom-Attribute"));
+                case "from" -> assertTrue(jar.getEntry("extra.txt") != null);
+                case "exclude" -> assertFalse(jar.getEntry("pack.mcmeta") != null);
+                // Copying the downgraded entries over keeps them deflated, so this has to be packaged normally
+                case "storedCompression" -> assertEquals(
+                    java.util.zip.ZipEntry.STORED,
+                    jar.getEntry("pack.mcmeta")
+                        .getMethod());
+            }
+            if (task.equals("downgradeApiJar")) {
+                assertTrue(jar.getEntry("LICENSE") != null, "API resources should pass through the downgrade");
+            }
+        }
+    }
+
+    private void setupArchiveProject() throws IOException {
+        setupProject("""
+            modName = MyMod
+            modId = mymodid
+            modGroup = com.myname.mymodid
+            apiPackage = api
+            enableModernJavaSyntax = jvmDowngrader
+            """);
+        Files.createDirectories(new File(projectDir, "src/main/java/com/myname/mymodid/api").toPath());
+        writeResource("{}");
+        writeString(new File(projectDir, "extra.txt"), "extra resource");
+        writeString(new File(projectDir, "Api.java"), "package com.myname.mymodid.api; public interface Api {}\n");
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + """
+            // This fixture packages resources only, so it does not need compiler stubs.
+            configurations.named("compileOnly") { dependencies.clear() }
+            tasks.named<org.gradle.jvm.tasks.Jar>("apiJar") {
+                from("extra.txt") { rename { "LICENSE" } }
+                from("Api.java") { into("com/myname/mymodid/api") }
+            }
+            tasks.withType<xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar>().configureEach {
+                classpath = files()
+                isPreserveFileTimestamps = false
+                isReproducibleFileOrder = true
+            }
+            """);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "shadowJar,fast", "shadowJar,fallback", "downgradeJar,fast", "downgradeJar,fallback",
+        "downgradeApiJar,fast", "downgradeApiJar,fallback" })
+    void archiveFastPaths_preserveTaskCallbacks(String task, String mode) throws IOException {
+        if (task.equals("shadowJar")) {
+            setupProject(SHADOW_PROPERTIES_FILE);
+            writeResource("{}");
+        } else {
+            setupArchiveProject();
+        }
+        final String configuration = """
+            tasks.named<org.gradle.api.tasks.bundling.AbstractArchiveTask>("%s") {
+                val marker = layout.buildDirectory.file("callbacks.txt")
+                val output = archiveFile
+                doFirst {
+                    marker.get().asFile.apply { parentFile.mkdirs(); writeText("before\\n") }
+                }
+                doLast {
+                    check(output.get().asFile.isFile)
+                    marker.get().asFile.appendText("after\\n")
+                }
+                %s
+            }
+            """.formatted(task, mode.equals("fallback") ? "exclude(\"pack.mcmeta\", \"LICENSE\")" : "");
+        writeString(getBuildFile(), Files.readString(getBuildFile().toPath()) + configuration);
+        final BuildResult first = createRunner(task, "--info").build();
+        final Path marker = new File(projectDir, "build/callbacks.txt").toPath();
+        assertEquals("before\nafter\n", Files.readString(marker));
+        final String fastLog = task.equals("shadowJar") ? "Nothing to shadow" : "Downgrading directly into";
+        assertEquals(
+            mode.equals("fast"),
+            first.getOutput()
+                .contains(fastLog),
+            first.getOutput());
+
+        createRunner(task, "--configuration-cache", "--offline").build();
+        Files.delete(findJar(task.equals("downgradeApiJar") ? "-api.jar" : "-dev.jar"));
+        Files.delete(marker);
+        final BuildResult reused = createRunner(task, "--configuration-cache", "--offline", "--info").build();
+        assertTrue(
+            reused.getOutput()
+                .contains("Reusing configuration cache"),
+            reused.getOutput());
+        assertEquals(
+            mode.equals("fast"),
+            reused.getOutput()
+                .contains(fastLog),
+            reused.getOutput());
+        assertEquals("before\nafter\n", Files.readString(marker));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "downgradeJar", "downgradeApiJar" })
+    void downgradedArchives_areReproducible(String task) throws IOException {
+        setupArchiveProject();
+        final BuildResult first = createRunner(task, "--info").build();
+        assertTrue(
+            first.getOutput()
+                .contains("Downgrading directly into"),
+            first.getOutput());
+        final Path jar = findJar(task.equals("downgradeJar") ? "-dev.jar" : "-api.jar");
+        final byte[] expected = Files.readAllBytes(jar);
+
+        createRunner(task, "--rerun-tasks", "--offline").build();
+        assertArrayEquals(expected, Files.readAllBytes(jar));
+        createRunner(task, "--configuration-cache", "--offline").build();
+        Files.delete(jar);
+        final BuildResult reused = createRunner(task, "--configuration-cache", "--offline", "--info").build();
+        assertTrue(
+            reused.getOutput()
+                .contains("Reusing configuration cache"),
+            reused.getOutput());
+        assertTrue(
+            reused.getOutput()
+                .contains("Downgrading directly into"),
+            reused.getOutput());
+        assertArrayEquals(expected, Files.readAllBytes(jar));
+        if (task.equals("downgradeApiJar")) {
+            assertTrue(jarContainsEntry(jar, "LICENSE"));
+            assertTrue(jarContainsEntry(jar, "com/myname/mymodid/api/Api.java"));
+        }
     }
 
     @Test
@@ -331,5 +640,405 @@ class GTNHGradlePluginFunctionalTest {
             result.getOutput()
                 .contains("downgradeJar"),
             "jvmDowngraderMultiReleaseVersions=21,25 should auto-bump toolchain to 25");
+    }
+
+    @Test
+    void wildcardImportCheck_failsUntilFixed() throws IOException {
+        setupProject(SIMPLE_PROPERTIES_FILE);
+        final File sources = new File(projectDir, "src/main/java/com/myname/mymodid");
+        final File good = new File(sources, "Good.java");
+        final File bad = new File(sources, "Bad.java");
+        // These sources have wildcard imports on purpose, which Spotless rejects
+        // spotless:off
+        writeString(good, """
+            package com.myname.mymodid;
+
+            import static java.lang.Math.*;
+
+            public class Good {}
+            """);
+        writeString(bad, """
+            package com.myname.mymodid;
+
+            import java.util.
+                List;
+            import java.util.*;
+
+            public class Bad {}
+            """);
+        // spotless:on
+
+        final String dryRun = createRunner("check", "--dry-run").build()
+            .getOutput();
+        assertTrue(dryRun.contains(":checkWildcardImportsMain SKIPPED"), "check should run the wildcard import check");
+        assertFalse(dryRun.contains(":checkstyleMain"), "Checkstyle should not be used anymore");
+
+        assertTrue(
+            createRunner("checkWildcardImportsMain").buildAndFail()
+                .getOutput()
+                .contains("Bad.java:5: import java.util.*;"),
+            "The wildcard import should be reported");
+
+        // Only Good.java is read again, the result for Bad.java comes from the previous run
+        writeString(good, "package com.myname.mymodid;\n\npublic class Good {}\n");
+        assertTrue(
+            createRunner("checkWildcardImportsMain").buildAndFail()
+                .getOutput()
+                .contains("Bad.java:5: import java.util.*;"),
+            "The wildcard import in the unchanged file should still be reported");
+
+        writeString(bad, "package com.myname.mymodid;\n\nimport java.util.List;\n\npublic class Bad {}\n");
+        createRunner("checkWildcardImportsMain").build();
+        assertEquals(
+            TaskOutcome.UP_TO_DATE,
+            createRunner("checkWildcardImportsMain").build()
+                .task(":checkWildcardImportsMain")
+                .getOutcome());
+    }
+
+    @Test
+    void mcmodInfo_isExpandedOutsideProcessResources() throws IOException {
+        setupProject(SIMPLE_PROPERTIES_FILE);
+        final File resources = new File(projectDir, "src/main/resources");
+        Files.createDirectories(resources.toPath());
+        writeString(new File(resources, "mcmod.info"), "{\"modid\": \"${modId}\", \"version\": \"${modVersion}\"}");
+
+        createRunner("processMcmodInfo").build();
+
+        final String expanded = Files
+            .readString(new File(projectDir, "build/generated/resources/mcmodInfo/mcmod.info").toPath());
+        assertTrue(expanded.contains("\"modid\": \"mymodid\""), "modId should be expanded: " + expanded);
+        assertTrue(expanded.contains("\"version\": \"1.0.0\""), "modVersion should be expanded: " + expanded);
+    }
+
+    @Test
+    void wildcardImportCheck_keepsResultsForMatchingPathsInDifferentRoots() throws IOException {
+        setupProject(SIMPLE_PROPERTIES_FILE);
+        final File first = new File(projectDir, "src/main/java/com/myname/mymodid/Imports.java");
+        final File second = new File(projectDir, "src/extra/java/com/myname/mymodid/Imports.java");
+        Files.createDirectories(
+            second.getParentFile()
+                .toPath());
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + "\nsourceSets.main { java.srcDir(\"src/extra/java\") }\n");
+        // spotless:off
+        writeString(first, "package com.myname.mymodid;\nimport java.util.*;\nclass First {}\n");
+        // spotless:on
+        writeString(second, "package com.myname.mymodid;\nclass Second {}\n");
+        final String failed = createRunner("checkWildcardImportsMain").buildAndFail()
+            .getOutput();
+        assertTrue(failed.contains(first + ":2: import java.util.*;"), failed);
+
+        writeString(first, "package com.myname.mymodid;\nclass First {}\n");
+        createRunner("checkWildcardImportsMain").build();
+        // spotless:off
+        writeString(second, "package com.myname.mymodid;\nimport java.io.*;\nclass Second {}\n");
+        // spotless:on
+        final String changed = createRunner("checkWildcardImportsMain").buildAndFail()
+            .getOutput();
+        assertTrue(changed.contains(second + ":2: import java.io.*;"), changed);
+        Files.delete(first.toPath());
+        assertTrue(
+            createRunner("checkWildcardImportsMain").buildAndFail()
+                .getOutput()
+                .contains(second + ":2: import java.io.*;"));
+    }
+
+    private static final String SHADOW_PROPERTIES_FILE = """
+        modName = MyMod
+        modId = mymodid
+        modGroup = com.myname.mymodid
+        enableModernJavaSyntax = jabel
+        usesShadowedDependencies = true
+        """;
+
+    @Test
+    void shadowWithoutShadedDependencies_copiesPlainJar() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+
+        String output = createRunner("shadowJar", "--dry-run").build()
+            .getOutput();
+
+        assertTrue(output.contains(":jar SKIPPED"), "shadowJar should copy the plain jar when nothing is shadowed");
+    }
+
+    @Test
+    void shadowWithShadedDependencies_doesNotNeedPlainJar() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + """
+            dependencies {
+                "shadowImplementation"("com.google.code.findbugs:jsr305:3.0.2")
+            }
+            """);
+
+        String output = createRunner("shadowJar", "--dry-run").build()
+            .getOutput();
+
+        assertFalse(output.contains(":jar SKIPPED"), "shadowJar should shadow normally when there are dependencies");
+    }
+
+    @Test
+    void shadowWithoutShadedDependencies_producesTheSameJar() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeResource("{}");
+
+        createRunner("shadowJar").build();
+
+        assertArrayEquals(
+            Files.readAllBytes(findJar("-dev-preshadow.jar")),
+            Files.readAllBytes(findJar("-dev.jar")),
+            "the shadow jar should be a copy of the plain jar");
+    }
+
+    @Test
+    void shadowWithFilesAddedByHand_keepsThem() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeString(new File(projectDir, "extra.txt"), "added by the build script");
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + """
+            tasks.shadowJar {
+                from("extra.txt") { into("added") }
+            }
+            """);
+
+        assertFalse(
+            createRunner("shadowJar", "--dry-run").build()
+                .getOutput()
+                .contains(":jar SKIPPED"));
+
+        createRunner("shadowJar").build();
+
+        // Copying the plain jar would drop this
+        assertTrue(
+            jarContainsEntry(findJar("-dev.jar"), "added/extra.txt"),
+            "a file added to shadowJar by hand should not be dropped");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "exclude", "rename", "filter", "into", "defaultExclude", "from", "manifest" })
+    void shadowWithCopyRules_keepsThemWithAReusedConfigurationCache(String rule) throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeResource("original");
+        if (rule.equals("defaultExclude")) {
+            writeString(new File(projectDir, "src/main/resources/module-info.class"), "excluded module descriptor");
+        }
+        writeString(new File(projectDir, "extra.txt"), "extra resource");
+        final String configuration = switch (rule) {
+            case "exclude" -> "exclude(\"pack.mcmeta\")";
+            case "rename" -> "rename(\"pack.mcmeta\", \"renamed.txt\")";
+            case "filter" -> "filter { line: String -> line.replace(\"original\", \"filtered\") }";
+            case "into" -> "into(\"nested\")";
+            case "defaultExclude" -> "";
+            case "from" -> "from(\"extra.txt\")";
+            case "manifest" -> "manifest.attributes(\"Custom-Attribute\" to \"preserved\")";
+            default -> throw new AssertionError(rule);
+        };
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + "\ntasks.shadowJar { " + configuration + " }\n");
+
+        // Sources and manifest attributes only show once shadowJar runs, the other rules with the task graph
+        if (!List.of("defaultExclude", "from", "manifest")
+            .contains(rule)) {
+            assertFalse(
+                createRunner("shadowJar", "--dry-run").build()
+                    .getOutput()
+                    .contains(":jar SKIPPED"),
+                rule);
+        }
+
+        createRunner("shadowJar").build();
+        createRunner("shadowJar", "--configuration-cache", "--offline").build();
+        Files.delete(findJar("-dev.jar"));
+        final BuildResult reused = createRunner("shadowJar", "--configuration-cache", "--offline").build();
+        assertTrue(
+            reused.getOutput()
+                .contains("Reusing configuration cache"),
+            reused.getOutput());
+        try (ZipFile jar = new ZipFile(findJar("-dev.jar").toFile())) {
+            assertFalse(jar.getEntry("module-info.class") != null);
+            if (rule.equals("from")) {
+                assertTrue(jar.getEntry("extra.txt") != null);
+            }
+            final String entry = switch (rule) {
+                case "rename" -> "renamed.txt";
+                case "into" -> "nested/pack.mcmeta";
+                default -> "pack.mcmeta";
+            };
+            assertEquals(!rule.equals("exclude"), jar.getEntry(entry) != null, rule);
+            if (rule.equals("filter")) {
+                assertEquals(
+                    "filtered",
+                    new String(
+                        jar.getInputStream(jar.getEntry(entry))
+                            .readAllBytes())
+                        .trim());
+            }
+            if (rule.equals("rename") || rule.equals("into")) {
+                assertFalse(jar.getEntry("pack.mcmeta") != null, rule);
+            }
+        }
+    }
+
+    @Test
+    void shadowOnOlderGradle_canLoadTheConfigurationCache() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeResource("{}");
+
+        // Unlike the version these tests run on, this one can't restore a private record held by a task action
+        createRunner("shadowJar", "--configuration-cache").withGradleVersion("9.4.0")
+            .build();
+    }
+
+    @Test
+    void shadowWithDisabledJar_doesNotCopyAnOldJar() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeResource("original");
+        createRunner("shadowJar").build();
+
+        // The same length, so only the content tells them apart
+        writeResource("changed!");
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + "\ntasks.jar { enabled = false }\n");
+        createRunner("shadowJar").build();
+
+        assertEquals("changed!", readEntry(findJar("-dev.jar"), "pack.mcmeta").trim());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "from", "filter" })
+    void shadowWithPlainJarRules_doesNotInheritThem(String rule) throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeResource("original");
+        writeString(new File(projectDir, "extra.txt"), "extra resource");
+        final String configuration = switch (rule) {
+            case "from" -> "from(\"extra.txt\") { into(\"extra\") }";
+            case "filter" -> "filesMatching(\"pack.mcmeta\") { filter { line: String -> \"filtered\" } }";
+            default -> throw new AssertionError(rule);
+        };
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + "\ntasks.jar { " + configuration + " }\n");
+
+        createRunner("shadowJar").build();
+
+        final Path jar = findJar("-dev.jar");
+        assertEquals("original", readEntry(jar, "pack.mcmeta").trim());
+        assertFalse(jarContainsEntry(jar, "extra/extra.txt"));
+        assertFalse(jarContainsEntry(jar, "extra/"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "mainClass", "shadowConfiguration", "storedCompression", "timestamps" })
+    void shadowWithOwnSettings_keepsThem(String rule) throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeResource("{}");
+        final String configuration = switch (rule) {
+            case "mainClass" -> "tasks.shadowJar { mainClass = \"com.myname.mymodid.Main\" }";
+            case "shadowConfiguration" -> "dependencies { \"shadow\"(\"com.google.code.findbugs:jsr305:3.0.2\") }";
+            case "storedCompression" -> "tasks.shadowJar { entryCompression = org.gradle.api.tasks.bundling.ZipEntryCompression.STORED }";
+            case "timestamps" -> "tasks.shadowJar { isPreserveFileTimestamps = true }";
+            default -> throw new AssertionError(rule);
+        };
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + "\n" + configuration + "\n");
+
+        createRunner("shadowJar").build();
+
+        final Path jar = findJar("-dev.jar");
+        final String manifest = readEntry(jar, "META-INF/MANIFEST.MF");
+        try (ZipFile zip = new ZipFile(jar.toFile())) {
+            final ZipEntry entry = zip.getEntry("pack.mcmeta");
+            switch (rule) {
+                case "mainClass" -> assertTrue(manifest.contains("Main-Class: com.myname.mymodid.Main"), manifest);
+                case "shadowConfiguration" -> assertTrue(manifest.contains("Class-Path: jsr305-3.0.2.jar"), manifest);
+                case "storedCompression" -> assertEquals(ZipEntry.STORED, entry.getMethod());
+                // Later than the constant Gradle writes for reproducible archives
+                case "timestamps" -> assertTrue(entry.getTime() > 1_000_000_000_000L);
+                default -> throw new AssertionError(rule);
+            }
+        }
+    }
+
+    @Test
+    void shadowWithoutShadedDependencies_copiesPlainJarWithAReusedConfigurationCache() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE);
+        writeResource("{}");
+
+        // Offline, as the plugin's update check invalidates the configuration cache entry on online builds
+        createRunner("shadowJar").build();
+        createRunner("shadowJar", "--configuration-cache", "--offline").build();
+        // Reruns shadowJar without invalidating the configuration cache entry
+        Files.delete(findJar("-dev.jar"));
+        final BuildResult second = createRunner("shadowJar", "--configuration-cache", "--offline", "--info").build();
+
+        assertTrue(
+            second.getOutput()
+                .contains("Reusing configuration cache"),
+            second.getOutput());
+        assertTrue(
+            second.getOutput()
+                .contains("Nothing to shadow"),
+            second.getOutput());
+        assertArrayEquals(
+            Files.readAllBytes(findJar("-dev-preshadow.jar")),
+            Files.readAllBytes(findJar("-dev.jar")),
+            "the shadow jar should still be a copy of the plain jar");
+    }
+
+    @Test
+    void shadowWithShadedDependencies_shadowsWithAReusedConfigurationCache() throws IOException {
+        setupProject(SHADOW_PROPERTIES_FILE + """
+            minimizeShadowedDependencies = false
+            relocateShadowedDependencies = false
+            """);
+        writeResource("{}");
+        writeString(getBuildFile(), SIMPLE_BUILD_FILE + """
+            dependencies {
+                "shadowImplementation"("com.google.code.findbugs:jsr305:3.0.2")
+            }
+            """);
+
+        createRunner("shadowJar").build();
+        createRunner("shadowJar", "--configuration-cache", "--offline").build();
+        Files.delete(findJar("-dev.jar"));
+        final BuildResult second = createRunner("shadowJar", "--configuration-cache", "--offline").build();
+
+        // The configuration cache hands the task a resolved file collection instead of the configurations
+        assertTrue(
+            second.getOutput()
+                .contains("Reusing configuration cache"),
+            second.getOutput());
+        assertTrue(
+            jarContainsEntry(findJar("-dev.jar"), "javax/annotation/Nonnull.class"),
+            "the shaded dependency should still be in the shadow jar");
+    }
+
+    private File writeResource(String content) throws IOException {
+        Files.createDirectories(
+            projectDir.toPath()
+                .resolve("src/main/resources"));
+        final File resource = new File(projectDir, "src/main/resources/pack.mcmeta");
+        writeString(resource, content);
+        return resource;
+    }
+
+    private Path findJar(String suffix) throws IOException {
+        final Path libs = projectDir.toPath()
+            .resolve("build/libs");
+        try (Stream<Path> jars = Files.list(libs)) {
+            return jars.filter(
+                jar -> jar.getFileName()
+                    .toString()
+                    .endsWith(suffix))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No jar ending in " + suffix + " in " + libs));
+        }
+    }
+
+    private static String readEntry(Path jar, String entry) throws IOException {
+        try (ZipFile zip = new ZipFile(jar.toFile())) {
+            return new String(
+                zip.getInputStream(zip.getEntry(entry))
+                    .readAllBytes());
+        }
+    }
+
+    private static boolean jarContainsEntry(Path jar, String entry) throws IOException {
+        try (ZipFile zip = new ZipFile(jar.toFile())) {
+            return zip.getEntry(entry) != null;
+        }
     }
 }
