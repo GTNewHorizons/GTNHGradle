@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public class CodeStyleModule implements GTNHModule {
 
-    /** Source sets of Minecraft itself and of RFG-generated code, which are not checked */
+    /** Minecraft and RFG-generated source sets */
     private static final Set<String> UNCHECKED_SOURCE_SETS = ImmutableSet
         .of("patchedMc", "mcLauncher", "ideVirtualMain", "injectedTags");
 
@@ -40,7 +40,6 @@ public class CodeStyleModule implements GTNHModule {
             project.apply(oca -> { oca.from(Blowdryer.file("spotless.gradle")); });
         }
         if (!gtnh.configuration.disableCheckstyle) {
-            // Replaces Checkstyle, which was only used for this check but re-checked every file whenever one changed
             final TaskContainer tasks = project.getTasks();
             final SourceSetContainer sourceSets = project.getExtensions()
                 .getByType(JavaPluginExtension.class)

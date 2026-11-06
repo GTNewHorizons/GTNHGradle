@@ -31,9 +31,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Fails on non-static wildcard imports like {@code import java.util.*;}, which IDEs tend to create on their own.
- * Static wildcard imports are allowed, and imports between {@code CHECKSTYLE:OFF} and {@code CHECKSTYLE:ON} comments
- * are skipped, like with the Checkstyle setup this replaces. Only the files changed since the last run are read again.
+ * Fails on non-static wildcard imports like {@code import java.util.*;}, skipping imports between
+ * {@code CHECKSTYLE:OFF} and {@code CHECKSTYLE:ON} comments. Only reads the files changed since the last run.
  */
 @DisableCachingByDefault(because = "Only reads the start of the changed source files, cheaper than a cache lookup")
 public abstract class CheckWildcardImportsTask extends DefaultTask {
@@ -43,19 +42,19 @@ public abstract class CheckWildcardImportsTask extends DefaultTask {
     private static final String SUPPRESSION_OFF = "CHECKSTYLE:OFF";
     private static final String SUPPRESSION_ON = "CHECKSTYLE:ON";
 
-    /** @return The Java source files to check, incremental through {@link SkipWhenEmpty} */
+    /** @return The Java source files to check */
     @InputFiles
     @SkipWhenEmpty
     @IgnoreEmptyDirectories
     @PathSensitive(PathSensitivity.ABSOLUTE)
     public abstract ConfigurableFileCollection getSource();
 
-    /** @return Wildcard imports found by the previous runs per source file, so unchanged files are not read again */
+    /** @return The wildcard imports found per source file, kept for the files not read again */
     @OutputFile
     public abstract RegularFileProperty getResultsFile();
 
     /**
-     * Checks the source files changed since the last run, then fails if any source file has a wildcard import.
+     * Checks the changed source files, then fails if any source file has a wildcard import.
      *
      * @param inputChanges The changed source files
      * @throws IOException If a source file or the results file can't be read or written
@@ -96,8 +95,7 @@ public abstract class CheckWildcardImportsTask extends DefaultTask {
     }
 
     /**
-     * Reads complete package and import statements, including statements split across lines. Stops at the first type
-     * declaration without scanning class bodies.
+     * Reads package and import statements up to the first type declaration.
      *
      * @param file The Java source file
      * @return One "file:line: import" entry per non-static wildcard import
@@ -115,7 +113,6 @@ public abstract class CheckWildcardImportsTask extends DefaultTask {
         return scanner.found;
     }
 
-    /** Walks the package and import statements of a source file, keeping code and comments in file order */
     private static final class HeaderScanner {
 
         private final File file;

@@ -383,10 +383,7 @@ public class JVMDowngraderModule implements GTNHModule {
             });
     }
 
-    /**
-     * DowngradeFiles only declares outputs for the inputs that exist when it is configured. On a clean tree the classes
-     * are not compiled yet, so the task had no outputs and the tests using them silently ran nothing.
-     */
+    /** DowngradeFiles only declares outputs for existing inputs, so tests ran nothing on a clean tree without this */
     private static void declareOutputsOfMissingInputs(DowngradeFiles task, FileCollection inputs) {
         for (final File input : inputs.getFiles()) {
             if (!input.exists()) {
@@ -397,10 +394,8 @@ public class JVMDowngraderModule implements GTNHModule {
     }
 
     /**
-     * Turns multi-release handling off in the test JVM, which the tests need to load the downgraded classes out of the
-     * jar instead of the copies for the JVM's own Java version. Only when they do read the jar: the flag applies to
-     * every jar on the test classpath, and the tests keep using the separately downgraded classes when something is
-     * shaded.
+     * Turns multi-release off in the test JVM so tests load the downgraded classes from the jar. It applies to every
+     * jar on the test classpath, so it is only set when the tests read that jar.
      */
     private static class MultiReleaseFlag implements CommandLineArgumentProvider {
 
@@ -424,10 +419,7 @@ public class JVMDowngraderModule implements GTNHModule {
 
     private void configureTestTask(Project project, GTNHGradlePlugin.GTNHExtension gtnh,
         DowngradeTasks downgradeTasks) {
-        // The main and mixin classes are already downgraded in the dev jar, so the tests use it instead of downgrading
-        // them a second time. Shaded dependencies are relocated in that jar while the test code uses their original
-        // names, and copy rules can leave classes out of it, so in those cases the separately downgraded classes are
-        // used like before.
+        // Tests reuse the classes downgraded in the dev jar, unless shading relocated them or copy rules may omit some
         final boolean usesShadow = gtnh.configuration.usesShadowedDependencies;
         final TaskProvider<Jar> inputJar = project.getTasks()
             .named(usesShadow ? SHADOW_JAR_TASK : JavaPlugin.JAR_TASK_NAME, Jar.class);
@@ -673,11 +665,7 @@ public class JVMDowngraderModule implements GTNHModule {
         }
     }
 
-    /**
-     * DowngradeJar writes the downgraded jar, then unpacks it and packs it again as a regular Jar task, compressing
-     * every entry a second time. This downgrades into a temporary jar and copies the compressed entries into the
-     * archive as they are instead.
-     */
+    /** DowngradeJar unpacks its result and compresses every entry again, this copies the compressed entries instead */
     private static void downgradeDirectlyIntoArchive(DowngradeJar task) {
         final Set<String> defaultCopyActions = ArchiveFastPath.copyActions(task);
         ArchiveFastPath.replacePackaging(task, t -> {
@@ -723,7 +711,7 @@ public class JVMDowngraderModule implements GTNHModule {
     }
 
     private static boolean hasArchiveCustomizations(DowngradeJar task, Set<String> defaultCopyActions) {
-        // The downgraded entries are copied over with the compression they already have
+        // Entries keep the compression they already have
         if (task.getEntryCompression() != ZipEntryCompression.DEFLATED) {
             return true;
         }
@@ -785,8 +773,7 @@ public class JVMDowngraderModule implements GTNHModule {
             try (ClassDowngrader downgrader = ClassDowngrader.downgradeTo(flags);
                 FileSystem in = Utils.openZipFileSystem(input, false);
                 FileSystem out = Utils.openZipFileSystem(downgraded, true)) {
-                // The manifest goes first, as tools reading jars as a stream expect. Downgrading then updates it in
-                // place, the zip file system keeps the order entries were added in.
+                // First for tools reading jars as a stream, downgrading then updates it in place
                 final Path manifest = in.getPath(JarFile.MANIFEST_NAME);
                 if (Files.exists(manifest)) {
                     Files.createDirectories(out.getPath("META-INF"));
@@ -807,9 +794,8 @@ public class JVMDowngraderModule implements GTNHModule {
     }
 
     /**
-     * Copies a jar entry by entry, keeping the compressed data as it is and dropping the per-entry extra fields. The
-     * zip file system writes a 36 byte NTFS timestamp field per entry on Windows, which nothing reading a mod jar
-     * uses and which added over 2 MB to a GT5U sized jar.
+     * Copies a jar without recompressing it, dropping the extra fields. On Windows the zip file system writes a 36 byte
+     * NTFS timestamp per entry, over 2 MB on GT5U.
      */
     static void repackWithoutExtraFields(Path source, Path target, boolean preserveFileTimestamps,
         boolean reproducibleFileOrder) throws IOException {

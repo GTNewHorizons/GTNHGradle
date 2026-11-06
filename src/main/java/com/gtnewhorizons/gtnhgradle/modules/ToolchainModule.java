@@ -405,8 +405,7 @@ public abstract class ToolchainModule implements GTNHModule {
             props.put("modVersion", modVersion);
         }
 
-        // mcmod.info is expanded in its own task: the mod version changes with every commit and whenever the work
-        // tree becomes dirty, and as an input of processResources it made it copy every resource again.
+        // In its own task, as the version would make processResources copy every resource again on each commit
         final SourceSet mainSourceSet = java.getSourceSets()
             .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
         final Provider<Directory> mcmodInfoDir = project.getLayout()

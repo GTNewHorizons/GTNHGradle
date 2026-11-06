@@ -46,10 +46,9 @@ import java.util.zip.CRC32;
 /** Shadowed dependency support */
 public class ShadowModule implements GTNHModule {
 
-    /** Where Gradle puts the manifest it generated inside a jar task's own sources */
     private static final String MANIFEST_IN_META_INF = "MANIFEST.MF";
 
-    /** Shadow's built-in exclusions; any additional rule needs its normal copy action. */
+    /** Shadow's built-in exclusions */
     static final Set<String> DEFAULT_EXCLUDES = Set.of(
         "META-INF/INDEX.LIST",
         "META-INF/*.SF",
@@ -111,20 +110,17 @@ public class ShadowModule implements GTNHModule {
             }
 
         });
-        // Mods often enable shadowing without shading anything. The shadow jar is then only the plain jar packaged
-        // again, a full extra pass over every class and resource, so shadowJar copies the plain jar's entries instead.
+        // When nothing is shaded, copy the plain jar's entries instead of packing every class and resource again
         final TaskProvider<Jar> jarTask = tasks.named("jar", Jar.class);
         final Provider<RegularFile> plainJar = jarTask.flatMap(AbstractArchiveTask::getArchiveFile);
-        // The task objects are reached through providers: a task an action holds on to cannot go into the
-        // configuration cache.
+        // Through providers: a task held by an action can't go into the configuration cache
         final Provider<Boolean> sameJarSettings = project.provider(
             () -> cfgs.getByName("shadow")
                 .isEmpty() && archiveOptions(shadowJar.get()).equals(archiveOptions(jarTask.get())));
         shadowJar.configure(sj -> {
             final Set<String> defaultCopyActions = ArchiveFastPath.copyActions(sj);
             final String defaultSignature = archiveSignature(sj);
-            // Only depend on the plain jar while copying it is still on the table. That needs the build scripts to
-            // have configured shadowJar, so it is left to the moment the task graph is worked out.
+            // Resolved with the task graph, as whether copying is possible depends on the build scripts
             sj.getInputs()
                 .files(
                     project.files(
@@ -140,7 +136,7 @@ public class ShadowModule implements GTNHModule {
                     .getAsFile()
                     .toPath();
                 if (!Files.isRegularFile(source)) {
-                    // The task graph decided the plain jar was not worth building, so there is nothing to copy
+                    // Not built, as the task graph ruled out copying
                     return false;
                 }
                 final Path target = ((ShadowJar) t).getArchiveFile()
@@ -188,11 +184,7 @@ public class ShadowModule implements GTNHModule {
             .set("publishableDevJar", shadowJar);
     }
 
-    /**
-     * @param task A jar task
-     * @return How the copy spec tree would pack, as text: destinations, patterns and copy actions. Stays the same
-     *         from configuration to execution, unlike the files themselves, which upstream tasks produce in between.
-     */
+    /** @return The destinations, patterns and copy actions of the copy spec tree, as text */
     private static String archiveSignature(Jar task) {
         final StringBuilder signature = new StringBuilder();
         if (task.getRootSpec()
@@ -228,15 +220,12 @@ public class ShadowModule implements GTNHModule {
         return signature.toString();
     }
 
-    /** @return The settings that make two jars with the same files differ, which a copy would not pick up */
+    /** @return The archive settings a copy of the plain jar would not apply */
     private static List<Object> archiveOptions(Jar task) {
         return List.of(task.getEntryCompression(), task.isPreserveFileTimestamps(), task.isReproducibleFileOrder());
     }
 
-    /**
-     * Whether shadowJar has nothing to do but pack the source set outputs. Besides relocating and transforming, which
-     * {@link #shadowsNothing(ShadowJar)} covers, it adds a main class to the manifest and can run R8.
-     */
+    /** @return Whether shadowJar only packs the source set outputs, so no main class or R8 either */
     private static boolean packsLikeThePlainJar(ShadowJar sj, String defaultSignature) {
         return shadowsNothing(sj) && defaultSignature.equals(archiveSignature(sj))
             && !sj.getMainClass()
@@ -249,12 +238,8 @@ public class ShadowModule implements GTNHModule {
     }
 
     /**
-     * Whether shadowJar relocates anything, which is what decides if its output can stand in for the source set
-     * outputs. Says nothing about files a build script added to the task by hand, see {@code apply}.
-     *
      * @param project A project with this module applied
-     * @return true if there is nothing to shade, relocate or transform. Only known once the build scripts declared
-     *         their dependencies.
+     * @return Whether there is nothing to shade, relocate or transform. Only known once dependencies are declared.
      */
     public static Provider<Boolean> shadowsNothing(Project project) {
         final TaskProvider<ShadowJar> shadowJar = project.getTasks()
@@ -263,16 +248,10 @@ public class ShadowModule implements GTNHModule {
     }
 
     /**
-     * Works out which entries of the plain jar make up what shadowJar would write. The plain jar can hold more than
-     * that, as the jar task can be given extra sources (RFG's tags class is one), and it can hold other content, from
-     * jar task filters or from an old build when the jar task did not run. The built jar is read instead of the jar
-     * task's own sources, which a reused configuration cache entry does not restore for a task it skipped.
+     * The plain jar can hold extra entries, like RFG's tags class, and other content, from jar filters or a jar task
+     * that did not run. The built jar is read as a reused configuration cache entry lacks a skipped task's sources.
      *
-     * @param sj                 The executing shadowJar task
-     * @param plainJar           The built plain jar
-     * @param defaultCopyActions The copy actions of shadowJar before the build scripts configured it
-     * @return The names of the entries to copy, or null if the plain jar can't supply what shadowJar would write
-     * @throws IOException If the plain jar or a source file can't be read
+     * @return The plain jar entries making up what shadowJar would write, or null if it can't supply them
      */
     private static @Nullable Set<String> findEntriesToCopy(ShadowJar sj, Path plainJar, Set<String> defaultCopyActions)
         throws IOException {
@@ -281,7 +260,7 @@ public class ShadowModule implements GTNHModule {
         final boolean[] customized = { false };
         sj.getRootSpec()
             .walk(spec -> {
-                // Renames and filters run after getSource(); inspecting paths alone cannot account for them.
+                // Renames and filters run after getSource(), so the paths below don't show them
                 customized[0] |= !spec.getAllIncludes()
                     .isEmpty()
                     || !spec.getAllIncludeSpecs()
@@ -325,7 +304,7 @@ public class ShadowModule implements GTNHModule {
                 }
                 jarEntries.put(file.getValue(), entry);
             }
-            // Shadow inherits the plain jar's manifest, but a build script can add attributes to shadowJar alone
+            // Differs if a doFirst action changed the manifest, or the jar task did not run
             if (shadowManifest != null) {
                 final Manifest expected;
                 try (InputStream in = Files.newInputStream(shadowManifest.toPath())) {
@@ -372,8 +351,7 @@ public class ShadowModule implements GTNHModule {
     }
 
     private static boolean shadowsNothing(ShadowJar sj) {
-        // Read as file collections, not as configurations: with the configuration cache the task holds a resolved
-        // file collection in their place, which a Configuration typed loop fails to cast once the entry is reused.
+        // Not typed as Configuration: a reused configuration cache entry holds resolved file collections instead
         for (final Object shadowed : sj.getConfigurations()
             .get()) {
             if (shadowed instanceof FileCollection files && !files.isEmpty()) {

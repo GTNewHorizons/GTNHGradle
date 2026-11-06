@@ -24,9 +24,8 @@ public final class ArchiveFastPath {
     private ArchiveFastPath() {}
 
     /**
-     * Puts a shortcut in front of a task's own actions, which only run when the shortcut declines. Register it before
-     * the build scripts configure the task, so the shortcut runs after the doFirst actions they add and before their
-     * doLast ones. Throwing {@link org.gradle.api.tasks.StopExecutionException} instead would skip those as well.
+     * Puts a shortcut in front of a task's own actions, which only run when it declines. Register it before the build
+     * scripts configure the task, so it runs between their doFirst and doLast actions.
      *
      * @param task     The archive task
      * @param shortcut Writes the archive and returns true, or returns false to let the task package it as usual
@@ -47,8 +46,7 @@ public final class ArchiveFastPath {
 
     /**
      * @param task A jar task
-     * @return The class names of its copy actions, empty if it has custom ones. Taken before the build scripts
-     *         configure the task, this tells the actions Gradle added from the ones they did.
+     * @return The class names of its copy actions, empty if it has custom ones
      */
     public static Set<String> copyActions(Jar task) {
         final Set<String> copyActions = new HashSet<>();
@@ -89,7 +87,7 @@ public final class ArchiveFastPath {
      *
      * @param source  The jar to copy from
      * @param target  The jar to write
-     * @param entries The names of the entries to keep. A plain file copy when that is all of them.
+     * @param entries The names of the entries to keep
      * @throws IOException If a jar can't be read or written
      */
     public static void copyEntries(Path source, Path target, Set<String> entries) throws IOException {

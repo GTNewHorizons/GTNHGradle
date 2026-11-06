@@ -47,7 +47,7 @@ class JVMDowngraderModuleTest {
         "META-INF/versions/17/pkg/Compressible.class",
         "versioned".getBytes(StandardCharsets.UTF_8));
 
-    /** Entry order matters: tools reading a jar as a stream expect the manifest first */
+    /** Tools reading a jar as a stream expect the manifest first */
     private static final List<String> ORDER = List.of(
         "META-INF/MANIFEST.MF",
         "pkg/Compressible.class",

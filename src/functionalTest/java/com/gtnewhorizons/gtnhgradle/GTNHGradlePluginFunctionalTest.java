@@ -130,7 +130,7 @@ class GTNHGradlePluginFunctionalTest {
         }
     }
 
-    /** Project setups whose dependencies this test run downloaded, which --offline builds rely on */
+    /** Project setups with their dependencies downloaded, for --offline builds */
     private static final Set<String> CACHED_SETUPS = new HashSet<>();
 
     private GradleRunner createRunner(String... args) {
@@ -229,7 +229,7 @@ class GTNHGradlePluginFunctionalTest {
 
         assertTrue(output.contains(":downgradeJar SKIPPED"), "test should use the downgraded jar");
         assertFalse(output.contains(":downgradeMainClasses SKIPPED"), "main classes should not be downgraded twice");
-        // Without this the test JVM would load the copies for its own Java version out of the multi-release jar
+        // Otherwise the test JVM loads the multi-release copies for its own Java version
         assertTrue(
             createRunner("printTestJvmArgs").build()
                 .getOutput()
@@ -255,7 +255,7 @@ class GTNHGradlePluginFunctionalTest {
         final String output = createRunner("test", "--dry-run").build()
             .getOutput();
 
-        // The jar has the shaded dependencies relocated, the test code uses their original names
+        // The test code uses the shaded dependencies' original names, which the jar relocated
         assertTrue(output.contains(":downgradeMainClasses SKIPPED"), "test should use the unrelocated main classes");
         assertFalse(output.contains(":downgradeJar SKIPPED"), "test should not need the downgraded jar");
         // The flag applies to every jar on the test classpath, so it is only set where the tests need it
@@ -806,7 +806,7 @@ class GTNHGradlePluginFunctionalTest {
 
         createRunner("shadowJar").build();
 
-        // Copying the plain jar would drop this, as it did for lwjgl3ify's Forge patches
+        // Copying the plain jar would drop this
         assertTrue(
             jarContainsEntry(findJar("-dev.jar"), "added/extra.txt"),
             "a file added to shadowJar by hand should not be dropped");
@@ -833,9 +833,7 @@ class GTNHGradlePluginFunctionalTest {
         };
         writeString(getBuildFile(), SIMPLE_BUILD_FILE + "\ntasks.shadowJar { " + configuration + " }\n");
 
-        // Copy rules are already visible while the task graph is worked out, so the plain jar is not even built.
-        // Sources and manifest attributes a build script adds are only noticed once shadowJar runs and compares
-        // what it would write against the jar, which has to be there for that.
+        // Sources and manifest attributes only show once shadowJar runs, the other rules with the task graph
         if (!List.of("defaultExclude", "from", "manifest")
             .contains(rule)) {
             assertFalse(
@@ -883,8 +881,7 @@ class GTNHGradlePluginFunctionalTest {
         setupProject(SHADOW_PROPERTIES_FILE);
         writeResource("{}");
 
-        // Mods are spread over Gradle versions, and this one can't restore everything newer ones can. A private
-        // record held by the shadowJar action failed here, while passing on the version these tests run with.
+        // Unlike the version these tests run on, this one can't restore a private record held by a task action
         createRunner("shadowJar", "--configuration-cache").withGradleVersion("9.4.0")
             .build();
     }
@@ -960,11 +957,10 @@ class GTNHGradlePluginFunctionalTest {
         setupProject(SHADOW_PROPERTIES_FILE);
         writeResource("{}");
 
-        // The builds below run offline so one configuration cache entry survives: the plugin's own update check
-        // resolves a dynamic version, which invalidates the entry on every online build
+        // Offline, as the plugin's update check invalidates the configuration cache entry on online builds
         createRunner("shadowJar").build();
         createRunner("shadowJar", "--configuration-cache", "--offline").build();
-        // Deleting the output makes shadowJar run again without touching anything the configuration cache tracks
+        // Reruns shadowJar without invalidating the configuration cache entry
         Files.delete(findJar("-dev.jar"));
         final BuildResult second = createRunner("shadowJar", "--configuration-cache", "--offline", "--info").build();
 
